@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Golf Swing Simulator</title>
+  <style>
+    :root {
+      --bg1: #87ceeb;
+      --bg2: #e8f7ff;
+      --grass: #59a14f;
+      --sand: #e6d3a3;
+      --panel: rgba(7, 32, 49, 0.78);
+      --text: #f4fbff;
+      --accent: #ffd166;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 20% 20%, var(--bg2), var(--bg1) 60%);
+      font-family: "Trebuchet MS", "Verdana", sans-serif;
+    }
+
+    #game-shell {
+      width: min(96vw, 960px);
+      aspect-ratio: 16 / 9;
+      border: 2px solid rgba(0, 0, 0, 0.22);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+      position: relative;
+      background: #9fd6ee;
+    }
+
+    #game {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+      outline: none;
+    }
+
+    #start-btn {
+      position: absolute;
+      left: 50%;
+      bottom: 10%;
+      transform: translateX(-50%);
+      border: 0;
+      background: var(--accent);
+      color: #1b2830;
+      font-size: clamp(15px, 2.2vw, 22px);
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 12px 28px;
+      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+    }
+
+    #start-btn.hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div id="game-shell">
+    <canvas id="game" width="960" height="540" tabindex="0" aria-label="Golf swing simulator"></canvas>
+    <button id="start-btn">게임 시작</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const shell = document.getElementById("game-shell");
+    const startBtn = document.getElementById("start-btn");
+
+    const state = {
+      mode: "menu",
+      totalShots: 0,
+      score: 0,
+      wind: 0,
+      charging: false,
+      chargeDir: 1,
+      charge: 0.1,
+      aimDeg: 14,
+      shotDone: false,
+      message: "",
+      ball: { x: 110, y: 400, vx: 0, vy: 0, r: 9, moving: false, trail: [] },
+      hole: { x: 820, y: 402, r: 12 },
+      cameraX: 0,
+      fullscreen: false
+    };
+
+    const keys = new Set();
+    let lastTime = performance.now();
+
+    function clamp(v, min, max) {
+      return Math.max(min, Math.min(max, v));
+    }
+
+    function resetRound() {
+      state.mode = "ready";
+      state.wind = (Math.random() * 2 - 1) * 24;
+      state.charging = false;
+      state.charge = 0.1;
+      state.chargeDir = 1;
+      state.aimDeg = 14;
+      state.shotDone = false;
+      state.message = "스페이스를 눌러 파워를 충전하고 놓아 스윙";
+      state.ball.x = 110;
+      state.ball.y = 400;
+      state.ball.vx = 0;
+      state.ball.vy = 0;
+      state.ball.moving = false;
+      state.ball.trail = [];
+      state.cameraX = 0;
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        shell.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    document.addEventListener("fullscreenchange", () => {
+      state.fullscreen = Boolean(document.fullscreenElement);
+      resizeCanvas();
+    });
+
+    function resizeCanvas() {
+      const rect = shell.getBoundingClientRect();
+      const targetW = Math.max(640, Math.floor(rect.width));
+      const targetH = Math.max(360, Math.floor(rect.height));
+      canvas.width = targetW;
+      canvas.height = targetH;
+      render();
+    }
+
+    function startGame() {
+      startBtn.classList.add("hidden");
+      resetRound();
+      canvas.focus();
+    }
+
+    startBtn.addEventListener("click", startGame);
+
+    window.addEventListener("keydown", (e) => {
+      const k = e.key.toLowerCase();
+      if (k === "f") {
+        e.preventDefault();
+        toggleFullscreen();
+        return;
+      }
+      if (e.key === "Escape" && document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+
+      keys.add(k);
+      if (e.code === "Space") {
+        e.preventDefault();
+        if (state.mode === "ready" && !state.shotDone && !state.charging && !state.ball.moving) {
+          state.charging = true;
+          state.message = "타이밍 좋게 놓으세요!";
+        }
+      }
+      if (k === "r" && (state.mode === "result" || state.shotDone)) {
+        resetRound();
+      }
+    });
+
+    window.addEventListener("keyup", (e) => {
+      const k = e.key.toLowerCase();
+      keys.delete(k);
+      if (e.code === "Space") {
+        if (state.charging && state.mode === "ready") {
+          swing();
+        }
+      }
+    });
+
+    function swing() {
+      const p = state.charge;
+      const power = 310 + p * 720;
+      const rad = (state.aimDeg * Math.PI) / 180;
+      state.ball.vx = Math.cos(rad) * power;
+      state.ball.vy = -Math.sin(rad) * power;
+      state.ball.moving = true;
+      state.charging = false;
+      state.shotDone = true;
+      state.totalShots += 1;
+      state.message = "비행 중...";
+    }
+
+    function evaluateLanding() {
+      const dist = Math.abs((state.ball.x + state.ball.r) - state.hole.x);
+      let points = 0;
+      if (dist < 16) {
+        points = 100;
+        state.message = "홀인원! R로 다시 도전";
+      } else if (dist < 70) {
+        points = 45;
+        state.message = "나이스 샷! R로 다시 도전";
+      } else if (dist < 150) {
+        points = 20;
+        state.message = "괜찮은 샷. R로 다시 도전";
+      } else {
+        points = 5;
+        state.message = "거리 조절 필요. R로 다시 도전";
+      }
+      state.score += points;
+      state.mode = "result";
+    }
+
+    function update(dt) {
+      if (state.mode === "menu") return;
+
+      if (keys.has("arrowleft")) state.aimDeg = clamp(state.aimDeg + 44 * dt, 4, 40);
+      if (keys.has("arrowright")) state.aimDeg = clamp(state.aimDeg - 44 * dt, 4, 40);
+
+      if (state.charging) {
+        state.charge += state.chargeDir * dt * 1.25;
+        if (state.charge > 1) {
+          state.charge = 1;
+          state.chargeDir = -1;
+        }
+        if (state.charge < 0.1) {
+          state.charge = 0.1;
+          state.chargeDir = 1;
+        }
+      }
+
+      if (state.ball.moving) {
+        state.ball.vx += state.wind * dt;
+        state.ball.vy += 700 * dt;
+        state.ball.x += state.ball.vx * dt;
+        state.ball.y += state.ball.vy * dt;
+
+        state.ball.trail.push({ x: state.ball.x, y: state.ball.y });
+        if (state.ball.trail.length > 35) state.ball.trail.shift();
+
+        if (state.ball.y + state.ball.r >= 410) {
+          state.ball.y = 410 - state.ball.r;
+          state.ball.vy *= -0.32;
+          state.ball.vx *= 0.65;
+
+          if (Math.abs(state.ball.vy) < 55) state.ball.vy = 0;
+          if (Math.abs(state.ball.vx) < 25 && Math.abs(state.ball.vy) < 20) {
+            state.ball.vx = 0;
+            state.ball.vy = 0;
+            state.ball.moving = false;
+            evaluateLanding();
+          }
+        }
+
+        if (state.ball.x > canvas.width - 120) {
+          state.cameraX = clamp(state.ball.x - (canvas.width - 240), 0, 320);
+        }
+      }
+    }
+
+    function drawBackground() {
+      const w = canvas.width;
+      const h = canvas.height;
+      const sky = ctx.createLinearGradient(0, 0, 0, h);
+      sky.addColorStop(0, "#8ed8ff");
+      sky.addColorStop(0.55, "#d5f1ff");
+      sky.addColorStop(1, "#f5fbff");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.fillStyle = "#8bcf73";
+      ctx.fillRect(0, h * 0.68, w, h * 0.32);
+
+      ctx.fillStyle = "#6ba85e";
+      for (let i = 0; i < 6; i += 1) {
+        const x = i * 190 - (state.cameraX * 0.45) % 190;
+        ctx.beginPath();
+        ctx.arc(x, h * 0.72, 150, Math.PI, 2 * Math.PI);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = "#e8d4a2";
+      ctx.beginPath();
+      ctx.ellipse(350 - state.cameraX, 410, 135, 24, 0, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    function drawHUD() {
+      ctx.fillStyle = "rgba(8, 32, 43, 0.78)";
+      ctx.fillRect(20, 16, 330, 126);
+      ctx.strokeStyle = "rgba(255,255,255,0.2)";
+      ctx.strokeRect(20, 16, 330, 126);
+
+      ctx.fillStyle = "#e9f7ff";
+      ctx.font = "18px Trebuchet MS";
+      ctx.fillText(`점수: ${state.score}`, 36, 44);
+      ctx.fillText(`시도: ${state.totalShots}`, 36, 68);
+      ctx.fillText(`바람: ${state.wind.toFixed(1)} m/s`, 36, 92);
+      ctx.fillText(`각도: ${state.aimDeg.toFixed(1)}°`, 36, 116);
+
+      ctx.fillStyle = "rgba(0,0,0,0.34)";
+      ctx.fillRect(380, 26, 240, 20);
+      ctx.fillStyle = "#ffd166";
+      ctx.fillRect(380, 26, 240 * state.charge, 20);
+      ctx.strokeStyle = "rgba(255,255,255,0.4)";
+      ctx.strokeRect(380, 26, 240, 20);
+      ctx.fillStyle = "#173042";
+      ctx.font = "14px Trebuchet MS";
+      ctx.fillText("Power", 472, 41);
+
+      ctx.fillStyle = "rgba(10, 27, 38, 0.75)";
+      ctx.fillRect(20, canvas.height - 62, canvas.width - 40, 40);
+      ctx.fillStyle = "#f4fbff";
+      ctx.font = "17px Trebuchet MS";
+      ctx.fillText(state.message, 34, canvas.height - 36);
+    }
+
+    function drawArrow() {
+      const baseX = state.ball.x - state.cameraX;
+      const baseY = state.ball.y - 10;
+      const len = 85;
+      const rad = (state.aimDeg * Math.PI) / 180;
+      const tx = baseX + Math.cos(rad) * len;
+      const ty = baseY - Math.sin(rad) * len;
+
+      ctx.strokeStyle = "#133b56";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(baseX, baseY);
+      ctx.lineTo(tx, ty);
+      ctx.stroke();
+
+      const head = 11;
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx - Math.cos(rad - 0.5) * head, ty + Math.sin(rad - 0.5) * head);
+      ctx.lineTo(tx - Math.cos(rad + 0.5) * head, ty + Math.sin(rad + 0.5) * head);
+      ctx.closePath();
+      ctx.fillStyle = "#133b56";
+      ctx.fill();
+    }
+
+    function drawScene() {
+      drawBackground();
+
+      const groundY = 410;
+      const cupX = state.hole.x - state.cameraX;
+      const cupY = state.hole.y;
+
+      ctx.fillStyle = "#1f6f4f";
+      ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(cupX - 1.5, cupY - 34, 3, 34);
+      ctx.beginPath();
+      ctx.moveTo(cupX + 1.5, cupY - 34);
+      ctx.lineTo(cupX + 36, cupY - 24);
+      ctx.lineTo(cupX + 1.5, cupY - 14);
+      ctx.closePath();
+      ctx.fillStyle = "#ff7f50";
+      ctx.fill();
+
+      ctx.fillStyle = "#292929";
+      ctx.beginPath();
+      ctx.ellipse(cupX, cupY + 2, state.hole.r, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      for (const trail of state.ball.trail) {
+        ctx.fillStyle = "rgba(255,255,255,0.24)";
+        ctx.beginPath();
+        ctx.arc(trail.x - state.cameraX, trail.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = "#f5f5f5";
+      ctx.beginPath();
+      ctx.arc(state.ball.x - state.cameraX, state.ball.y, state.ball.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.25)";
+      ctx.stroke();
+
+      if (!state.ball.moving && state.mode !== "menu") {
+        drawArrow();
+      }
+
+      drawHUD();
+
+      if (state.mode === "menu") {
+        ctx.fillStyle = "rgba(7, 32, 49, 0.8)";
+        ctx.fillRect(canvas.width * 0.12, canvas.height * 0.16, canvas.width * 0.76, canvas.height * 0.56);
+        ctx.fillStyle = "#f4fbff";
+        ctx.textAlign = "center";
+        ctx.font = "700 42px Trebuchet MS";
+        ctx.fillText("GOLF SWING SIM", canvas.width / 2, canvas.height * 0.29);
+        ctx.font = "21px Trebuchet MS";
+        ctx.fillText("좌우 방향키: 각도 조절 | Space: 파워 차지/스윙", canvas.width / 2, canvas.height * 0.42);
+        ctx.fillText("R: 라운드 재시작 | F: 전체화면", canvas.width / 2, canvas.height * 0.49);
+        ctx.fillText("바람을 고려해 컵에 가장 가깝게 붙이세요", canvas.width / 2, canvas.height * 0.58);
+        ctx.textAlign = "start";
+      }
+    }
+
+    function render() {
+      drawScene();
+    }
+
+    function frame(now) {
+      const dt = Math.min(0.033, (now - lastTime) / 1000 || 0.016);
+      lastTime = now;
+      update(dt);
+      render();
+      requestAnimationFrame(frame);
+    }
+
+    window.advanceTime = (ms) => {
+      const step = 1000 / 60;
+      const loops = Math.max(1, Math.round(ms / step));
+      for (let i = 0; i < loops; i += 1) {
+        update(step / 1000);
+      }
+      render();
+      return Promise.resolve();
+    };
+
+    window.render_game_to_text = () => {
+      const payload = {
+        coordinateSystem: "origin top-left, +x right, +y down",
+        mode: state.mode,
+        message: state.message,
+        score: state.score,
+        totalShots: state.totalShots,
+        wind: Number(state.wind.toFixed(2)),
+        aimDeg: Number(state.aimDeg.toFixed(2)),
+        charging: state.charging,
+        charge: Number(state.charge.toFixed(3)),
+        cameraX: Number(state.cameraX.toFixed(2)),
+        ball: {
+          x: Number(state.ball.x.toFixed(2)),
+          y: Number(state.ball.y.toFixed(2)),
+          vx: Number(state.ball.vx.toFixed(2)),
+          vy: Number(state.ball.vy.toFixed(2)),
+          radius: state.ball.r,
+          moving: state.ball.moving
+        },
+        hole: {
+          x: state.hole.x,
+          y: state.hole.y,
+          radius: state.hole.r
+        },
+        controls: {
+          swing: "Space hold/release",
+          aim: "ArrowLeft/ArrowRight",
+          restart: "R",
+          fullscreen: "F"
+        }
+      };
+      return JSON.stringify(payload);
+    };
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+    render();
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>
