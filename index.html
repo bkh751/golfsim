@@ -70,11 +70,24 @@
     <button id="start-btn">게임 시작</button>
   </div>
 
-  <script>
+  <script type="module">
+    import {
+      DEFAULT_PARAMS,
+      createInitialState,
+      createDefaultControls,
+      stepSwingModel,
+    } from "./swing-model.js";
+
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
     const shell = document.getElementById("game-shell");
     const startBtn = document.getElementById("start-btn");
+
+    const MODEL_PARAMS = {
+      ...DEFAULT_PARAMS,
+      groundY: 410,
+      ballRadius: 9,
+    };
 
     const state = {
       mode: "menu",
@@ -90,7 +103,9 @@
       ball: { x: 110, y: 400, vx: 0, vy: 0, r: 9, moving: false, trail: [] },
       hole: { x: 820, y: 402, r: 12 },
       cameraX: 0,
-      fullscreen: false
+      fullscreen: false,
+      model: createInitialState({ ballX: 110, ballY: 400 }),
+      modelControls: createDefaultControls(),
     };
 
     const keys = new Set();
@@ -100,22 +115,31 @@
       return Math.max(min, Math.min(max, v));
     }
 
+    function syncBallFromModel() {
+      state.ball.x = state.model.ballX;
+      state.ball.y = state.model.ballY;
+      state.ball.vx = state.model.ballVx;
+      state.ball.vy = state.model.ballVy;
+      state.ball.moving = state.model.ballMoving;
+    }
+
     function resetRound() {
       state.mode = "ready";
-      state.wind = (Math.random() * 2 - 1) * 24;
+      state.wind = (Math.random() * 2 - 1) * 11;
       state.charging = false;
       state.charge = 0.1;
       state.chargeDir = 1;
       state.aimDeg = 14;
       state.shotDone = false;
       state.message = "스페이스를 눌러 파워를 충전하고 놓아 스윙";
-      state.ball.x = 110;
-      state.ball.y = 400;
-      state.ball.vx = 0;
-      state.ball.vy = 0;
-      state.ball.moving = false;
       state.ball.trail = [];
       state.cameraX = 0;
+      state.model = createInitialState({ ballX: 110, ballY: 400 });
+      state.modelControls = createDefaultControls({
+        windX: state.wind,
+        aimDeg: state.aimDeg,
+      });
+      syncBallFromModel();
     }
 
     function toggleFullscreen() {
@@ -183,32 +207,38 @@
     });
 
     function swing() {
-      const p = state.charge;
-      const power = 310 + p * 720;
-      const rad = (state.aimDeg * Math.PI) / 180;
-      state.ball.vx = Math.cos(rad) * power;
-      state.ball.vy = -Math.sin(rad) * power;
-      state.ball.moving = true;
+      const strikeOffset = (0.82 - state.charge) * 0.16;
+      state.modelControls = {
+        ...state.modelControls,
+        initiateSwing: true,
+        powerNorm: state.charge,
+        tempoNorm: clamp(0.62 + state.charge * 0.55, 0.4, 1.25),
+        aimDeg: state.aimDeg,
+        loftDeltaDeg: 0,
+        strikeOffset,
+        windX: state.wind,
+      };
       state.charging = false;
       state.shotDone = true;
       state.totalShots += 1;
-      state.message = "비행 중...";
+      state.message = "다운스윙...";
     }
 
     function evaluateLanding() {
       const dist = Math.abs((state.ball.x + state.ball.r) - state.hole.x);
+      const qualityBonus = clamp(Math.round(state.model.impactQuality * 8), 0, 8);
       let points = 0;
       if (dist < 16) {
-        points = 100;
+        points = 100 + qualityBonus;
         state.message = "홀인원! R로 다시 도전";
       } else if (dist < 70) {
-        points = 45;
+        points = 45 + qualityBonus;
         state.message = "나이스 샷! R로 다시 도전";
       } else if (dist < 150) {
-        points = 20;
+        points = 20 + qualityBonus;
         state.message = "괜찮은 샷. R로 다시 도전";
       } else {
-        points = 5;
+        points = 5 + qualityBonus;
         state.message = "거리 조절 필요. R로 다시 도전";
       }
       state.score += points;
@@ -233,32 +263,32 @@
         }
       }
 
+      const previousPhase = state.model.phase;
+      state.modelControls = {
+        ...state.modelControls,
+        aimDeg: state.aimDeg,
+        windX: state.wind,
+      };
+      state.model = stepSwingModel(state.model, state.modelControls, MODEL_PARAMS, dt);
+      state.modelControls.initiateSwing = false;
+      syncBallFromModel();
+
       if (state.ball.moving) {
-        state.ball.vx += state.wind * dt;
-        state.ball.vy += 700 * dt;
-        state.ball.x += state.ball.vx * dt;
-        state.ball.y += state.ball.vy * dt;
-
         state.ball.trail.push({ x: state.ball.x, y: state.ball.y });
-        if (state.ball.trail.length > 35) state.ball.trail.shift();
+        if (state.ball.trail.length > 40) state.ball.trail.shift();
+      }
 
-        if (state.ball.y + state.ball.r >= 410) {
-          state.ball.y = 410 - state.ball.r;
-          state.ball.vy *= -0.32;
-          state.ball.vx *= 0.65;
-
-          if (Math.abs(state.ball.vy) < 55) state.ball.vy = 0;
-          if (Math.abs(state.ball.vx) < 25 && Math.abs(state.ball.vy) < 20) {
-            state.ball.vx = 0;
-            state.ball.vy = 0;
-            state.ball.moving = false;
-            evaluateLanding();
-          }
+      if (previousPhase !== state.model.phase) {
+        if (state.model.phase === "flight") {
+          state.message = "임팩트! 비행 중...";
         }
-
-        if (state.ball.x > canvas.width - 120) {
-          state.cameraX = clamp(state.ball.x - (canvas.width - 240), 0, 320);
+        if (state.model.phase === "rest" && state.mode !== "result") {
+          evaluateLanding();
         }
+      }
+
+      if (state.ball.x > canvas.width - 120) {
+        state.cameraX = clamp(state.ball.x - (canvas.width - 240), 0, 320);
       }
     }
 
@@ -291,9 +321,9 @@
 
     function drawHUD() {
       ctx.fillStyle = "rgba(8, 32, 43, 0.78)";
-      ctx.fillRect(20, 16, 330, 126);
+      ctx.fillRect(20, 16, 360, 140);
       ctx.strokeStyle = "rgba(255,255,255,0.2)";
-      ctx.strokeRect(20, 16, 330, 126);
+      ctx.strokeRect(20, 16, 360, 140);
 
       ctx.fillStyle = "#e9f7ff";
       ctx.font = "18px Trebuchet MS";
@@ -301,16 +331,17 @@
       ctx.fillText(`시도: ${state.totalShots}`, 36, 68);
       ctx.fillText(`바람: ${state.wind.toFixed(1)} m/s`, 36, 92);
       ctx.fillText(`각도: ${state.aimDeg.toFixed(1)}°`, 36, 116);
+      ctx.fillText(`헤드스피드: ${state.model.clubHeadSpeed.toFixed(1)} m/s`, 36, 140);
 
       ctx.fillStyle = "rgba(0,0,0,0.34)";
-      ctx.fillRect(380, 26, 240, 20);
+      ctx.fillRect(400, 26, 240, 20);
       ctx.fillStyle = "#ffd166";
-      ctx.fillRect(380, 26, 240 * state.charge, 20);
+      ctx.fillRect(400, 26, 240 * state.charge, 20);
       ctx.strokeStyle = "rgba(255,255,255,0.4)";
-      ctx.strokeRect(380, 26, 240, 20);
+      ctx.strokeRect(400, 26, 240, 20);
       ctx.fillStyle = "#173042";
       ctx.font = "14px Trebuchet MS";
-      ctx.fillText("Power", 472, 41);
+      ctx.fillText("Power", 492, 41);
 
       ctx.fillStyle = "rgba(10, 27, 38, 0.75)";
       ctx.fillRect(20, canvas.height - 62, canvas.width - 40, 40);
@@ -395,11 +426,11 @@
         ctx.fillStyle = "#f4fbff";
         ctx.textAlign = "center";
         ctx.font = "700 42px Trebuchet MS";
-        ctx.fillText("GOLF SWING SIM", canvas.width / 2, canvas.height * 0.29);
+        ctx.fillText("GOLF SWING SIM PRO", canvas.width / 2, canvas.height * 0.29);
         ctx.font = "21px Trebuchet MS";
         ctx.fillText("좌우 방향키: 각도 조절 | Space: 파워 차지/스윙", canvas.width / 2, canvas.height * 0.42);
-        ctx.fillText("R: 라운드 재시작 | F: 전체화면", canvas.width / 2, canvas.height * 0.49);
-        ctx.fillText("바람을 고려해 컵에 가장 가깝게 붙이세요", canvas.width / 2, canvas.height * 0.58);
+        ctx.fillText("3-Link 스윙 모델 + 임팩트 + 탄도 시뮬레이션", canvas.width / 2, canvas.height * 0.49);
+        ctx.fillText("R: 라운드 재시작 | F: 전체화면", canvas.width / 2, canvas.height * 0.58);
         ctx.textAlign = "start";
       }
     }
@@ -438,25 +469,34 @@
         charging: state.charging,
         charge: Number(state.charge.toFixed(3)),
         cameraX: Number(state.cameraX.toFixed(2)),
+        model: {
+          phase: state.model.phase,
+          clubHeadSpeed: Number(state.model.clubHeadSpeed.toFixed(2)),
+          attackAngleDeg: Number(state.model.attackAngleDeg.toFixed(2)),
+          dynamicLoftDeg: Number(state.model.dynamicLoftDeg.toFixed(2)),
+          launchDeg: Number(state.model.launchDeg.toFixed(2)),
+          spinRpm: Number(state.model.spinRpm.toFixed(1)),
+          impactQuality: Number(state.model.impactQuality.toFixed(3)),
+        },
         ball: {
           x: Number(state.ball.x.toFixed(2)),
           y: Number(state.ball.y.toFixed(2)),
           vx: Number(state.ball.vx.toFixed(2)),
           vy: Number(state.ball.vy.toFixed(2)),
           radius: state.ball.r,
-          moving: state.ball.moving
+          moving: state.ball.moving,
         },
         hole: {
           x: state.hole.x,
           y: state.hole.y,
-          radius: state.hole.r
+          radius: state.hole.r,
         },
         controls: {
           swing: "Space hold/release",
           aim: "ArrowLeft/ArrowRight",
           restart: "R",
-          fullscreen: "F"
-        }
+          fullscreen: "F",
+        },
       };
       return JSON.stringify(payload);
     };
