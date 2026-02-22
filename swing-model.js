@@ -111,6 +111,7 @@ export function createInitialState(overrides = {}) {
     launchDeg: 0,
     impactQuality: 1,
     spinRpm: 0,
+    didImpact: false,
     ballX: 110,
     ballY: 400,
     ballVx: 0,
@@ -150,6 +151,7 @@ export function stepSwingModel(state, controls = {}, params = {}, dt = 1 / 60) {
   };
 
   const next = { ...state };
+  next.didImpact = false;
 
   if (u.initiateSwing && (next.phase === "address" || next.phase === "rest")) {
     next.phase = "downswing";
@@ -227,6 +229,7 @@ export function stepSwingModel(state, controls = {}, params = {}, dt = 1 / 60) {
       next.ballVy = -ballSpeed * Math.sin(launchRad);
       next.ballMoving = true;
       next.phase = "flight";
+      next.didImpact = true;
       next.dynamicLoftDeg = dynamicLoftDeg;
       next.launchDeg = launchDeg;
       next.spinRpm = spinRpm;

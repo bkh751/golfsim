@@ -24,17 +24,22 @@ test('happy path: swing progresses to flight then rest with forward ball travel'
   });
 
   let sawFlight = false;
+  let didImpactCount = 0;
   let steps = 0;
 
   while (steps < 900) {
     state = stepSwingModel(state, controls, DEFAULT_PARAMS, 1 / 60);
     controls.initiateSwing = false;
+    if (state.didImpact) {
+      didImpactCount += 1;
+    }
     if (state.phase === 'flight') sawFlight = true;
     if (sawFlight && state.phase === 'rest') break;
     steps += 1;
   }
 
   assert.equal(sawFlight, true);
+  assert.equal(didImpactCount, 1);
   assert.equal(state.phase, 'rest');
   assert.equal(state.ballMoving, false);
   assert.ok(state.ballX > 110);
@@ -85,4 +90,5 @@ test('regression: without initiateSwing state remains idle', () => {
   assert.equal(state.ballMoving, false);
   assert.equal(state.ballX, 110);
   assert.equal(state.ballY, 400);
+  assert.equal(state.didImpact, false);
 });

@@ -104,6 +104,7 @@
       hole: { x: 820, y: 402, r: 12 },
       cameraX: 0,
       fullscreen: false,
+      impactEffects: [],
       model: createInitialState({ ballX: 110, ballY: 400 }),
       modelControls: createDefaultControls(),
     };
@@ -123,6 +124,85 @@
       state.ball.moving = state.model.ballMoving;
     }
 
+    function spawnImpactEffect() {
+      const x = state.ball.x;
+      const y = state.ball.y;
+      state.impactEffects.push({
+        kind: "ring",
+        x,
+        y,
+        age: 0,
+        maxAge: 0.45,
+        maxRadius: 52,
+      });
+
+      const sparkCount = 10;
+      for (let i = 0; i < sparkCount; i += 1) {
+        const angle = (i / sparkCount) * Math.PI * 2;
+        const speed = 160 + (i % 3) * 22;
+        state.impactEffects.push({
+          kind: "spark",
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed * 0.3 - 55,
+          age: 0,
+          maxAge: 0.42 + (i % 3) * 0.06,
+          size: 1.8 + (i % 3) * 0.4,
+          decay: 0.75,
+        });
+      }
+    }
+
+    function updateImpactEffects(dt) {
+      if (state.impactEffects.length === 0) return;
+
+      const nextEffects = [];
+      const gravity = 420;
+
+      for (const fx of state.impactEffects) {
+        fx.age += dt;
+        if (fx.age > fx.maxAge) continue;
+
+        if (fx.kind === "spark") {
+          fx.vy += gravity * dt;
+          fx.x += fx.vx * dt;
+          fx.y += fx.vy * dt;
+          fx.vx *= 0.94;
+          fx.vy *= 0.96;
+        }
+
+        nextEffects.push(fx);
+      }
+
+      state.impactEffects = nextEffects;
+    }
+
+    function drawImpactEffects() {
+      if (state.impactEffects.length === 0) return;
+
+      for (const fx of state.impactEffects) {
+        const t = Math.min(1, fx.age / fx.maxAge);
+
+        if (fx.kind === "ring") {
+          const radius = fx.maxRadius * t;
+          const alpha = 0.45 * (1 - t);
+          ctx.strokeStyle = `rgba(255, 240, 200, ${alpha.toFixed(3)})`;
+          ctx.lineWidth = 3 * (1 - t);
+          ctx.beginPath();
+          ctx.arc(fx.x - state.cameraX, fx.y, radius, 0, Math.PI * 2);
+          ctx.stroke();
+          continue;
+        }
+
+        const alpha = fx.decay * (1 - t);
+        ctx.fillStyle = `rgba(255, 244, 220, ${alpha.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(fx.x - state.cameraX, fx.y, fx.size * (1 - t), 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
     function resetRound() {
       state.mode = "ready";
       state.wind = (Math.random() * 2 - 1) * 11;
@@ -132,6 +212,7 @@
       state.aimDeg = 14;
       state.shotDone = false;
       state.message = "스페이스를 눌러 파워를 충전하고 놓아 스윙";
+      state.impactEffects = [];
       state.ball.trail = [];
       state.cameraX = 0;
       state.model = createInitialState({ ballX: 110, ballY: 400 });
@@ -272,6 +353,7 @@
       state.model = stepSwingModel(state.model, state.modelControls, MODEL_PARAMS, dt);
       state.modelControls.initiateSwing = false;
       syncBallFromModel();
+      updateImpactEffects(dt);
 
       if (state.ball.moving) {
         state.ball.trail.push({ x: state.ball.x, y: state.ball.y });
@@ -281,6 +363,7 @@
       if (previousPhase !== state.model.phase) {
         if (state.model.phase === "flight") {
           state.message = "임팩트! 비행 중...";
+          spawnImpactEffect();
         }
         if (state.model.phase === "rest" && state.mode !== "result") {
           evaluateLanding();
@@ -407,6 +490,8 @@
         ctx.fill();
       }
 
+      drawImpactEffects();
+
       ctx.fillStyle = "#f5f5f5";
       ctx.beginPath();
       ctx.arc(state.ball.x - state.cameraX, state.ball.y, state.ball.r, 0, Math.PI * 2);
@@ -477,7 +562,9 @@
           launchDeg: Number(state.model.launchDeg.toFixed(2)),
           spinRpm: Number(state.model.spinRpm.toFixed(1)),
           impactQuality: Number(state.model.impactQuality.toFixed(3)),
+          didImpact: state.model.didImpact,
         },
+        impactEffectCount: state.impactEffects.length,
         ball: {
           x: Number(state.ball.x.toFixed(2)),
           y: Number(state.ball.y.toFixed(2)),
