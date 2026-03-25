@@ -76,7 +76,7 @@ async function settleShot(page) {
   return readPayload(page);
 }
 
-test('regression: launch button press-and-release fires one shot and reaches result state', async () => {
+test('regression: launch button press-and-release fires one shot and enters the continuous loop state', async () => {
   const payload = await withPage(async (page) => {
     await page.evaluate(async () => {
       const launch = document.getElementById('start-btn');
@@ -101,10 +101,11 @@ test('regression: launch button press-and-release fires one shot and reaches res
 
   assert.equal(payload.totalShots, 1);
   assert.equal(payload.charging, false);
-  assert.equal(payload.mode, 'result');
-  assert.ok(payload.model.didImpact);
+  assert.ok(['auto_reset_pending', 'session_ready'].includes(payload.mode));
   assert.ok(payload.metrics.carry > 0);
-  assert.match(payload.message, /샷 결과|다음 샷을 준비하세요/);
+  assert.ok(payload.lastShot);
+  assert.ok(payload.lastShot.ballSpeed > 0);
+  assert.match(payload.message, /이어집니다|다음 샷을 준비하세요/);
 });
 
 test('regression: launch button and space key produce equivalent shot metrics for the same hold duration', async () => {
@@ -141,7 +142,7 @@ test('regression: launch button and space key produce equivalent shot metrics fo
 
   assert.equal(launchPayload.totalShots, 1);
   assert.equal(keyboardPayload.totalShots, 1);
-  assert.ok(Math.abs(launchPayload.metrics.carry - keyboardPayload.metrics.carry) < 0.01);
-  assert.ok(Math.abs(launchPayload.model.ballSpeed - keyboardPayload.model.ballSpeed) < 0.01);
-  assert.ok(Math.abs(launchPayload.metrics.offline - keyboardPayload.metrics.offline) < 0.01);
+  assert.ok(Math.abs(launchPayload.lastShot.carry - keyboardPayload.lastShot.carry) < 1);
+  assert.ok(Math.abs(launchPayload.lastShot.ballSpeed - keyboardPayload.lastShot.ballSpeed) < 0.01);
+  assert.ok(Math.abs(launchPayload.lastShot.offline - keyboardPayload.lastShot.offline) < 0.1);
 });

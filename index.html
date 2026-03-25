@@ -161,6 +161,42 @@
       flex-shrink: 0;
     }
 
+    .session-ribbon {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .session-pill {
+      border: 1px solid rgba(14, 26, 41, 0.08);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(240, 245, 249, 0.92));
+      padding: 10px 12px;
+      min-width: 0;
+    }
+
+    .session-pill-label {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 15px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .session-pill-value {
+      display: block;
+      color: #12202c;
+      font-size: 15px;
+      line-height: 20px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     #game-viewport {
       flex: 1;
       width: 100%;
@@ -317,34 +353,57 @@
       #game-stage {
         min-height: 360px;
       }
+
+      .session-ribbon {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
   </style>
 </head>
 <body>
   <div id="game-shell">
     <aside id="hud-panel" class="sidebar" aria-label="HUD panel">
-      <div class="sidebar-heading">HUD (데이터)</div>
+      <div class="sidebar-heading">SESSION HUD</div>
       <div class="metric-grid">
         <div class="metric-card">
-          <div class="metric-card-label"><span class="metric-icon distance">D</span>Distance</div>
-          <div id="hud-distance" class="metric-card-value">-</div>
+          <div class="metric-card-label"><span class="metric-icon distance">S</span>Shots</div>
+          <div id="hud-shots" class="metric-card-value">0</div>
         </div>
         <div class="metric-card">
           <div class="metric-card-label"><span class="metric-icon wind">W</span>Wind</div>
           <div id="hud-wind" class="metric-card-value">-</div>
         </div>
       </div>
-      <section class="info-card" aria-label="Ball flight data">
-        <h2>Ball Flight Data</h2>
-        <div class="info-row"><span class="label">Side Spin</span><span id="hud-side-spin" class="value">-</span></div>
-        <div class="info-row"><span class="label">Back Spin</span><span id="hud-back-spin" class="value">-</span></div>
-        <div class="info-row"><span class="label">Ball Speed</span><span id="hud-ball-speed" class="value">-</span></div>
+      <section class="info-card" aria-label="Latest shot data">
+        <h2>Latest Shot</h2>
+        <div class="info-row"><span class="label">Carry</span><span id="hud-carry" class="value">-</span></div>
+        <div class="info-row"><span class="label">Total</span><span id="hud-total" class="value">-</span></div>
+        <div class="info-row"><span class="label">Curve</span><span id="hud-curve" class="value">-</span></div>
+        <div class="info-row"><span class="label">Apex</span><span id="hud-apex" class="value">-</span></div>
         <div id="hud-status" class="status-note">샷을 준비하세요</div>
       </section>
     </aside>
 
     <main id="game-stage" aria-label="Game view">
-      <div class="game-stage-header">Ball Flight View</div>
+      <div class="game-stage-header">Range Session View</div>
+      <div class="session-ribbon" aria-label="Session ribbon">
+        <div class="session-pill">
+          <span class="session-pill-label">Session State</span>
+          <span id="session-state" class="session-pill-value">Ready</span>
+        </div>
+        <div class="session-pill">
+          <span class="session-pill-label">Current Shot</span>
+          <span id="session-count" class="session-pill-value">Shot 0</span>
+        </div>
+        <div class="session-pill">
+          <span class="session-pill-label">Last Result</span>
+          <span id="session-last" class="session-pill-value">대기 중</span>
+        </div>
+        <div class="session-pill">
+          <span class="session-pill-label">Best Carry</span>
+          <span id="session-best" class="session-pill-value">-</span>
+        </div>
+      </div>
       <div id="game-viewport">
         <canvas id="game" width="1080" height="608" tabindex="0" aria-label="Golf swing simulator"></canvas>
       </div>
@@ -379,8 +438,8 @@
         </div>
       </section>
       <div class="button-stack">
-        <button id="start-btn" type="button">LAUNCH</button>
-        <button id="reset-btn" type="button">Reset</button>
+        <button id="start-btn" type="button">HOLD TO SWING</button>
+        <button id="reset-btn" type="button">NEW SESSION</button>
       </div>
       <div class="sr-only">Side Spin (rpm) Back Spin (rpm) Ball Speed (mph) HUD (데이터) Ball Flight View Ball Control Aim Direction Ball Parameters</div>
     </aside>
@@ -406,12 +465,17 @@
     const ballSpeedMphInput = document.getElementById("ball-speed-mph");
     const sideSpinInput = document.getElementById("side-spin-rpm");
     const backSpinInput = document.getElementById("back-spin-rpm");
-    const hudDistance = document.getElementById("hud-distance");
+    const hudShots = document.getElementById("hud-shots");
     const hudWind = document.getElementById("hud-wind");
-    const hudSideSpin = document.getElementById("hud-side-spin");
-    const hudBackSpin = document.getElementById("hud-back-spin");
-    const hudBallSpeed = document.getElementById("hud-ball-speed");
+    const hudCarry = document.getElementById("hud-carry");
+    const hudTotal = document.getElementById("hud-total");
+    const hudCurve = document.getElementById("hud-curve");
+    const hudApex = document.getElementById("hud-apex");
     const hudStatus = document.getElementById("hud-status");
+    const sessionState = document.getElementById("session-state");
+    const sessionCount = document.getElementById("session-count");
+    const sessionLast = document.getElementById("session-last");
+    const sessionBest = document.getElementById("session-best");
 
     const MODEL_PARAMS = {
       ...DEFAULT_PARAMS,
@@ -421,26 +485,23 @@
     const WORLD = {
       fairwayLength: 390,
       fairwayHalfWidth: 22,
-      greenHalfWidth: 14,
-      greenRadius: 13,
       teePos: { x: 0, y: MODEL_PARAMS.ballRadius, z: 0 },
-      hole: { x: 230, y: 0, z: 0, radius: 0.14 },
       meterMarkers: [50, 100, 150, 200, 250, 300, 350],
     };
 
     const state = {
-      mode: "ready",
+      mode: "session_ready",
       totalShots: 0,
-      score: 0,
+      sessionDistanceTotal: 0,
+      sessionBestCarry: 0,
+      autoResetTimer: 0,
       charging: false,
       chargeDir: 1,
       charge: 0.24,
       aimDeg: 15,
       yawDeg: 0,
-      shotDone: false,
       message: "샷을 준비하세요",
       wind: { x: 0, z: 0 },
-      hole: { ...WORLD.hole },
       ball: {
         position: { ...WORLD.teePos },
         velocity: { x: 0, y: 0, z: 0 },
@@ -529,15 +590,6 @@
       return Math.hypot(a.x - b.x, a.z - b.z);
     }
 
-    function randomHole() {
-      return {
-        x: 175 + Math.random() * 135,
-        y: 0,
-        z: (Math.random() * 2 - 1) * 12,
-        radius: 0.14,
-      };
-    }
-
     function formatMetric(value, digits = 1) {
       return Number.isFinite(value) ? value.toFixed(digits) : "-";
     }
@@ -580,17 +632,45 @@
       return Number.isFinite(value) ? `${Math.round(value * 1.09361)}y` : "-";
     }
 
+    function formatSignedYards(value) {
+      if (!Number.isFinite(value)) return "-";
+      const yards = Math.round(value * 1.09361);
+      return `${yards > 0 ? "+" : ""}${yards}y`;
+    }
+
+    function describeMode(mode) {
+      switch (mode) {
+        case "shot_primed":
+          return "Primed";
+        case "launching":
+          return "Launching";
+        case "in_flight":
+          return "In Flight";
+        case "rollout":
+          return "Rollout";
+        case "auto_reset_pending":
+          return "Looping";
+        default:
+          return "Ready";
+      }
+    }
+
     function updateChrome() {
-      const hasShotResult = state.model.phase === "flight" || state.model.phase === "rest" || state.mode === "result";
+      const hasShotResult = Boolean(state.lastShotMetrics);
       const windMph = Math.round(Math.hypot(state.wind.x, state.wind.z) * 2.23694);
-      hudDistance.textContent = formatYards(hasShotResult ? state.model.totalDistance : null);
+      hudShots.textContent = `${state.totalShots}`;
       hudWind.textContent = `${windMph}mph ${formatWindDirection(state.wind.x, state.wind.z)}`;
-      hudSideSpin.textContent = `${formatPanelMetric(state.model.sidespinRpm, 0, hasShotResult)} rpm`;
-      hudBackSpin.textContent = `${formatPanelMetric(state.model.backspinRpm, 0, hasShotResult)} rpm`;
-      hudBallSpeed.textContent = `${formatPanelMetric(mpsToMph(state.model.ballSpeed), 0, hasShotResult)} mph`;
+      hudCarry.textContent = hasShotResult ? formatYards(state.lastShotMetrics.carry) : "-";
+      hudTotal.textContent = hasShotResult ? formatYards(state.lastShotMetrics.total) : "-";
+      hudCurve.textContent = hasShotResult ? formatSignedYards(state.lastShotMetrics.offline) : "-";
+      hudApex.textContent = hasShotResult ? `${formatPanelMetric(state.lastShotMetrics.apex, 1, true)} m` : "-";
       hudStatus.textContent = state.message;
       aimDirectionInput.value = String(Math.round(state.yawDeg));
       aimDirectionValue.textContent = `${Math.round(state.yawDeg)}°`;
+      sessionState.textContent = describeMode(state.mode);
+      sessionCount.textContent = `Shot ${state.totalShots + (state.mode === "session_ready" ? 1 : 0)}`;
+      sessionLast.textContent = hasShotResult ? `${formatYards(state.lastShotMetrics.total)} / ${formatSignedYards(state.lastShotMetrics.offline)}` : "대기 중";
+      sessionBest.textContent = state.sessionBestCarry > 0 ? formatYards(state.sessionBestCarry) : "-";
     }
 
     function applyManualInputs() {
@@ -779,24 +859,18 @@
       return simulatePreview(estimateShotProfile(currentState), currentState);
     }
 
-    function resetRound() {
-      state.hole = randomHole();
-      state.mode = "ready";
-      state.wind = {
-        x: (Math.random() * 2 - 1) * 7.5,
-        z: (Math.random() * 2 - 1) * 6,
-      };
+    function prepareShotLoop(message = "다음 샷을 준비하세요") {
+      state.mode = "session_ready";
       state.charging = false;
       state.charge = 0.24;
       state.chargeDir = 1;
+      state.autoResetTimer = 0;
       state.aimDeg = 15;
       state.yawDeg = 0;
-      state.shotDone = false;
-      state.message = "샷을 준비하세요";
+      state.message = message;
       state.impactEffects = [];
       state.trajectorySamples = [];
       state.previewSamples = [];
-      state.lastShotMetrics = null;
       state.model = createInitialState({ ballPos: WORLD.teePos });
       state.modelControls = createDefaultControls({
         windX: state.wind.x,
@@ -813,15 +887,28 @@
       state.previewSamples = sampleTrajectoryPreview(state, state.model);
     }
 
+    function resetSession() {
+      state.totalShots = 0;
+      state.sessionDistanceTotal = 0;
+      state.sessionBestCarry = 0;
+      state.lastShotMetrics = null;
+      state.wind = {
+        x: (Math.random() * 2 - 1) * 7.5,
+        z: (Math.random() * 2 - 1) * 6,
+      };
+      prepareShotLoop("샷을 준비하세요");
+    }
+
     function beginLaunchCharge() {
-      if (state.mode !== "ready" || state.shotDone || state.charging || state.ball.moving) return;
+      if (state.mode !== "session_ready" || state.charging || state.ball.moving) return;
       state.charging = true;
-      state.message = "샷을 준비하세요";
+      state.mode = "shot_primed";
+      state.message = "스윙 강도를 조절하세요";
       updateChrome();
     }
 
     function releaseLaunchCharge() {
-      if (state.charging && state.mode === "ready") {
+      if (state.charging && state.mode === "shot_primed") {
         swing();
         updateChrome();
       }
@@ -863,38 +950,26 @@
         manualSideSpinRpm: state.manualLaunch.sideSpinRpm,
       };
       state.charging = false;
-      state.shotDone = true;
+      state.mode = "launching";
       state.totalShots += 1;
-      state.message = "샷을 준비하세요";
+      state.message = "샷 시작";
     }
 
-    function evaluateLanding() {
-      const dist = distance2D(state.ball.position, state.hole);
-      const qualityBonus = clamp(Math.round(state.model.impactQuality * 8), 0, 8);
+    function finalizeShotLoop() {
       state.lastShotMetrics = {
         carry: state.model.carryDistance,
         total: state.model.totalDistance,
         offline: state.model.offlineDistance,
-        miss: dist,
+        apex: state.model.apexHeight,
+        ballSpeed: state.model.ballSpeed,
+        backspin: state.model.backspinRpm,
+        sidespin: state.model.sidespinRpm,
       };
-      let points = 0;
-
-      if (dist < 1.6) {
-        points = 100 + qualityBonus;
-        state.message = "샷 결과";
-      } else if (dist < 6) {
-        points = 46 + qualityBonus;
-        state.message = "샷 결과";
-      } else if (dist < 12) {
-        points = 22 + qualityBonus;
-        state.message = "샷 결과";
-      } else {
-        points = 6 + qualityBonus;
-        state.message = "다음 샷을 준비하세요";
-      }
-
-      state.score += points;
-      state.mode = "result";
+      state.sessionDistanceTotal += state.model.totalDistance;
+      state.sessionBestCarry = Math.max(state.sessionBestCarry, state.model.carryDistance);
+      state.mode = "auto_reset_pending";
+      state.autoResetTimer = 1.15;
+      state.message = `볼 정지. ${formatYards(state.model.totalDistance)} 샷 완료, 다음 샷으로 이어집니다`;
     }
 
     function update(dt) {
@@ -933,17 +1008,30 @@
       if (state.ball.moving) {
         state.trajectorySamples.push({ ...state.ball.position });
         if (state.trajectorySamples.length > 96) state.trajectorySamples.shift();
-      } else if (!state.shotDone) {
+      } else if (state.mode === "session_ready" || state.mode === "shot_primed") {
         state.previewSamples = sampleTrajectoryPreview(state, state.model);
+      }
+
+      if (state.model.phase === "flight" && state.model.firstBounceDone && state.mode === "in_flight") {
+        state.mode = "rollout";
+        state.message = "런아웃 추적 중";
       }
 
       if (previousPhase !== state.model.phase) {
         if (state.model.phase === "flight") {
+          state.mode = "in_flight";
           state.message = "샷 추적 중";
           spawnImpactEffect();
         }
-        if (state.model.phase === "rest" && state.mode !== "result") {
-          evaluateLanding();
+        if (state.model.phase === "rest" && state.mode !== "auto_reset_pending") {
+          finalizeShotLoop();
+        }
+      }
+
+      if (state.mode === "auto_reset_pending") {
+        state.autoResetTimer = Math.max(0, state.autoResetTimer - dt);
+        if (state.autoResetTimer === 0) {
+          prepareShotLoop("다음 샷을 준비하세요");
         }
       }
     }
@@ -1014,11 +1102,11 @@
       );
 
       drawGroundQuad(
-        { x: state.hole.x - WORLD.greenRadius, y: 0.02, z: state.hole.z - WORLD.greenHalfWidth },
-        { x: state.hole.x + WORLD.greenRadius, y: 0.02, z: state.hole.z - WORLD.greenHalfWidth },
-        { x: state.hole.x + WORLD.greenRadius, y: 0.02, z: state.hole.z + WORLD.greenHalfWidth },
-        { x: state.hole.x - WORLD.greenRadius, y: 0.02, z: state.hole.z + WORLD.greenHalfWidth },
-        "#79b86d"
+        { x: -2, y: 0.02, z: -4 },
+        { x: WORLD.fairwayLength - 16, y: 0.02, z: -4 },
+        { x: WORLD.fairwayLength - 16, y: 0.02, z: 4 },
+        { x: -2, y: 0.02, z: 4 },
+        "rgba(255,255,255,0.08)"
       );
 
       for (const marker of WORLD.meterMarkers) {
@@ -1039,32 +1127,6 @@
           ctx.fillText(`${marker} m`, label.x, label.y);
         }
       }
-    }
-
-    function drawHole() {
-      const cup = worldToScreen(state.hole);
-      const flagTop = worldToScreen({ x: state.hole.x, y: 2.5, z: state.hole.z });
-      if (!cup.visible || !flagTop.visible) return;
-
-      ctx.strokeStyle = "rgba(245,245,245,0.92)";
-      ctx.lineWidth = Math.max(1, cup.scale * 0.02);
-      ctx.beginPath();
-      ctx.moveTo(cup.x, cup.y);
-      ctx.lineTo(flagTop.x, flagTop.y);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(flagTop.x, flagTop.y);
-      ctx.lineTo(flagTop.x + clamp(cup.scale * 0.35, 12, 28), flagTop.y + clamp(cup.scale * 0.08, 4, 9));
-      ctx.lineTo(flagTop.x, flagTop.y + clamp(cup.scale * 0.18, 8, 16));
-      ctx.closePath();
-      ctx.fillStyle = "#ff7f50";
-      ctx.fill();
-
-      ctx.fillStyle = "#1e2428";
-      ctx.beginPath();
-      ctx.ellipse(cup.x, cup.y, clamp(cup.scale * 0.16, 4, 12), clamp(cup.scale * 0.05, 2, 6), 0, 0, Math.PI * 2);
-      ctx.fill();
     }
 
     function drawTrails() {
@@ -1253,12 +1315,12 @@
       ctx.fillStyle = "rgba(235, 246, 255, 0.82)";
       ctx.font = "18px Trebuchet MS";
       ctx.fillText("Ball Speed, Backspin, Side Spin을 직접 넣고", panelX + 34, panelY + 182);
-      ctx.fillText("3D 비행과 타깃 미스를 바로 확인할 수 있습니다.", panelX + 34, panelY + 210);
+      ctx.fillText("연속된 샷 루프로 3D 비행과 런아웃을 계속 확인할 수 있습니다.", panelX + 34, panelY + 210);
 
       const stats = [
         ["3D Flight", "camera + carry + curve"],
         ["Manual Spin", "backspin / sidespin input"],
-        ["Playable Loop", "aim, swing, result, retry"],
+        ["Continuous Loop", "aim, swing, rollout, next"],
       ];
       for (let i = 0; i < stats.length; i += 1) {
         const boxX = panelX + 34 + i * ((panelW - 68) / 3);
@@ -1280,14 +1342,13 @@
       ctx.font = "13px Trebuchet MS";
       ctx.fillText("ArrowLeft / ArrowRight: 방위각", panelX + 34, panelY + panelH - 48);
       ctx.fillText("ArrowUp / ArrowDown: 발사각", panelX + 34, panelY + panelH - 28);
-      ctx.fillText("Space: 파워와 스윙  |  R: 리셋  |  F: 전체화면", panelX + panelW - 292, panelY + panelH - 28);
+      ctx.fillText("Space: 파워와 스윙  |  R: 새 세션  |  F: 전체화면", panelX + panelW - 312, panelY + panelH - 28);
       ctx.restore();
     }
 
     function drawScene() {
       drawEnvironment();
       drawTrails();
-      drawHole();
       drawGolfer();
       drawBall();
       if (!state.ball.moving) drawAim();
@@ -1318,12 +1379,20 @@
 
     window.render_game_to_text = () => {
       const ballScreen = state.ball.screen;
+      const reportedMetrics = state.lastShotMetrics ?? {
+        carry: state.model.carryDistance,
+        total: state.model.totalDistance,
+        offline: state.model.offlineDistance,
+        apex: state.model.apexHeight,
+        ballSpeed: state.model.ballSpeed,
+      };
       return JSON.stringify({
         coordinateSystem: "world: +x downrange, +y up, +z right; screen: origin top-left",
         mode: state.mode,
         message: state.message,
-        score: state.score,
         totalShots: state.totalShots,
+        sessionDistanceTotal: Number(state.sessionDistanceTotal.toFixed(2)),
+        sessionBestCarry: Number(state.sessionBestCarry.toFixed(2)),
         charging: state.charging,
         charge: Number(state.charge.toFixed(3)),
         aimDeg: Number(state.aimDeg.toFixed(2)),
@@ -1387,22 +1456,27 @@
           moving: state.ball.moving,
         },
         metrics: {
-          carry: Number(state.model.carryDistance.toFixed(2)),
-          total: Number(state.model.totalDistance.toFixed(2)),
-          apex: Number(state.model.apexHeight.toFixed(2)),
-          offline: Number(state.model.offlineDistance.toFixed(2)),
+          carry: Number(reportedMetrics.carry.toFixed(2)),
+          total: Number(reportedMetrics.total.toFixed(2)),
+          apex: Number(reportedMetrics.apex.toFixed(2)),
+          offline: Number(reportedMetrics.offline.toFixed(2)),
         },
-        hole: {
-          x: state.hole.x,
-          y: state.hole.y,
-          z: state.hole.z,
-          radius: state.hole.radius,
+        lastShot: state.lastShotMetrics ? {
+          carry: Number(state.lastShotMetrics.carry.toFixed(2)),
+          total: Number(state.lastShotMetrics.total.toFixed(2)),
+          offline: Number(state.lastShotMetrics.offline.toFixed(2)),
+          apex: Number(state.lastShotMetrics.apex.toFixed(2)),
+          ballSpeed: Number(state.lastShotMetrics.ballSpeed.toFixed(2)),
+        } : null,
+        session: {
+          state: describeMode(state.mode),
+          autoResetTimer: Number(state.autoResetTimer.toFixed(2)),
         },
         controls: {
           swing: "Space hold/release",
           elevation: "ArrowUp/ArrowDown",
           azimuth: "ArrowLeft/ArrowRight",
-          restart: "R",
+          restart: "R new session",
           fullscreen: "F",
         },
       });
@@ -1424,8 +1498,8 @@
         e.preventDefault();
         beginLaunchCharge();
       }
-      if (k === "r" && (state.mode === "result" || state.shotDone)) {
-        resetRound();
+      if (k === "r") {
+        resetSession();
         applyManualInputs();
       }
     });
@@ -1454,7 +1528,7 @@
       if ((e.buttons & 1) === 1) releaseLaunchCharge();
     });
     resetBtn.addEventListener("click", () => {
-      resetRound();
+      resetSession();
       applyManualInputs();
       canvas.focus();
     });
@@ -1471,7 +1545,7 @@
     });
 
     resizeCanvas();
-    resetRound();
+    resetSession();
     syncSpeedInputs();
     applyManualInputs();
     buildFlightCamera(state);
