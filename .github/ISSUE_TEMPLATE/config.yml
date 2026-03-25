@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Product Policy
+    url: https://github.com/bkh751/golfsim/blob/main/docs/product.md
+    about: 제품 방향과 판단 기준을 먼저 확인합니다.
+  - name: Collaboration Policy
+    url: https://github.com/bkh751/golfsim/blob/main/AGENTS.md
+    about: 역할, 이슈 구조, 대화 프로토콜을 먼저 확인합니다.

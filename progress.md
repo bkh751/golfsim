@@ -15,3 +15,9 @@ Original prompt: golf 스윙을 시뮬레이션 하는 web 게임
 - Playwright verification: ran multiple action bursts with start button click and observed screenshots/state outputs in `output/web-game*`.
 - Verified controls and transitions: aim + swing path, impact->flight->rest transition, scoring transition, restart (`R`) via direct Playwright script, fullscreen toggle (`F`/`Esc`) via direct Playwright script.
 - No runtime console/page errors observed in Playwright client outputs.
+- Added deterministic Node tests at `test/swing-model.test.mjs` (happy path, boundary clamp/finite, idle regression).
+- Verified tests: `node --test test/swing-model.test.mjs` passed (3/3).
+- Verified runtime marker and state via Playwright (start/swing + `render_game_to_text` model payload).
+- Committed model integration + tests at `0c7a65c` and pushed to `origin/main`.
+- GitHub Actions pages build run `22234525254` completed with success for head sha `0c7a65c3abedeef033dcb190ff96fb9f8d68cb37`.
+- GitHub Pages reflection confirmed at https://bkh751.github.io/golfsim/ with markers `GOLF SWING SIM PRO` and `./swing-model.js`.

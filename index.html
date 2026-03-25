@@ -8,13 +8,13 @@
     :root {
       --sky-top: #6db6ff;
       --sky-bottom: #eefaff;
-      --field-green: #4f9c56;
-      --field-shadow: #2f7a40;
-      --panel: rgba(9, 25, 43, 0.88);
-      --panel-soft: rgba(10, 27, 40, 0.68);
-      --text: #ecf9ff;
-      --accent: #ffd166;
-      --accent-2: #8ce3b2;
+      --panel: #f9fafb;
+      --panel-border: rgba(0, 0, 0, 0.1);
+      --text: #0a0a0a;
+      --muted: #6a7282;
+      --surface: #ffffff;
+      --app-bg: #f3f4f6;
+      --brand: #2b7fff;
     }
 
     * {
@@ -24,23 +24,151 @@
     body {
       margin: 0;
       min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background:
-        radial-gradient(circle at 20% 20%, #cde9ff, #7ec7ff 42%, #6eaee0 75%);
-      font-family: "Trebuchet MS", "Verdana", sans-serif;
+      padding: 16px;
+      background: #ffffff;
+      font-family: "Inter", "Noto Sans KR", "Segoe UI", sans-serif;
       color: var(--text);
     }
 
     #game-shell {
-      width: min(96vw, 960px);
-      aspect-ratio: 16 / 9;
-      border: 2px solid rgba(3, 17, 29, 0.3);
-      border-radius: 16px;
+      width: min(100%, 1535px);
+      min-height: min(calc(100vh - 32px), 936px);
+      display: grid;
+      grid-template-columns: 368px minmax(0, 1fr) 368px;
+      gap: 16px;
+      background: var(--app-bg);
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: min(calc(100vh - 32px), 936px);
+      background: var(--panel);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .sidebar-heading {
+      height: 28px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      background: rgba(0, 0, 0, 0.8);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card,
+    .info-card,
+    .control-card {
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      background: var(--surface);
+    }
+
+    .metric-card {
+      padding: 12px 13px 11px;
+    }
+
+    .metric-card-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 16px;
+      margin-bottom: 3px;
+    }
+
+    .metric-card-value {
+      font-size: 18px;
+      line-height: 26px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .info-card {
+      padding: 16px 17px 15px;
+    }
+
+    .info-card h2,
+    .control-card h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      line-height: 27px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 8px;
+      font-size: 14px;
+      line-height: 20px;
+    }
+
+    .info-row .label {
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .info-row .value {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .status-note {
+      margin-top: 14px;
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--muted);
+    }
+
+    #game-stage {
+      min-height: min(calc(100vh - 32px), 936px);
+      background: var(--surface);
+      border: 2px solid #d1d5dc;
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
       overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+    }
+
+    .game-stage-header {
+      height: 28px;
+      border-radius: 4px;
+      background: #e5e7eb;
+      color: #4a5565;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      font-size: 14px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    #game-viewport {
+      flex: 1;
+      width: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #d6ecfb;
       position: relative;
-      background: #7bc4ee;
-      box-shadow: 0 16px 42px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(209, 213, 220, 0.9);
     }
 
     #game {
@@ -52,36 +180,210 @@
     }
 
     #start-btn {
-      position: absolute;
-      left: 50%;
-      bottom: 10%;
-      transform: translateX(-50%);
+      width: 100%;
+      height: 48px;
       border: 0;
-      border-radius: 999px;
-      background: var(--accent);
-      color: #1d2f3a;
-      font-size: clamp(16px, 2.2vw, 24px);
-      font-weight: 800;
-      padding: 12px 30px;
+      border-radius: 10px;
+      background: var(--brand);
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
       cursor: pointer;
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
     }
 
-    #start-btn.hidden {
-      display: none;
+    #control-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    #control-panel h2 {
+      margin: 0;
+    }
+
+    .control-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .control-row label {
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .control-row input {
+      width: 100%;
+      border: 1px solid var(--panel-border);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 4px;
+      padding: 8px 12px;
+      font: inherit;
+      height: 38px;
+    }
+
+    .control-card {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .aim-range {
+      width: 100%;
+      margin: 2px 0 0;
+    }
+
+    .aim-scale {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 16px;
+    }
+
+    .aim-scale strong {
+      color: #101828;
+      font-weight: 700;
+    }
+
+    .button-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #reset-btn {
+      width: 100%;
+      height: 50px;
+      border: 1px solid #d1d5dc;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .metric-icon {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .metric-icon.distance {
+      color: #2b7fff;
+      background: rgba(43, 127, 255, 0.12);
+    }
+
+    .metric-icon.wind {
+      color: #4a8b5c;
+      background: rgba(84, 145, 102, 0.14);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     @media (max-width: 720px) {
-      #start-btn {
-        font-size: 18px;
+      body {
+        padding: 10px;
+      }
+
+      #game-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar,
+      #game-stage {
+        min-height: 360px;
       }
     }
   </style>
 </head>
 <body>
   <div id="game-shell">
-    <canvas id="game" width="960" height="540" tabindex="0" aria-label="Golf swing simulator"></canvas>
-    <button id="start-btn">게임 시작</button>
+    <aside id="hud-panel" class="sidebar" aria-label="HUD panel">
+      <div class="sidebar-heading">HUD (데이터)</div>
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-card-label"><span class="metric-icon distance">D</span>Distance</div>
+          <div id="hud-distance" class="metric-card-value">-</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label"><span class="metric-icon wind">W</span>Wind</div>
+          <div id="hud-wind" class="metric-card-value">-</div>
+        </div>
+      </div>
+      <section class="info-card" aria-label="Ball flight data">
+        <h2>Ball Flight Data</h2>
+        <div class="info-row"><span class="label">Side Spin</span><span id="hud-side-spin" class="value">-</span></div>
+        <div class="info-row"><span class="label">Back Spin</span><span id="hud-back-spin" class="value">-</span></div>
+        <div class="info-row"><span class="label">Ball Speed</span><span id="hud-ball-speed" class="value">-</span></div>
+        <div id="hud-status" class="status-note">샷을 준비하세요</div>
+      </section>
+    </aside>
+
+    <main id="game-stage" aria-label="Game view">
+      <div class="game-stage-header">Ball Flight View</div>
+      <div id="game-viewport">
+        <canvas id="game" width="1080" height="608" tabindex="0" aria-label="Golf swing simulator"></canvas>
+      </div>
+    </main>
+
+    <aside class="sidebar" aria-label="Control panel">
+      <div class="sidebar-heading">Ball Control</div>
+      <section class="control-card" aria-label="Aim controls">
+        <h2>Aim Direction</h2>
+        <input id="aim-direction" class="aim-range" type="range" min="-24" max="24" step="1" value="0" aria-label="Aim direction">
+        <div class="aim-scale">
+          <span>&larr; Left</span>
+          <strong id="aim-direction-value">0°</strong>
+          <span>Right &rarr;</span>
+        </div>
+      </section>
+      <section id="control-panel" aria-label="Manual launch controls">
+        <div class="control-card">
+          <h2>Ball Parameters</h2>
+          <div class="control-row">
+            <label for="side-spin-rpm">Side Spin (rpm)</label>
+            <input id="side-spin-rpm" type="number" min="-4000" max="4000" step="50" value="500" placeholder="Auto">
+          </div>
+          <div class="control-row">
+            <label for="back-spin-rpm">Back Spin (rpm)</label>
+            <input id="back-spin-rpm" type="number" min="1200" max="7200" step="50" value="2500" placeholder="Auto">
+          </div>
+          <div class="control-row">
+            <label for="ball-speed-mph">Ball Speed (mph)</label>
+            <input id="ball-speed-mph" type="number" min="0" max="250" step="1" value="150" placeholder="mph">
+          </div>
+        </div>
+      </section>
+      <div class="button-stack">
+        <button id="start-btn" type="button">LAUNCH</button>
+        <button id="reset-btn" type="button">Reset</button>
+      </div>
+      <div class="sr-only">Side Spin (rpm) Back Spin (rpm) Ball Speed (mph) HUD (데이터) Ball Flight View Ball Control Aim Direction Ball Parameters</div>
+    </aside>
   </div>
 
   <script type="module">
@@ -95,40 +397,75 @@
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
     const shell = document.getElementById("game-shell");
+    const gameViewport = document.getElementById("game-viewport");
     const startBtn = document.getElementById("start-btn");
+    const resetBtn = document.getElementById("reset-btn");
+    const controlPanel = document.getElementById("control-panel");
+    const aimDirectionInput = document.getElementById("aim-direction");
+    const aimDirectionValue = document.getElementById("aim-direction-value");
+    const ballSpeedMphInput = document.getElementById("ball-speed-mph");
+    const sideSpinInput = document.getElementById("side-spin-rpm");
+    const backSpinInput = document.getElementById("back-spin-rpm");
+    const hudDistance = document.getElementById("hud-distance");
+    const hudWind = document.getElementById("hud-wind");
+    const hudSideSpin = document.getElementById("hud-side-spin");
+    const hudBackSpin = document.getElementById("hud-back-spin");
+    const hudBallSpeed = document.getElementById("hud-ball-speed");
+    const hudStatus = document.getElementById("hud-status");
 
     const MODEL_PARAMS = {
       ...DEFAULT_PARAMS,
-      groundY: 410,
-      ballRadius: 9,
+      groundY: 0,
     };
 
     const WORLD = {
-      greenY: 408,
-      holeX: 820,
-      holeY: 402,
-      holeR: 12,
-      fairwayStart: 0,
-      fairwayLength: 960,
+      fairwayLength: 390,
+      fairwayHalfWidth: 22,
+      greenHalfWidth: 14,
+      greenRadius: 13,
+      teePos: { x: 0, y: MODEL_PARAMS.ballRadius, z: 0 },
+      hole: { x: 230, y: 0, z: 0, radius: 0.14 },
+      meterMarkers: [50, 100, 150, 200, 250, 300, 350],
     };
 
     const state = {
-      mode: "menu",
+      mode: "ready",
       totalShots: 0,
       score: 0,
-      wind: 0,
       charging: false,
       chargeDir: 1,
-      charge: 0.1,
-      aimDeg: 14,
+      charge: 0.24,
+      aimDeg: 15,
+      yawDeg: 0,
       shotDone: false,
-      message: "",
-      ball: { x: 110, y: 400, vx: 0, vy: 0, r: 9, moving: false, trail: [] },
-      hole: { x: WORLD.holeX, y: WORLD.holeY, r: WORLD.holeR },
-      cameraX: -130,
-      fullscreen: false,
+      message: "샷을 준비하세요",
+      wind: { x: 0, z: 0 },
+      hole: { ...WORLD.hole },
+      ball: {
+        position: { ...WORLD.teePos },
+        velocity: { x: 0, y: 0, z: 0 },
+        screen: { x: 0, y: 0, scale: 1, depth: 1, visible: true },
+        moving: false,
+        radius: MODEL_PARAMS.ballRadius,
+      },
+      camera: {
+        position: { x: -9.5, y: 4.8, z: -12 },
+        target: { x: 24, y: 1.2, z: 0 },
+        forward: { x: 1, y: 0, z: 0 },
+        right: { x: 0, y: 0, z: 1 },
+        up: { x: 0, y: 1, z: 0 },
+        fov: 48,
+      },
       impactEffects: [],
-      model: createInitialState({ ballX: 110, ballY: 400 }),
+      trajectorySamples: [],
+      previewSamples: [],
+      lastShotMetrics: null,
+      manualLaunch: {
+        ballSpeedMps: null,
+        backspinRpm: null,
+        sideSpinRpm: null,
+      },
+      model: createInitialState({ ballPos: WORLD.teePos }),
       modelControls: createDefaultControls(),
     };
 
@@ -139,122 +476,355 @@
       return Math.max(min, Math.min(max, v));
     }
 
-    function worldToScreen(x) {
-      return x - state.cameraX;
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function vec3(x = 0, y = 0, z = 0) {
+      return { x, y, z };
+    }
+
+    function add3(a, b) {
+      return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z };
+    }
+
+    function sub3(a, b) {
+      return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
+    }
+
+    function scale3(v, s) {
+      return { x: v.x * s, y: v.y * s, z: v.z * s };
+    }
+
+    function dot3(a, b) {
+      return a.x * b.x + a.y * b.y + a.z * b.z;
+    }
+
+    function cross3(a, b) {
+      return {
+        x: a.y * b.z - a.z * b.y,
+        y: a.z * b.x - a.x * b.z,
+        z: a.x * b.y - a.y * b.x,
+      };
+    }
+
+    function length3(v) {
+      return Math.hypot(v.x, v.y, v.z);
+    }
+
+    function normalize3(v) {
+      const len = Math.max(1e-6, length3(v));
+      return { x: v.x / len, y: v.y / len, z: v.z / len };
+    }
+
+    function blendVec(a, b, t) {
+      return {
+        x: lerp(a.x, b.x, t),
+        y: lerp(a.y, b.y, t),
+        z: lerp(a.z, b.z, t),
+      };
+    }
+
+    function distance2D(a, b) {
+      return Math.hypot(a.x - b.x, a.z - b.z);
+    }
+
+    function randomHole() {
+      return {
+        x: 175 + Math.random() * 135,
+        y: 0,
+        z: (Math.random() * 2 - 1) * 12,
+        radius: 0.14,
+      };
+    }
+
+    function formatMetric(value, digits = 1) {
+      return Number.isFinite(value) ? value.toFixed(digits) : "-";
+    }
+
+    function formatPanelMetric(value, digits = 1, available = true) {
+      return available && Number.isFinite(value) ? value.toFixed(digits) : "-";
+    }
+
+    function mphToMps(mph) {
+      return mph * 0.44704;
+    }
+
+    function mpsToMph(mps) {
+      return mps / 0.44704;
+    }
+
+    function parseOptionalNumber(rawValue) {
+      if (rawValue == null || rawValue === "") return null;
+      const value = Number(rawValue);
+      return Number.isFinite(value) ? value : null;
+    }
+
+    function syncSpeedInputs() {
+      const mph = parseOptionalNumber(ballSpeedMphInput.value);
+      if (mph == null) {
+        state.manualLaunch.ballSpeedMps = null;
+      } else {
+        state.manualLaunch.ballSpeedMps = mphToMps(mph);
+      }
+      state.previewSamples = sampleTrajectoryPreview(state, state.model);
+    }
+
+    function formatWindDirection(x, z) {
+      if (Math.abs(x) < 0.25 && Math.abs(z) < 0.25) return "Calm";
+      if (Math.abs(x) >= Math.abs(z)) return x >= 0 ? "E" : "W";
+      return z >= 0 ? "S" : "N";
+    }
+
+    function formatYards(value) {
+      return Number.isFinite(value) ? `${Math.round(value * 1.09361)}y` : "-";
+    }
+
+    function updateChrome() {
+      const hasShotResult = state.model.phase === "flight" || state.model.phase === "rest" || state.mode === "result";
+      const windMph = Math.round(Math.hypot(state.wind.x, state.wind.z) * 2.23694);
+      hudDistance.textContent = formatYards(hasShotResult ? state.model.totalDistance : null);
+      hudWind.textContent = `${windMph}mph ${formatWindDirection(state.wind.x, state.wind.z)}`;
+      hudSideSpin.textContent = `${formatPanelMetric(state.model.sidespinRpm, 0, hasShotResult)} rpm`;
+      hudBackSpin.textContent = `${formatPanelMetric(state.model.backspinRpm, 0, hasShotResult)} rpm`;
+      hudBallSpeed.textContent = `${formatPanelMetric(mpsToMph(state.model.ballSpeed), 0, hasShotResult)} mph`;
+      hudStatus.textContent = state.message;
+      aimDirectionInput.value = String(Math.round(state.yawDeg));
+      aimDirectionValue.textContent = `${Math.round(state.yawDeg)}°`;
+    }
+
+    function applyManualInputs() {
+      state.manualLaunch.backspinRpm = parseOptionalNumber(backSpinInput.value);
+      state.manualLaunch.sideSpinRpm = parseOptionalNumber(sideSpinInput.value);
+      state.modelControls = {
+        ...state.modelControls,
+        manualBallSpeedMps: state.manualLaunch.ballSpeedMps,
+        manualBackspinRpm: state.manualLaunch.backspinRpm,
+        manualSideSpinRpm: state.manualLaunch.sideSpinRpm,
+      };
+      state.previewSamples = sampleTrajectoryPreview(state, state.model);
+    }
+
+    function buildFlightCamera(currentState) {
+      const ball = currentState.ball.position;
+      const yawRad = (currentState.model.phase === "flight" ? currentState.model.launchAzimuthDeg : currentState.yawDeg) * Math.PI / 180;
+      const forwardFlat = normalize3({ x: Math.cos(yawRad), y: 0, z: Math.sin(yawRad) || 0 });
+      const chaseDistance = currentState.model.phase === "flight" ? 10.5 : 13.5;
+      const target = {
+        x: ball.x + 10,
+        y: clamp(1.25 + ball.y * 0.12, 1.1, 6.4),
+        z: ball.z,
+      };
+      const desiredPosition = {
+        x: ball.x - forwardFlat.x * chaseDistance - 3.4,
+        y: clamp(4.8 + ball.y * 0.22, 4.4, 11.5),
+        z: ball.z - forwardFlat.z * chaseDistance - Math.sin(yawRad) * 2.2,
+      };
+
+      currentState.camera.position = blendVec(currentState.camera.position, desiredPosition, 0.08);
+      currentState.camera.target = blendVec(currentState.camera.target, target, 0.11);
+
+      const forward = normalize3(sub3(currentState.camera.target, currentState.camera.position));
+      const worldUp = vec3(0, 1, 0);
+      const right = normalize3(cross3(forward, worldUp));
+      const up = normalize3(cross3(right, forward));
+
+      currentState.camera.forward = forward;
+      currentState.camera.right = right;
+      currentState.camera.up = up;
+      currentState.camera.fov = 48;
+      return currentState.camera;
+    }
+
+    function projectWorldToScreen(worldPoint, camera = state.camera) {
+      const rel = sub3(worldPoint, camera.position);
+      const camX = dot3(rel, camera.right);
+      const camY = dot3(rel, camera.up);
+      const camZ = dot3(rel, camera.forward);
+
+      if (camZ <= 0.05) {
+        return { x: 0, y: 0, scale: 0, depth: camZ, visible: false };
+      }
+
+      const focal = canvas.height / (2 * Math.tan((camera.fov * Math.PI / 180) / 2));
+      return {
+        x: canvas.width * 0.5 + (camX * focal) / camZ,
+        y: canvas.height * 0.56 - (camY * focal) / camZ,
+        scale: focal / camZ,
+        depth: camZ,
+        visible: true,
+      };
+    }
+
+    function worldToScreen(worldPoint) {
+      return projectWorldToScreen(worldPoint, state.camera);
     }
 
     function syncBallFromModel() {
-      state.ball.x = state.model.ballX;
-      state.ball.y = state.model.ballY;
-      state.ball.vx = state.model.ballVx;
-      state.ball.vy = state.model.ballVy;
+      state.ball.position = { ...state.model.ballPos };
+      state.ball.velocity = { ...state.model.ballVel };
       state.ball.moving = state.model.ballMoving;
+      state.ball.screen = worldToScreen(state.ball.position);
     }
 
     function spawnImpactEffect() {
-      const x = state.ball.x;
-      const y = state.ball.y;
+      const base = state.ball.position;
       state.impactEffects.push({
         kind: "ring",
-        x,
-        y,
+        position: { ...base },
         age: 0,
-        maxAge: 0.42,
-        maxRadius: 62,
+        maxAge: 0.52,
+        maxRadius: 2.5,
       });
 
-      const sparkCount = 12;
-      for (let i = 0; i < sparkCount; i += 1) {
-        const angle = (i / sparkCount) * Math.PI * 2;
-        const speed = 150 + (i % 4) * 18;
+      for (let i = 0; i < 14; i += 1) {
+        const angle = (i / 14) * Math.PI * 2;
+        const lift = 0.7 + (i % 4) * 0.12;
         state.impactEffects.push({
           kind: "spark",
-          x,
-          y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed * 0.35 - 52,
+          position: { ...base },
+          velocity: {
+            x: Math.cos(angle) * (5.5 + (i % 3)),
+            y: lift,
+            z: Math.sin(angle) * (2.6 + (i % 2)),
+          },
           age: 0,
-          maxAge: 0.45 + (i % 4) * 0.045,
-          size: 2 + (i % 3) * 0.35,
-          decay: 0.7,
+          maxAge: 0.55 + (i % 4) * 0.04,
+          size: 0.11 + (i % 3) * 0.02,
         });
       }
     }
 
     function updateImpactEffects(dt) {
-      if (state.impactEffects.length === 0) return;
-
       const nextEffects = [];
-      const gravity = 420;
-
       for (const fx of state.impactEffects) {
         fx.age += dt;
-        if (fx.age > fx.maxAge) continue;
-
+        if (fx.age >= fx.maxAge) continue;
         if (fx.kind === "spark") {
-          fx.vy += gravity * dt;
-          fx.x += fx.vx * dt;
-          fx.y += fx.vy * dt;
-          fx.vx *= 0.94;
-          fx.vy *= 0.95;
+          fx.velocity.y -= 8 * dt;
+          fx.position = add3(fx.position, scale3(fx.velocity, dt));
+          if (fx.position.y < MODEL_PARAMS.ballRadius) fx.position.y = MODEL_PARAMS.ballRadius;
         }
-
         nextEffects.push(fx);
       }
       state.impactEffects = nextEffects;
     }
 
-    function drawImpactEffects() {
-      if (state.impactEffects.length === 0) return;
+    function estimateShotProfile(currentState) {
+      const power = currentState.charging ? currentState.charge : Math.max(currentState.charge, 0.24);
+      const tempo = clamp(0.62 + power * 0.55, 0.4, 1.25);
+      const clubHeadSpeed = clamp(22 + power * 58, 18, 92);
+      const strikeOffsetX = (0.58 - power) * 0.08;
+      const strikeOffsetY = (0.68 - power) * 0.05;
+      const loft = MODEL_PARAMS.loftBaseDeg + MODEL_PARAMS.attackLoftCoupling * (tempo * 3.1);
+      const launchDeg = clamp(currentState.aimDeg + loft * 0.48 - strikeOffsetY * 6, 5, 42);
+      const ballSpeed = Number.isFinite(currentState.manualLaunch.ballSpeedMps)
+        ? clamp(currentState.manualLaunch.ballSpeedMps, 5, 112)
+        : clamp(clubHeadSpeed * (1.24 + power * 0.2), 26, 108);
+      const backspinRpm = Number.isFinite(currentState.manualLaunch.backspinRpm)
+        ? clamp(currentState.manualLaunch.backspinRpm, 1200, 7200)
+        : 3200;
+      const spinAxisTiltDeg = Number.isFinite(currentState.manualLaunch.sideSpinRpm)
+        ? clamp(Math.atan2(currentState.manualLaunch.sideSpinRpm, backspinRpm) * 180 / Math.PI, -40, 40)
+        : clamp(currentState.yawDeg * 0.08 + strikeOffsetX * 36, -20, 20);
+      const spinRateRpm = Number.isFinite(currentState.manualLaunch.sideSpinRpm) || Number.isFinite(currentState.manualLaunch.backspinRpm)
+        ? clamp(Math.hypot(backspinRpm, currentState.manualLaunch.sideSpinRpm ?? 0), 1800, 7200)
+        : clamp(2800 + launchDeg * 60 + Math.abs(spinAxisTiltDeg) * 50, 1800, 6900);
+      const launchAzimuthDeg = currentState.yawDeg + strikeOffsetX * 7;
+      return { ballSpeed, launchDeg, launchAzimuthDeg, spinRateRpm, spinAxisTiltDeg };
+    }
 
-      for (const fx of state.impactEffects) {
-        const t = Math.min(1, fx.age / fx.maxAge);
+    function simulatePreview(profile, currentState) {
+      const points = [];
+      let pos = { ...WORLD.teePos };
+      const launchRad = profile.launchDeg * Math.PI / 180;
+      const azimuthRad = profile.launchAzimuthDeg * Math.PI / 180;
+      let vel = {
+        x: profile.ballSpeed * Math.cos(launchRad) * Math.cos(azimuthRad),
+        y: profile.ballSpeed * Math.sin(launchRad),
+        z: profile.ballSpeed * Math.cos(launchRad) * Math.sin(azimuthRad),
+      };
+      let backspin = profile.spinRateRpm * Math.cos(profile.spinAxisTiltDeg * Math.PI / 180);
+      let sidespin = profile.spinRateRpm * Math.sin(profile.spinAxisTiltDeg * Math.PI / 180);
+      const wind = currentState.wind;
 
-        if (fx.kind === "ring") {
-          const radius = fx.maxRadius * t;
-          const alpha = 0.45 * (1 - t);
-          const width = 3 * (1 - t);
-          ctx.strokeStyle = `rgba(255, 238, 196, ${alpha.toFixed(3)})`;
-          ctx.lineWidth = Math.max(1, width);
-          ctx.beginPath();
-          ctx.arc(worldToScreen(fx.x), fx.y, radius, 0, Math.PI * 2);
-          ctx.stroke();
-          continue;
-        }
-
-        const alpha = fx.decay * (1 - t);
-        const radius = fx.size * (1 - t);
-        ctx.fillStyle = `rgba(255, 246, 220, ${alpha.toFixed(3)})`;
-        ctx.beginPath();
-        ctx.arc(worldToScreen(fx.x), fx.y, radius, 0, Math.PI * 2);
-        ctx.fill();
+      for (let i = 0; i < 55; i += 1) {
+        const rel = { x: vel.x - wind.x, y: vel.y, z: vel.z - wind.z };
+        const speed = Math.max(0.001, length3(rel));
+        const spinVector = {
+          x: 0,
+          y: -(sidespin * (2 * Math.PI / 60)) * MODEL_PARAMS.sideMagnusScale,
+          z: backspin * (2 * Math.PI / 60),
+        };
+        const magnus = cross3(spinVector, rel);
+        const accel = {
+          x: -MODEL_PARAMS.dragCoeff * speed * rel.x + MODEL_PARAMS.magnusCoeff * magnus.x,
+          y: -MODEL_PARAMS.gravity - MODEL_PARAMS.dragCoeff * speed * rel.y + MODEL_PARAMS.magnusCoeff * magnus.y,
+          z: -MODEL_PARAMS.dragCoeff * speed * rel.z + MODEL_PARAMS.magnusCoeff * magnus.z,
+        };
+        vel = add3(vel, scale3(accel, 0.08));
+        pos = add3(pos, scale3(vel, 0.08));
+        points.push(pos);
+        backspin *= MODEL_PARAMS.spinDecayAir;
+        sidespin *= MODEL_PARAMS.spinDecayAir;
+        if (pos.y <= MODEL_PARAMS.ballRadius) break;
       }
+      return points;
+    }
+
+    function sampleTrajectoryPreview(currentState, modelState) {
+      if (currentState.ball.moving || modelState.phase === "flight") {
+        return currentState.trajectorySamples.slice(-28);
+      }
+      return simulatePreview(estimateShotProfile(currentState), currentState);
     }
 
     function resetRound() {
+      state.hole = randomHole();
       state.mode = "ready";
-      state.wind = (Math.random() * 2 - 1) * 11;
+      state.wind = {
+        x: (Math.random() * 2 - 1) * 7.5,
+        z: (Math.random() * 2 - 1) * 6,
+      };
       state.charging = false;
-      state.charge = 0.1;
+      state.charge = 0.24;
       state.chargeDir = 1;
-      state.aimDeg = 14;
+      state.aimDeg = 15;
+      state.yawDeg = 0;
       state.shotDone = false;
-      state.message = "스페이스를 눌러 파워를 충전하고 놓아 스윙";
+      state.message = "샷을 준비하세요";
       state.impactEffects = [];
-      state.ball.trail = [];
-      state.cameraX = clamp(state.ball.x - 250, -180, 340);
-      state.model = createInitialState({ ballX: 110, ballY: WORLD.greenY - 10 });
+      state.trajectorySamples = [];
+      state.previewSamples = [];
+      state.lastShotMetrics = null;
+      state.model = createInitialState({ ballPos: WORLD.teePos });
       state.modelControls = createDefaultControls({
-        windX: state.wind,
+        windX: state.wind.x,
+        windZ: state.wind.z,
         aimDeg: state.aimDeg,
+        yawDeg: state.yawDeg,
+        manualBallSpeedMps: state.manualLaunch.ballSpeedMps,
+        manualBackspinRpm: state.manualLaunch.backspinRpm,
+        manualSideSpinRpm: state.manualLaunch.sideSpinRpm,
       });
+      state.camera.position = { x: -9.5, y: 4.8, z: -12 };
+      state.camera.target = { x: 22, y: 1.2, z: 0 };
       syncBallFromModel();
+      state.previewSamples = sampleTrajectoryPreview(state, state.model);
     }
 
-    function startGame() {
-      startBtn.classList.add("hidden");
-      resetRound();
-      canvas.focus();
+    function beginLaunchCharge() {
+      if (state.mode !== "ready" || state.shotDone || state.charging || state.ball.moving) return;
+      state.charging = true;
+      state.message = "샷을 준비하세요";
+      updateChrome();
+    }
+
+    function releaseLaunchCharge() {
+      if (state.charging && state.mode === "ready") {
+        swing();
+        updateChrome();
+      }
     }
 
     function toggleFullscreen() {
@@ -266,73 +836,81 @@
     }
 
     function resizeCanvas() {
-      const rect = shell.getBoundingClientRect();
-      const targetW = Math.max(640, Math.floor(rect.width));
-      const targetH = Math.max(360, Math.floor(rect.height));
-      canvas.width = targetW;
-      canvas.height = targetH;
+      const rect = gameViewport.getBoundingClientRect();
+      canvas.width = Math.max(720, Math.floor(rect.width));
+      canvas.height = Math.max(405, Math.floor(rect.height));
       render();
     }
 
     function swing() {
-      const strikeOffset = (0.82 - state.charge) * 0.16;
+      const strikeOffsetX = (0.52 - state.charge) * 0.12;
+      const strikeOffsetY = (0.74 - state.charge) * 0.08;
       state.modelControls = {
         ...state.modelControls,
         initiateSwing: true,
         powerNorm: state.charge,
         tempoNorm: clamp(0.62 + state.charge * 0.55, 0.4, 1.25),
         aimDeg: state.aimDeg,
-        loftDeltaDeg: 0,
-        strikeOffset,
-        windX: state.wind,
+        yawDeg: state.yawDeg,
+        strikeOffsetX,
+        strikeOffsetY,
+        faceAngleBias: strikeOffsetX * 16,
+        clubPathBias: state.yawDeg * 0.18,
+        windX: state.wind.x,
+        windZ: state.wind.z,
+        manualBallSpeedMps: state.manualLaunch.ballSpeedMps,
+        manualBackspinRpm: state.manualLaunch.backspinRpm,
+        manualSideSpinRpm: state.manualLaunch.sideSpinRpm,
       };
       state.charging = false;
       state.shotDone = true;
       state.totalShots += 1;
-      state.message = "다운스윙 준비";
+      state.message = "샷을 준비하세요";
     }
 
     function evaluateLanding() {
-      const dist = Math.abs((state.ball.x + state.ball.r) - state.hole.x);
+      const dist = distance2D(state.ball.position, state.hole);
       const qualityBonus = clamp(Math.round(state.model.impactQuality * 8), 0, 8);
+      state.lastShotMetrics = {
+        carry: state.model.carryDistance,
+        total: state.model.totalDistance,
+        offline: state.model.offlineDistance,
+        miss: dist,
+      };
       let points = 0;
 
-      if (dist < 16) {
+      if (dist < 1.6) {
         points = 100 + qualityBonus;
-        state.message = "홀인원! R로 다시 도전";
-      } else if (dist < 70) {
-        points = 45 + qualityBonus;
-        state.message = "나이스 샷! R로 다시 도전";
-      } else if (dist < 150) {
-        points = 20 + qualityBonus;
-        state.message = "괜찮은 샷. R로 다시 도전";
+        state.message = "샷 결과";
+      } else if (dist < 6) {
+        points = 46 + qualityBonus;
+        state.message = "샷 결과";
+      } else if (dist < 12) {
+        points = 22 + qualityBonus;
+        state.message = "샷 결과";
       } else {
-        points = 5 + qualityBonus;
-        state.message = "거리 조절 필요. R로 다시 도전";
+        points = 6 + qualityBonus;
+        state.message = "다음 샷을 준비하세요";
       }
 
       state.score += points;
       state.mode = "result";
     }
 
-    function clampWind(value) {
-      return clamp(value, -2, 2);
-    }
-
     function update(dt) {
-      if (state.mode === "menu") return;
-
-      if (keys.has("arrowleft")) state.aimDeg = clamp(state.aimDeg + 44 * dt, 4, 40);
-      if (keys.has("arrowright")) state.aimDeg = clamp(state.aimDeg - 44 * dt, 4, 40);
+      if (keys.has("arrowleft")) state.yawDeg = clamp(state.yawDeg - 28 * dt, -24, 24);
+      if (keys.has("arrowright")) state.yawDeg = clamp(state.yawDeg + 28 * dt, -24, 24);
+      if (keys.has("arrowup")) state.aimDeg = clamp(state.aimDeg + 16 * dt, 6, 28);
+      if (keys.has("arrowdown")) state.aimDeg = clamp(state.aimDeg - 16 * dt, 6, 28);
 
       if (state.charging) {
-        state.charge += state.chargeDir * dt * 1.25;
+        state.charge += state.chargeDir * dt * 1.18;
         if (state.charge > 1) {
           state.charge = 1;
           state.chargeDir = -1;
         }
-        if (state.charge < 0.1) {
-          state.charge = 0.1;
+        if (state.charge < 0.12) {
+          state.charge = 0.12;
           state.chargeDir = 1;
         }
       }
@@ -341,376 +919,379 @@
       state.modelControls = {
         ...state.modelControls,
         aimDeg: state.aimDeg,
-        windX: state.wind,
+        yawDeg: state.yawDeg,
+        windX: state.wind.x,
+        windZ: state.wind.z,
       };
       state.model = stepSwingModel(state.model, state.modelControls, MODEL_PARAMS, dt);
       state.modelControls.initiateSwing = false;
+
       syncBallFromModel();
+      buildFlightCamera(state);
       updateImpactEffects(dt);
 
       if (state.ball.moving) {
-        state.ball.trail.push({ x: state.ball.x, y: state.ball.y });
-        if (state.ball.trail.length > 48) state.ball.trail.shift();
+        state.trajectorySamples.push({ ...state.ball.position });
+        if (state.trajectorySamples.length > 96) state.trajectorySamples.shift();
+      } else if (!state.shotDone) {
+        state.previewSamples = sampleTrajectoryPreview(state, state.model);
       }
 
       if (previousPhase !== state.model.phase) {
         if (state.model.phase === "flight") {
-          state.message = "임팩트! 비행 중...";
+          state.message = "샷 추적 중";
           spawnImpactEffect();
         }
         if (state.model.phase === "rest" && state.mode !== "result") {
           evaluateLanding();
         }
       }
-
-      const targetCamera = clamp(state.ball.x - 240, -180, 380);
-      state.cameraX += (targetCamera - state.cameraX) * 0.12;
     }
 
-    function drawEnvironment() {
-      const w = canvas.width;
-      const h = canvas.height;
-
-      const sky = ctx.createLinearGradient(0, 0, 0, h);
-      sky.addColorStop(0, "#a3dcff");
-      sky.addColorStop(0.62, "#d8f2ff");
-      sky.addColorStop(1, "#f1fbff");
+    function drawSky() {
+      const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      sky.addColorStop(0, "#8fd7ff");
+      sky.addColorStop(0.52, "#dff4ff");
+      sky.addColorStop(1, "#f5fbff");
       ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, w, h);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 
-      const strip = ctx.createLinearGradient(0, h * 0.48, 0, h);
-      strip.addColorStop(0, "#e9f8dd");
-      strip.addColorStop(1, "#d9f0c1");
-      ctx.fillStyle = strip;
-      ctx.fillRect(0, h * 0.53, w, h * 0.47);
+    function projectGroundToScreen(worldPoint, minDepth = 0.08) {
+      const relFromCamera = sub3(worldPoint, state.camera.position);
+      const camX = dot3(relFromCamera, state.camera.right);
+      const camY = dot3(relFromCamera, state.camera.up);
+      const camZ = Math.max(minDepth, dot3(relFromCamera, state.camera.forward));
+      const focal = canvas.height / (2 * Math.tan((state.camera.fov * Math.PI / 180) / 2));
+      return {
+        x: canvas.width * 0.5 + (camX * focal) / camZ,
+        y: canvas.height * 0.56 - (camY * focal) / camZ,
+        scale: focal / camZ,
+        depth: camZ,
+        visible: true,
+      };
+    }
 
-      for (let i = 0; i < 11; i += 1) {
-        const x = (i * 220 - (state.cameraX * 0.35) % 220);
-        const scale = i / 11;
-        const y = 248 + 26 * scale;
-        const r = 110 + 13 * i;
-        const alpha = 0.12 + scale * 0.08;
-        ctx.fillStyle = `rgba(95, 159, 87, ${alpha.toFixed(3)})`;
-        ctx.beginPath();
-        ctx.arc(x, y, r, Math.PI, 2 * Math.PI);
-        ctx.fill();
-      }
+    function drawGroundQuad(p1, p2, p3, p4, fillStyle, strokeStyle = "") {
+      const s1 = projectGroundToScreen(p1);
+      const s2 = projectGroundToScreen(p2);
+      const s3 = projectGroundToScreen(p3);
+      const s4 = projectGroundToScreen(p4);
 
-      const groundY = WORLD.greenY;
-      const perspectiveTop = 250;
-
-      ctx.fillStyle = "#4ba06d";
       ctx.beginPath();
-      ctx.moveTo(0, h);
-      ctx.lineTo(0, groundY);
-      ctx.lineTo(w, perspectiveTop);
-      ctx.lineTo(w, h);
+      ctx.moveTo(s1.x, s1.y);
+      ctx.lineTo(s2.x, s2.y);
+      ctx.lineTo(s3.x, s3.y);
+      ctx.lineTo(s4.x, s4.y);
       ctx.closePath();
+      ctx.fillStyle = fillStyle;
       ctx.fill();
-
-      const greensEdge = worldToScreen(WORLD.holeX + 40);
-      ctx.strokeStyle = "rgba(34, 84, 38, 0.45)";
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(greensEdge - 80, WORLD.greenY + 2);
-      ctx.quadraticCurveTo(greensEdge - 10, 360, greensEdge + 60, WORLD.greenY + 2);
-      ctx.stroke();
-
-      const ditherCount = 30;
-      for (let i = 0; i < ditherCount; i += 1) {
-        const x = (i * 32 + (state.cameraX * 0.2)) % w;
-        const alpha = 0.06 + (i % 4) * 0.015;
-        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha.toFixed(3)})`;
-        ctx.beginPath();
-        ctx.moveTo(x, groundY);
-        ctx.lineTo(x, h);
+      if (strokeStyle) {
+        ctx.strokeStyle = strokeStyle;
+        ctx.lineWidth = 1.1;
         ctx.stroke();
       }
     }
 
-    function drawHole() {
-      const cupX = worldToScreen(state.hole.x);
-      const cupY = state.hole.y;
-      const rim = 3;
-      const height = 38;
+    function drawEnvironment() {
+      drawSky();
 
-      ctx.fillStyle = "rgba(255,255,255,0.8)";
-      ctx.fillRect(cupX - rim, cupY - height, rim * 2, height);
+      drawGroundQuad(
+        { x: -18, y: 0, z: -60 },
+        { x: WORLD.fairwayLength + 28, y: 0, z: -60 },
+        { x: WORLD.fairwayLength + 28, y: 0, z: 60 },
+        { x: -18, y: 0, z: 60 },
+        "#d7ebbc"
+      );
+
+      drawGroundQuad(
+        { x: -6, y: 0.01, z: -WORLD.fairwayHalfWidth },
+        { x: WORLD.fairwayLength, y: 0.01, z: -WORLD.fairwayHalfWidth },
+        { x: WORLD.fairwayLength, y: 0.01, z: WORLD.fairwayHalfWidth },
+        { x: -6, y: 0.01, z: WORLD.fairwayHalfWidth },
+        "#5da160",
+        "rgba(255,255,255,0.08)"
+      );
+
+      drawGroundQuad(
+        { x: state.hole.x - WORLD.greenRadius, y: 0.02, z: state.hole.z - WORLD.greenHalfWidth },
+        { x: state.hole.x + WORLD.greenRadius, y: 0.02, z: state.hole.z - WORLD.greenHalfWidth },
+        { x: state.hole.x + WORLD.greenRadius, y: 0.02, z: state.hole.z + WORLD.greenHalfWidth },
+        { x: state.hole.x - WORLD.greenRadius, y: 0.02, z: state.hole.z + WORLD.greenHalfWidth },
+        "#79b86d"
+      );
+
+      for (const marker of WORLD.meterMarkers) {
+        const a = worldToScreen({ x: marker, y: 0.03, z: -WORLD.fairwayHalfWidth });
+        const b = worldToScreen({ x: marker, y: 0.03, z: WORLD.fairwayHalfWidth });
+        if (!a.visible || !b.visible) continue;
+        ctx.strokeStyle = "rgba(255,255,255,0.16)";
+        ctx.lineWidth = Math.max(1, a.scale * 0.02);
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+
+        const label = worldToScreen({ x: marker, y: 0.05, z: WORLD.fairwayHalfWidth + 2.2 });
+        if (label.visible) {
+          ctx.fillStyle = "rgba(9, 25, 43, 0.7)";
+          ctx.font = `${clamp(label.scale * 0.22, 11, 18)}px Trebuchet MS`;
+          ctx.fillText(`${marker} m`, label.x, label.y);
+        }
+      }
+    }
+
+    function drawHole() {
+      const cup = worldToScreen(state.hole);
+      const flagTop = worldToScreen({ x: state.hole.x, y: 2.5, z: state.hole.z });
+      if (!cup.visible || !flagTop.visible) return;
+
+      ctx.strokeStyle = "rgba(245,245,245,0.92)";
+      ctx.lineWidth = Math.max(1, cup.scale * 0.02);
+      ctx.beginPath();
+      ctx.moveTo(cup.x, cup.y);
+      ctx.lineTo(flagTop.x, flagTop.y);
+      ctx.stroke();
 
       ctx.beginPath();
-      ctx.moveTo(cupX + rim, cupY - height);
-      ctx.lineTo(cupX + 42, cupY - 24);
-      ctx.lineTo(cupX + rim, cupY - 10);
+      ctx.moveTo(flagTop.x, flagTop.y);
+      ctx.lineTo(flagTop.x + clamp(cup.scale * 0.35, 12, 28), flagTop.y + clamp(cup.scale * 0.08, 4, 9));
+      ctx.lineTo(flagTop.x, flagTop.y + clamp(cup.scale * 0.18, 8, 16));
       ctx.closePath();
       ctx.fillStyle = "#ff7f50";
       ctx.fill();
 
+      ctx.fillStyle = "#1e2428";
       ctx.beginPath();
-      ctx.ellipse(cupX, cupY + 3, state.hole.r + 0.5, 6, 0, 0, Math.PI * 2);
-      ctx.fillStyle = "#272727";
+      ctx.ellipse(cup.x, cup.y, clamp(cup.scale * 0.16, 4, 12), clamp(cup.scale * 0.05, 2, 6), 0, 0, Math.PI * 2);
       ctx.fill();
     }
 
     function drawTrails() {
-      for (const trail of state.ball.trail) {
-        const tx = worldToScreen(trail.x);
-        const alpha = Math.min(1, state.ball.trail.length > 0 ? 0.75 : 0);
-        ctx.fillStyle = `rgba(255,255,255,${(alpha * 0.22).toFixed(3)})`;
+      const samples = state.ball.moving ? state.trajectorySamples : state.previewSamples;
+      for (let i = 0; i < samples.length; i += 1) {
+        const projected = worldToScreen(samples[i]);
+        if (!projected.visible) continue;
+        const alpha = samples === state.previewSamples ? 0.16 + (i / samples.length) * 0.12 : 0.2 + (i / samples.length) * 0.38;
+        ctx.fillStyle = samples === state.previewSamples
+          ? `rgba(29, 62, 88, ${alpha.toFixed(3)})`
+          : `rgba(255,255,255, ${alpha.toFixed(3)})`;
         ctx.beginPath();
-        ctx.arc(tx, trail.y, 3.1, 0, Math.PI * 2);
+        ctx.arc(projected.x, projected.y, clamp(projected.scale * 0.04, 1.2, 4.2), 0, Math.PI * 2);
         ctx.fill();
+      }
+    }
+
+    function drawImpactEffects() {
+      for (const fx of state.impactEffects) {
+        const projected = worldToScreen(fx.position);
+        if (!projected.visible) continue;
+        const life = fx.age / fx.maxAge;
+        if (fx.kind === "ring") {
+          ctx.strokeStyle = `rgba(255, 238, 196, ${(0.38 * (1 - life)).toFixed(3)})`;
+          ctx.lineWidth = Math.max(1, projected.scale * 0.02);
+          ctx.beginPath();
+          ctx.arc(projected.x, projected.y, projected.scale * fx.maxRadius * life * 0.06, 0, Math.PI * 2);
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = `rgba(255, 246, 220, ${(0.55 * (1 - life)).toFixed(3)})`;
+          ctx.beginPath();
+          ctx.arc(projected.x, projected.y, clamp(projected.scale * fx.size * 0.08, 1, 4.5), 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
     }
 
     function drawBall() {
-      const x = worldToScreen(state.ball.x);
-      const y = state.ball.y;
-
-      const shadowY = WORLD.greenY;
-      const fade = clamp(1 - ((shadowY - y) / 90), 0.15, 0.4);
-      ctx.fillStyle = `rgba(0,0,0,${fade.toFixed(3)})`;
-      ctx.beginPath();
-      ctx.ellipse(x, shadowY + 2, state.ball.r * 0.98, 4, 0, 0, Math.PI * 2);
-      ctx.fill();
+      const shadow = worldToScreen({ x: state.ball.position.x, y: 0.01, z: state.ball.position.z });
+      const ball = state.ball.screen;
+      if (shadow.visible) {
+        const shadowSize = clamp(shadow.scale * 0.09, 6, 24);
+        const liftFade = clamp(1 - state.ball.position.y / 18, 0.16, 0.42);
+        ctx.fillStyle = `rgba(0,0,0,${liftFade.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.ellipse(shadow.x, shadow.y, shadowSize, shadowSize * 0.36, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       drawImpactEffects();
 
-      const glow = clamp(1 + Math.max(0, state.model.clubHeadSpeed - 18) * 0.012, 1, 2.5);
-      const grad = ctx.createRadialGradient(x - 2, y - 2, 0, x, y, 10);
-      grad.addColorStop(0, "rgba(255,255,255,0.95)");
-      grad.addColorStop(0.5, "rgba(240, 240, 240, 0.95)");
-      grad.addColorStop(1, "rgba(240, 240, 240, 0.2)");
+      if (!ball.visible) return;
+      const r = clamp(ball.scale * 0.11, 5, 16);
+      const grad = ctx.createRadialGradient(ball.x - r * 0.22, ball.y - r * 0.28, 0, ball.x, ball.y, r);
+      grad.addColorStop(0, "rgba(255,255,255,0.98)");
+      grad.addColorStop(0.5, "rgba(242, 246, 248, 0.95)");
+      grad.addColorStop(1, "rgba(212, 224, 234, 0.26)");
       ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.arc(x, y, state.ball.r * glow, 0, Math.PI * 2);
+      ctx.arc(ball.x, ball.y, r, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = "rgba(255,255,255,0.9)";
-      ctx.beginPath();
-      ctx.arc(x, y, state.ball.r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(0, 0, 0, 0.25)";
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.22)";
       ctx.stroke();
-
-      if (!state.ball.moving && state.mode !== "menu") {
-        drawAim();
-      }
     }
 
     function drawAim() {
-      const baseX = worldToScreen(state.ball.x);
-      const baseY = state.ball.y - 14;
-      const len = 88;
-      const rad = (state.aimDeg * Math.PI) / 180;
-      const tx = baseX + Math.cos(rad) * len;
-      const ty = baseY - Math.sin(rad) * len;
+      const base = worldToScreen(state.ball.position);
+      if (!base.visible) return;
 
-      ctx.strokeStyle = "#163f57";
-      ctx.lineWidth = 3.5;
-      ctx.beginPath();
-      ctx.moveTo(baseX, baseY);
-      ctx.lineTo(tx, ty);
-      ctx.stroke();
-
-      ctx.fillStyle = "#163f57";
-      const head = 10;
-      ctx.beginPath();
-      ctx.moveTo(tx, ty);
-      ctx.lineTo(tx - Math.cos(rad - 0.5) * head, ty + Math.sin(rad - 0.5) * head);
-      ctx.lineTo(tx - Math.cos(rad + 0.5) * head, ty + Math.sin(rad + 0.5) * head);
-      ctx.closePath();
-      ctx.fill();
+      const aimLength = 12;
+      const yawRad = state.yawDeg * Math.PI / 180;
+      const pitchRad = state.aimDeg * Math.PI / 180;
+      const tip = {
+        x: state.ball.position.x + Math.cos(pitchRad) * Math.cos(yawRad) * aimLength,
+        y: state.ball.position.y + Math.sin(pitchRad) * aimLength * 0.42,
+        z: state.ball.position.z + Math.cos(pitchRad) * Math.sin(yawRad) * aimLength,
+      };
+      const tipScreen = worldToScreen(tip);
+      if (tipScreen.visible) {
+        ctx.strokeStyle = "#163f57";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(base.x, base.y);
+        ctx.lineTo(tipScreen.x, tipScreen.y);
+        ctx.stroke();
+      }
     }
 
     function drawGolfer() {
-      const x = worldToScreen(state.ball.x) - 95;
-      const y = WORLD.greenY - 26;
-      const baseBob = Math.sin(performance.now() / 170 + state.ball.x * 0.01) * 1.2;
-      const torsoBase = { x, y: y + baseBob };
-      const shoulder = { x: torsoBase.x - 5, y: torsoBase.y - 52 };
-      const hip = { x: torsoBase.x - 2, y: torsoBase.y + 10 };
+      const stance = worldToScreen({ x: -1.25, y: 0, z: -0.8 });
+      if (!stance.visible) return;
 
-      const torsoLen = 46;
-      const armLen = 38;
-      const clubLen = 45;
-
+      const x = stance.x - clamp(stance.scale * 0.06, 12, 28);
+      const y = stance.y - clamp(stance.scale * 0.18, 52, 96);
+      const bodyScale = clamp(stance.scale * 0.13, 42, 86);
       const torsoAngle = -Math.PI / 2 + state.model.thetaTorso * 0.32;
       const armAngle = torsoAngle + state.model.thetaArm * 0.45;
       const clubAngle = armAngle + state.model.thetaClub * 0.42;
 
-      const shoulderTop = {
-        x: shoulder.x + Math.cos(torsoAngle) * torsoLen,
-        y: shoulder.y + Math.sin(torsoAngle) * torsoLen,
+      const shoulder = { x, y };
+      const torsoTip = {
+        x: shoulder.x + Math.cos(torsoAngle) * bodyScale * 0.36,
+        y: shoulder.y + Math.sin(torsoAngle) * bodyScale * 0.36,
       };
-
       const hand = {
-        x: shoulderTop.x + Math.cos(armAngle) * armLen,
-        y: shoulderTop.y + Math.sin(armAngle) * armLen,
+        x: torsoTip.x + Math.cos(armAngle) * bodyScale * 0.3,
+        y: torsoTip.y + Math.sin(armAngle) * bodyScale * 0.3,
       };
-
-      const head = {
-        x: shoulderTop.x + Math.cos(clubAngle) * clubLen,
-        y: shoulderTop.y + Math.sin(clubAngle) * clubLen,
+      const clubHead = {
+        x: hand.x + Math.cos(clubAngle) * bodyScale * 0.45,
+        y: hand.y + Math.sin(clubAngle) * bodyScale * 0.45,
       };
-
-      const swingActive = state.mode !== "menu" && state.model.phase !== "address";
-      const bodyPulse = swingActive ? 1.03 : 1;
 
       ctx.save();
-      ctx.globalAlpha = 0.98;
       ctx.lineCap = "round";
-
-      // shadow
-      ctx.fillStyle = "rgba(0,0,0,0.18)";
+      ctx.fillStyle = "rgba(0,0,0,0.12)";
       ctx.beginPath();
-      ctx.ellipse(worldToScreen(state.ball.x), WORLD.greenY + 3, 22, 5, 0, 0, Math.PI * 2);
+      ctx.ellipse(stance.x, stance.y + 6, bodyScale * 0.16, bodyScale * 0.04, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // body
       ctx.strokeStyle = "#1f2937";
-      ctx.lineWidth = 7;
+      ctx.lineWidth = bodyScale * 0.08;
       ctx.beginPath();
-      ctx.moveTo(hip.x, hip.y);
+      ctx.moveTo(shoulder.x, shoulder.y + bodyScale * 0.36);
       ctx.lineTo(shoulder.x, shoulder.y);
       ctx.stroke();
 
-      ctx.lineWidth = 5.5;
-      ctx.strokeStyle = "#3a4a5b";
+      ctx.strokeStyle = "#425264";
+      ctx.lineWidth = bodyScale * 0.06;
       ctx.beginPath();
       ctx.moveTo(shoulder.x, shoulder.y);
-      ctx.lineTo(shoulderTop.x, shoulderTop.y);
-      ctx.stroke();
-
-      // arm / club
-      ctx.strokeStyle = "#4b5a6a";
-      ctx.lineWidth = 4.2;
-      ctx.beginPath();
-      ctx.moveTo(shoulderTop.x, shoulderTop.y);
+      ctx.lineTo(torsoTip.x, torsoTip.y);
       ctx.lineTo(hand.x, hand.y);
       ctx.stroke();
 
-      const impactColor = state.model.didImpact ? "#ffc46a" : "#5e707b";
-      ctx.strokeStyle = impactColor;
-      ctx.lineWidth = 3.4;
+      ctx.strokeStyle = state.model.didImpact ? "#ffc46a" : "#5e707b";
+      ctx.lineWidth = bodyScale * 0.045;
       ctx.beginPath();
       ctx.moveTo(hand.x, hand.y);
-      ctx.lineTo(head.x, head.y);
+      ctx.lineTo(clubHead.x, clubHead.y);
       ctx.stroke();
 
-      ctx.lineWidth = 5;
-      ctx.strokeStyle = "#d4e8ff";
-      for (let i = 0; i < 2; i += 1) {
-        const dx = i === 0 ? -1.2 : 1.2;
-        ctx.beginPath();
-        ctx.arc(shoulder.x + dx, shoulder.y - 7, 7 * bodyPulse, 0, Math.PI * 2);
-        ctx.fillStyle = i === 0 ? "#f5fafc" : "#dbeeff";
-        ctx.fill();
-      }
-
-      // club marker
-      const clubHeadX = shoulder.x - 8;
-      const clubHeadY = shoulder.y;
-      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.fillStyle = "#e8f2fa";
       ctx.beginPath();
-      ctx.arc(worldToScreen(state.model.phase === "address" ? clubHeadX + 55 : head.x), clubHeadY + 2, 4, 0, Math.PI * 2);
+      ctx.arc(shoulder.x, shoulder.y - bodyScale * 0.13, bodyScale * 0.09, 0, Math.PI * 2);
       ctx.fill();
-
-      // player label
-      ctx.fillStyle = "rgba(255,255,255,0.85)";
-      ctx.font = "12px Trebuchet MS";
-      ctx.fillText("PLAYER", worldToScreen(x - 12), y - 72);
       ctx.restore();
     }
 
     function drawHUD() {
-      const w = canvas.width;
-      const h = canvas.height;
-
-      ctx.fillStyle = "rgba(5, 22, 36, 0.75)";
-      ctx.fillRect(18, 16, 330, 136);
-      ctx.strokeStyle = "rgba(255,255,255,0.3)";
-      ctx.strokeRect(18, 16, 330, 136);
-
-      ctx.fillStyle = "#f3fbff";
-      ctx.font = "18px Trebuchet MS";
-      ctx.fillText(`점수: ${state.score}`, 36, 46);
-      ctx.fillText(`시도: ${state.totalShots}`, 36, 70);
-      ctx.fillText(`바람: ${state.wind.toFixed(1)} m/s`, 36, 94);
-      ctx.fillText(`각도: ${state.aimDeg.toFixed(1)}°`, 36, 118);
-
-      ctx.fillStyle = "rgba(255,255,255,0.14)";
-      ctx.fillRect(370, 30, 260, 17);
-      ctx.fillStyle = "#ffd166";
-      ctx.fillRect(370, 30, 260 * state.charge, 17);
-      ctx.strokeStyle = "rgba(255,255,255,0.38)";
-      ctx.strokeRect(370, 30, 260, 17);
-
-      ctx.fillStyle = "rgba(255, 255, 255, 0.88)";
-      ctx.font = "12px Trebuchet MS";
-      ctx.fillText("Power", 492, 44);
-
-      ctx.fillStyle = "rgba(2, 24, 38, 0.78)";
-      ctx.fillRect(18, h - 58, w - 36, 36);
-      ctx.fillStyle = "#effcff";
-      ctx.font = "16px Trebuchet MS";
-      ctx.fillText(state.message, 32, h - 34);
-
-      ctx.strokeStyle = "rgba(255,255,255,0.2)";
-      ctx.beginPath();
-      ctx.moveTo(18, h - 62);
-      ctx.lineTo(w - 18, h - 62);
-      ctx.stroke();
-
-      ctx.fillStyle = "rgba(255,255,255,0.75)";
-      ctx.font = "12px Trebuchet MS";
-      ctx.fillText("모드", 780, 20);
-      if (state.model.phase === "address") {
-        ctx.fillStyle = "rgba(130, 255, 180, 0.9)";
-      } else {
-        ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-      }
-      ctx.fillText(state.model.phase.toUpperCase(), 820, 38);
-
-      const barX = w - 176;
-      const barW = 154;
-      const barY = 50;
-      ctx.fillStyle = "rgba(0,0,0,0.35)";
-      ctx.fillRect(barX, barY, barW, 8);
-      ctx.fillStyle = "#8ce3b2";
-      ctx.fillRect(barX, barY, barW * state.model.clubHeadSpeed / 95, 8);
+      updateChrome();
     }
 
     function drawMenu() {
       const w = canvas.width;
       const h = canvas.height;
 
-      ctx.fillStyle = "rgba(8, 22, 38, 0.8)";
-      ctx.fillRect(w * 0.14, h * 0.17, w * 0.72, h * 0.56);
+      ctx.save();
+      ctx.fillStyle = "rgba(8, 20, 33, 0.2)";
+      ctx.fillRect(0, 0, w, h);
+
+      const panelX = w * 0.16;
+      const panelY = h * 0.17;
+      const panelW = w * 0.68;
+      const panelH = h * 0.54;
+
+      ctx.fillStyle = "rgba(8, 22, 38, 0.74)";
+      ctx.beginPath();
+      ctx.roundRect(panelX, panelY, panelW, panelH, 30);
+      ctx.fill();
+
+      ctx.strokeStyle = "rgba(255,255,255,0.09)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.textAlign = "left";
+      ctx.fillStyle = "rgba(255, 243, 205, 0.88)";
+      ctx.font = "12px Trebuchet MS";
+      ctx.fillText("Playable 3D Range Session", panelX + 34, panelY + 34);
 
       ctx.fillStyle = "#f4fbff";
-      ctx.textAlign = "center";
-      ctx.font = "700 42px Trebuchet MS";
-      ctx.fillText("GOLF SWING SIM PRO", w / 2, h * 0.30);
+      ctx.font = "700 54px Trebuchet MS";
+      ctx.fillText("GOLF", panelX + 30, panelY + 92);
+      ctx.fillText("SWING SIM", panelX + 30, panelY + 138);
 
-      ctx.font = "21px Trebuchet MS";
-      ctx.fillText("3인칭 카메라 / 타이밍 스윙 / 임팩트 피드백", w / 2, h * 0.41);
-      ctx.fillText("좌우 방향키: 조준 | 스페이스: 파워/스윙", w / 2, h * 0.47);
-      ctx.fillText("R: 리셋 | F: 전체화면", w / 2, h * 0.54);
-      ctx.fillStyle = "rgba(255, 255, 255, 0.76)";
+      ctx.fillStyle = "rgba(235, 246, 255, 0.82)";
+      ctx.font = "18px Trebuchet MS";
+      ctx.fillText("Ball Speed, Backspin, Side Spin을 직접 넣고", panelX + 34, panelY + 182);
+      ctx.fillText("3D 비행과 타깃 미스를 바로 확인할 수 있습니다.", panelX + 34, panelY + 210);
+
+      const stats = [
+        ["3D Flight", "camera + carry + curve"],
+        ["Manual Spin", "backspin / sidespin input"],
+        ["Playable Loop", "aim, swing, result, retry"],
+      ];
+      for (let i = 0; i < stats.length; i += 1) {
+        const boxX = panelX + 34 + i * ((panelW - 68) / 3);
+        const boxW = (panelW - 92) / 3;
+        const boxY = panelY + 246;
+        ctx.fillStyle = "rgba(255,255,255,0.055)";
+        ctx.beginPath();
+        ctx.roundRect(boxX, boxY, boxW, 70, 16);
+        ctx.fill();
+        ctx.fillStyle = "#fff5d5";
+        ctx.font = "700 17px Trebuchet MS";
+        ctx.fillText(stats[i][0], boxX + 16, boxY + 26);
+        ctx.fillStyle = "rgba(235, 246, 255, 0.74)";
+        ctx.font = "12px Trebuchet MS";
+        ctx.fillText(stats[i][1], boxX + 16, boxY + 47);
+      }
+
+      ctx.fillStyle = "rgba(235, 246, 255, 0.72)";
       ctx.font = "13px Trebuchet MS";
-      ctx.fillText("상태: Ready - 임팩트 순간에는 컷인 연출이 표시됩니다", w / 2, h * 0.59);
-      ctx.textAlign = "start";
+      ctx.fillText("ArrowLeft / ArrowRight: 방위각", panelX + 34, panelY + panelH - 48);
+      ctx.fillText("ArrowUp / ArrowDown: 발사각", panelX + 34, panelY + panelH - 28);
+      ctx.fillText("Space: 파워와 스윙  |  R: 리셋  |  F: 전체화면", panelX + panelW - 292, panelY + panelH - 28);
+      ctx.restore();
     }
 
     function drawScene() {
       drawEnvironment();
-      drawHole();
       drawTrails();
+      drawHole();
       drawGolfer();
       drawBall();
+      if (!state.ball.moving) drawAim();
       drawHUD();
-      if (state.mode === "menu") {
-        drawMenu();
-      }
     }
 
     function render() {
@@ -725,11 +1306,6 @@
       requestAnimationFrame(frame);
     }
 
-    function resizeAndSync() {
-      resizeCanvas();
-      render();
-    }
-
     window.advanceTime = (ms) => {
       const step = 1000 / 60;
       const loops = Math.max(1, Math.round(ms / step));
@@ -741,44 +1317,91 @@
     };
 
     window.render_game_to_text = () => {
+      const ballScreen = state.ball.screen;
       return JSON.stringify({
-        coordinateSystem: "origin top-left, +x right, +y down",
+        coordinateSystem: "world: +x downrange, +y up, +z right; screen: origin top-left",
         mode: state.mode,
         message: state.message,
         score: state.score,
         totalShots: state.totalShots,
-        wind: Number(state.wind.toFixed(2)),
-        aimDeg: Number(state.aimDeg.toFixed(2)),
         charging: state.charging,
         charge: Number(state.charge.toFixed(3)),
-        cameraX: Number(state.cameraX.toFixed(2)),
+        aimDeg: Number(state.aimDeg.toFixed(2)),
+        yawDeg: Number(state.yawDeg.toFixed(2)),
+        wind: {
+          x: Number(state.wind.x.toFixed(2)),
+          z: Number(state.wind.z.toFixed(2)),
+        },
+        manualLaunch: {
+          ballSpeedMps: state.manualLaunch.ballSpeedMps == null ? null : Number(state.manualLaunch.ballSpeedMps.toFixed(2)),
+          ballSpeedMph: state.manualLaunch.ballSpeedMps == null ? null : Number(mpsToMph(state.manualLaunch.ballSpeedMps).toFixed(2)),
+          backspinRpm: state.manualLaunch.backspinRpm == null ? null : Number(state.manualLaunch.backspinRpm.toFixed(0)),
+          sideSpinRpm: state.manualLaunch.sideSpinRpm == null ? null : Number(state.manualLaunch.sideSpinRpm.toFixed(0)),
+        },
+        cameraX: Number(state.camera.position.x.toFixed(2)),
+        camera: {
+          position: {
+            x: Number(state.camera.position.x.toFixed(2)),
+            y: Number(state.camera.position.y.toFixed(2)),
+            z: Number(state.camera.position.z.toFixed(2)),
+          },
+          target: {
+            x: Number(state.camera.target.x.toFixed(2)),
+            y: Number(state.camera.target.y.toFixed(2)),
+            z: Number(state.camera.target.z.toFixed(2)),
+          },
+        },
         model: {
           phase: state.model.phase,
           clubHeadSpeed: Number(state.model.clubHeadSpeed.toFixed(2)),
           attackAngleDeg: Number(state.model.attackAngleDeg.toFixed(2)),
           dynamicLoftDeg: Number(state.model.dynamicLoftDeg.toFixed(2)),
           launchDeg: Number(state.model.launchDeg.toFixed(2)),
-          spinRpm: Number(state.model.spinRpm.toFixed(1)),
+          launchAzimuthDeg: Number(state.model.launchAzimuthDeg.toFixed(2)),
+          ballSpeed: Number(state.model.ballSpeed.toFixed(2)),
+          backspinRpm: Number(state.model.backspinRpm.toFixed(1)),
+          sidespinRpm: Number(state.model.sidespinRpm.toFixed(1)),
+          spinRateRpm: Number(state.model.spinRateRpm.toFixed(1)),
+          spinAxisTiltDeg: Number(state.model.spinAxisTiltDeg.toFixed(2)),
           impactQuality: Number(state.model.impactQuality.toFixed(3)),
+          carryDistance: Number(state.model.carryDistance.toFixed(2)),
+          totalDistance: Number(state.model.totalDistance.toFixed(2)),
+          offlineDistance: Number(state.model.offlineDistance.toFixed(2)),
+          apexHeight: Number(state.model.apexHeight.toFixed(2)),
           didImpact: state.model.didImpact,
         },
         impactEffectCount: state.impactEffects.length,
         ball: {
-          x: Number(state.ball.x.toFixed(2)),
-          y: Number(state.ball.y.toFixed(2)),
-          vx: Number(state.ball.vx.toFixed(2)),
-          vy: Number(state.ball.vy.toFixed(2)),
-          radius: state.ball.r,
+          position: {
+            x: Number(state.ball.position.x.toFixed(2)),
+            y: Number(state.ball.position.y.toFixed(2)),
+            z: Number(state.ball.position.z.toFixed(2)),
+          },
+          velocity: {
+            x: Number(state.ball.velocity.x.toFixed(2)),
+            y: Number(state.ball.velocity.y.toFixed(2)),
+            z: Number(state.ball.velocity.z.toFixed(2)),
+          },
+          screenX: Number(ballScreen.x.toFixed(2)),
+          screenY: Number(ballScreen.y.toFixed(2)),
           moving: state.ball.moving,
+        },
+        metrics: {
+          carry: Number(state.model.carryDistance.toFixed(2)),
+          total: Number(state.model.totalDistance.toFixed(2)),
+          apex: Number(state.model.apexHeight.toFixed(2)),
+          offline: Number(state.model.offlineDistance.toFixed(2)),
         },
         hole: {
           x: state.hole.x,
           y: state.hole.y,
-          radius: state.hole.r,
+          z: state.hole.z,
+          radius: state.hole.radius,
         },
         controls: {
           swing: "Space hold/release",
-          aim: "ArrowLeft/ArrowRight",
+          elevation: "ArrowUp/ArrowDown",
+          azimuth: "ArrowLeft/ArrowRight",
           restart: "R",
           fullscreen: "F",
         },
@@ -799,13 +1422,11 @@
       keys.add(k);
       if (e.code === "Space") {
         e.preventDefault();
-        if (state.mode === "ready" && !state.shotDone && !state.charging && !state.ball.moving) {
-          state.charging = true;
-          state.message = "타이밍 좋게 놓으세요!";
-        }
+        beginLaunchCharge();
       }
       if (k === "r" && (state.mode === "result" || state.shotDone)) {
         resetRound();
+        applyManualInputs();
       }
     });
 
@@ -813,21 +1434,49 @@
       const k = e.key.toLowerCase();
       keys.delete(k);
       if (e.code === "Space") {
-        if (state.charging && state.mode === "ready") {
-          swing();
-        }
+        releaseLaunchCharge();
       }
     });
 
-    document.addEventListener("fullscreenchange", () => {
-      state.fullscreen = Boolean(document.fullscreenElement);
-      resizeCanvas();
+    document.addEventListener("fullscreenchange", resizeCanvas);
+    window.addEventListener("resize", resizeCanvas);
+    startBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      beginLaunchCharge();
+    });
+    startBtn.addEventListener("pointerup", (e) => {
+      e.preventDefault();
+      releaseLaunchCharge();
+      canvas.focus();
+    });
+    startBtn.addEventListener("pointercancel", releaseLaunchCharge);
+    startBtn.addEventListener("pointerleave", (e) => {
+      if ((e.buttons & 1) === 1) releaseLaunchCharge();
+    });
+    resetBtn.addEventListener("click", () => {
+      resetRound();
+      applyManualInputs();
+      canvas.focus();
+    });
+    ballSpeedMphInput.addEventListener("input", () => {
+      syncSpeedInputs();
+      applyManualInputs();
+    });
+    sideSpinInput.addEventListener("input", applyManualInputs);
+    backSpinInput.addEventListener("input", applyManualInputs);
+    aimDirectionInput.addEventListener("input", () => {
+      state.yawDeg = Number(aimDirectionInput.value);
+      state.previewSamples = sampleTrajectoryPreview(state, state.model);
+      updateChrome();
     });
 
-    window.addEventListener("resize", resizeAndSync);
-    startBtn.addEventListener("click", startGame);
-
     resizeCanvas();
+    resetRound();
+    syncSpeedInputs();
+    applyManualInputs();
+    buildFlightCamera(state);
+    syncBallFromModel();
+    updateChrome();
     render();
     requestAnimationFrame(frame);
   </script>
