@@ -2,9 +2,13 @@
   "name": "golfsim",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node scripts/serve.mjs",
+    "action": "node scripts/run-action.mjs",
+    "action:test": "node scripts/run-action.mjs test-actions.json",
+    "test": "node --test test/*.mjs"
   },
   "keywords": [],
   "author": "",

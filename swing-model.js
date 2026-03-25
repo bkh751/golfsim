@@ -1,6 +1,11 @@
 const DEG_TO_RAD = Math.PI / 180;
 const RAD_TO_DEG = 180 / Math.PI;
 
+import { DEFAULT_AERO_MODEL } from "./aero-model.js";
+import { createFlightState, stepFlightState } from "./flight-engine.js";
+import { computeTrajectoryMetrics } from "./metrics-agent.js";
+import { createImpactContext, createImpactOutput } from "./impact-agent.js";
+
 export const DEFAULT_PARAMS = Object.freeze({
   torsoInertia: 2.5,
   armInertia: 0.9,
@@ -30,18 +35,23 @@ export const DEFAULT_PARAMS = Object.freeze({
   spinLoftGain: 55,
   strikeSpinGain: 420,
   spinMin: 1400,
-  spinMax: 4800,
+  spinMax: 7200,
   gravity: 28,
-  dragCoeff: 0.0011,
-  liftCoeff: 0.014,
-  bounceRestitution: 0.32,
-  rollFriction: 0.985,
-  stopVx: 12,
-  stopVy: 10,
-  windMin: -12,
-  windMax: 12,
-  ballRadius: 9,
-  groundY: 410,
+  dragCoeff: 0.00115,
+  magnusCoeff: 0.00048,
+  sideMagnusScale: 0.95,
+  spinDecayAir: 0.996,
+  spinDecayGround: 0.88,
+  bounceRestitution: 0.34,
+  bounceLateralRestitution: 0.82,
+  rollFrictionForward: 0.992,
+  rollFrictionLateral: 0.955,
+  stopVxz: 7,
+  stopVy: 3.5,
+  windMin: -14,
+  windMax: 14,
+  ballRadius: 0.02135,
+  groundY: 0,
 });
 
 function clamp(value, min, max) {
@@ -87,7 +97,7 @@ function computeClubKinematics(state, params) {
     params.clubLength * Math.cos(a3) * w3;
 
   const speed = Math.hypot(vx, vy) * params.clubSpeedScale;
-  const attackAngleDeg = Math.atan2(-vy, Math.max(0.001, vx)) * RAD_TO_DEG;
+  const attackAngleDeg = Math.atan2(vy, Math.max(0.001, vx)) * RAD_TO_DEG;
 
   return {
     clubHeadSpeed: speed,
@@ -95,8 +105,28 @@ function computeClubKinematics(state, params) {
   };
 }
 
-export function createInitialState(overrides = {}) {
+function ensureVector(value, fallback) {
+  if (!value || typeof value !== "object") return { ...fallback };
   return {
+    x: Number.isFinite(value.x) ? value.x : fallback.x,
+    y: Number.isFinite(value.y) ? value.y : fallback.y,
+    z: Number.isFinite(value.z) ? value.z : fallback.z,
+  };
+}
+
+function copyVector(v) {
+  return { x: v.x, y: v.y, z: v.z };
+}
+
+function createBasePosition() {
+  return { x: 0, y: DEFAULT_PARAMS.ballRadius, z: 0 };
+}
+
+export function createInitialState(overrides = {}) {
+  const initialBallPos = ensureVector(overrides.ballPos, createBasePosition());
+  const initialBallVel = ensureVector(overrides.ballVel, { x: 0, y: 0, z: 0 });
+
+  const state = {
     phase: "address",
     swingTime: 0,
     thetaTorso: -0.65,
@@ -109,18 +139,43 @@ export function createInitialState(overrides = {}) {
     attackAngleDeg: 0,
     dynamicLoftDeg: 0,
     launchDeg: 0,
+    launchAzimuthDeg: 0,
+    ballSpeed: 0,
     impactQuality: 1,
-    spinRpm: 0,
+    spinRateRpm: 0,
+    spinAxisTiltDeg: 0,
+    backspinRpm: 0,
+    sidespinRpm: 0,
     didImpact: false,
-    ballX: 110,
-    ballY: 400,
-    ballVx: 0,
-    ballVy: 0,
+    ballPos: initialBallPos,
+    ballVel: initialBallVel,
     ballMoving: false,
-    launchX: 110,
-    apexY: 400,
+    launchPos: copyVector(initialBallPos),
+    landingPos: copyVector(initialBallPos),
+    carryDistance: 0,
+    totalDistance: 0,
+    offlineDistance: 0,
+    apexHeight: initialBallPos.y,
+    firstBounceDone: false,
+  };
+
+  const merged = {
+    ...state,
     ...overrides,
   };
+
+  merged.ballPos = ensureVector(merged.ballPos, initialBallPos);
+  merged.ballVel = ensureVector(merged.ballVel, initialBallVel);
+  merged.launchPos = ensureVector(merged.launchPos, merged.ballPos);
+  merged.landingPos = ensureVector(merged.landingPos, merged.ballPos);
+  merged.ballX = merged.ballPos.x;
+  merged.ballY = merged.ballPos.y;
+  merged.ballZ = merged.ballPos.z;
+  merged.ballVx = merged.ballVel.x;
+  merged.ballVy = merged.ballVel.y;
+  merged.ballVz = merged.ballVel.z;
+  merged.spinRpm = merged.spinRateRpm;
+  return merged;
 }
 
 export function createDefaultControls(overrides = {}) {
@@ -129,11 +184,62 @@ export function createDefaultControls(overrides = {}) {
     powerNorm: 0.5,
     tempoNorm: 0.7,
     aimDeg: 14,
+    yawDeg: 0,
     loftDeltaDeg: 0,
-    strikeOffset: 0,
+    strikeOffsetX: 0,
+    strikeOffsetY: 0,
+    clubPathBias: 0,
+    faceAngleBias: 0,
     windX: 0,
+    windZ: 0,
+    manualBallSpeedMps: null,
+    manualBackspinRpm: null,
+    manualSideSpinRpm: null,
     ...overrides,
   };
+}
+
+function updateCompatibilityFields(next) {
+  next.ballX = next.ballPos.x;
+  next.ballY = next.ballPos.y;
+  next.ballZ = next.ballPos.z;
+  next.ballVx = next.ballVel.x;
+  next.ballVy = next.ballVel.y;
+  next.ballVz = next.ballVel.z;
+  next.spinRpm = next.spinRateRpm;
+}
+
+function buildImpactState(next, controls, params) {
+  const impactOutput = createImpactOutput(
+    createImpactContext({
+      clubHeadSpeed: next.clubHeadSpeed,
+      attackAngleDeg: next.attackAngleDeg,
+      ballPos: next.ballPos,
+      impactQuality: next.impactQuality,
+    }),
+    controls,
+    params
+  );
+
+  next.ballVel = impactOutput.initialBallState.velocity;
+  next.ballMoving = true;
+  next.phase = "flight";
+  next.didImpact = true;
+  next.dynamicLoftDeg = impactOutput.dynamicLoftDeg;
+  next.launchDeg = impactOutput.launchElevationDeg;
+  next.launchAzimuthDeg = impactOutput.launchAzimuthDeg;
+  next.ballSpeed = impactOutput.ballSpeed;
+  next.spinRateRpm = impactOutput.spinRateRpm;
+  next.spinAxisTiltDeg = impactOutput.spinAxisTiltDeg;
+  next.backspinRpm = impactOutput.backspinRpm;
+  next.sidespinRpm = impactOutput.sidespinRpm;
+  next.launchPos = copyVector(impactOutput.launchPos);
+  next.landingPos = copyVector(impactOutput.launchPos);
+  Object.assign(
+    next,
+    computeTrajectoryMetrics(createFlightState(impactOutput.initialBallState))
+  );
+  next.firstBounceDone = false;
 }
 
 export function stepSwingModel(state, controls = {}, params = {}, dt = 1 / 60) {
@@ -144,13 +250,27 @@ export function stepSwingModel(state, controls = {}, params = {}, dt = 1 / 60) {
     ...uRaw,
     powerNorm: clampFinite(uRaw.powerNorm, 0.5, 0, 1),
     tempoNorm: clampFinite(uRaw.tempoNorm, 0.7, 0.4, 1.3),
-    aimDeg: clampFinite(uRaw.aimDeg, 14, 4, 45),
+    aimDeg: clampFinite(uRaw.aimDeg, 14, 3, 45),
+    yawDeg: clampFinite(uRaw.yawDeg, 0, -35, 35),
     loftDeltaDeg: clampFinite(uRaw.loftDeltaDeg, 0, -8, 8),
-    strikeOffset: clampFinite(uRaw.strikeOffset, 0, -0.35, 0.35),
+    strikeOffsetX: clampFinite(uRaw.strikeOffsetX, 0, -0.35, 0.35),
+    strikeOffsetY: clampFinite(uRaw.strikeOffsetY, 0, -0.35, 0.35),
+    clubPathBias: clampFinite(uRaw.clubPathBias, 0, -12, 12),
+    faceAngleBias: clampFinite(uRaw.faceAngleBias, 0, -12, 12),
     windX: clampFinite(uRaw.windX, 0, p.windMin, p.windMax),
+    windZ: clampFinite(uRaw.windZ, 0, p.windMin, p.windMax),
+    manualBallSpeedMps: Number.isFinite(uRaw.manualBallSpeedMps)
+      ? clamp(uRaw.manualBallSpeedMps, 5, 112)
+      : null,
+    manualBackspinRpm: Number.isFinite(uRaw.manualBackspinRpm)
+      ? clamp(uRaw.manualBackspinRpm, 1200, 7200)
+      : null,
+    manualSideSpinRpm: Number.isFinite(uRaw.manualSideSpinRpm)
+      ? clamp(uRaw.manualSideSpinRpm, -4000, 4000)
+      : null,
   };
 
-  const next = { ...state };
+  const next = createInitialState(state);
   next.didImpact = false;
 
   if (u.initiateSwing && (next.phase === "address" || next.phase === "rest")) {
@@ -162,7 +282,7 @@ export function stepSwingModel(state, controls = {}, params = {}, dt = 1 / 60) {
     next.omegaTorso = 0;
     next.omegaArm = 0;
     next.omegaClub = 0;
-    next.impactQuality = clamp(1 - Math.abs(u.strikeOffset) * 1.8, 0.25, 1);
+    next.impactQuality = clamp(1 - (Math.abs(u.strikeOffsetX) + Math.abs(u.strikeOffsetY)) * 1.2, 0.25, 1);
   }
 
   if (next.phase === "downswing") {
@@ -183,11 +303,9 @@ export function stepSwingModel(state, controls = {}, params = {}, dt = 1 / 60) {
       (tauTorso - p.torsoDamping * next.omegaTorso - p.torsoStiffness * (next.thetaTorso - targets.torso)) /
       p.torsoInertia;
     const dOmegaArm =
-      (tauArm - p.armDamping * next.omegaArm - p.armStiffness * (next.thetaArm - targets.arm)) /
-      p.armInertia;
+      (tauArm - p.armDamping * next.omegaArm - p.armStiffness * (next.thetaArm - targets.arm)) / p.armInertia;
     const dOmegaClub =
-      (tauClub - p.clubDamping * next.omegaClub - p.clubStiffness * (next.thetaClub - targets.club)) /
-      p.clubInertia;
+      (tauClub - p.clubDamping * next.omegaClub - p.clubStiffness * (next.thetaClub - targets.club)) / p.clubInertia;
 
     next.omegaTorso += dOmegaTorso * safeDt;
     next.omegaArm += dOmegaArm * safeDt;
@@ -205,65 +323,50 @@ export function stepSwingModel(state, controls = {}, params = {}, dt = 1 / 60) {
     const impactReached = next.swingTime >= impactTime || (next.thetaClub > -0.16 && next.omegaClub > 0);
 
     if (impactReached) {
-      const smash = clamp(
-        p.smashMin + (p.smashMax - p.smashMin) * (0.48 + 0.52 * u.powerNorm) - Math.abs(u.strikeOffset) * 0.14,
-        p.smashMin,
-        p.smashMax
-      );
-      const ballSpeed = clamp(smash * next.clubHeadSpeed, 15, 110);
-      const dynamicLoftDeg =
-        p.loftBaseDeg + u.loftDeltaDeg + p.attackLoftCoupling * next.attackAngleDeg - Math.abs(u.strikeOffset) * 2.4;
-      const launchDeg = clamp(
-        u.aimDeg + 0.22 * next.attackAngleDeg + 0.5 * dynamicLoftDeg - p.strikeLaunchPenalty * u.strikeOffset,
-        4,
-        44
-      );
-      const spinRpm = clamp(
-        p.spinBase + (dynamicLoftDeg - next.attackAngleDeg) * p.spinLoftGain + u.strikeOffset * p.strikeSpinGain,
-        p.spinMin,
-        p.spinMax
-      );
-      const launchRad = launchDeg * DEG_TO_RAD;
-
-      next.ballVx = ballSpeed * Math.cos(launchRad);
-      next.ballVy = -ballSpeed * Math.sin(launchRad);
-      next.ballMoving = true;
-      next.phase = "flight";
-      next.didImpact = true;
-      next.dynamicLoftDeg = dynamicLoftDeg;
-      next.launchDeg = launchDeg;
-      next.spinRpm = spinRpm;
-      next.launchX = next.ballX;
-      next.apexY = next.ballY;
+      buildImpactState(next, u, p);
     }
   }
 
   if (next.phase === "flight") {
-    const speed = Math.max(0.001, Math.hypot(next.ballVx, next.ballVy));
-    const spinFactor = next.spinRpm / 3500;
+    const flight = stepFlightState(
+      createFlightState({
+        position: next.ballPos,
+        velocity: next.ballVel,
+        spinRateRpm: next.spinRateRpm,
+        spinAxisTiltDeg: next.spinAxisTiltDeg,
+        backspinRpm: next.backspinRpm,
+        sidespinRpm: next.sidespinRpm,
+        moving: next.ballMoving,
+        firstBounceDone: next.firstBounceDone,
+        launchPos: next.launchPos,
+        landingPos: next.landingPos,
+        apexHeight: next.apexHeight,
+      }),
+      {
+        wind: { x: u.windX, y: 0, z: u.windZ },
+      },
+      p,
+      safeDt,
+      DEFAULT_AERO_MODEL
+    );
 
-    const ax = u.windX - p.dragCoeff * speed * next.ballVx;
-    const ay = p.gravity - p.dragCoeff * speed * next.ballVy - p.liftCoeff * spinFactor * Math.abs(next.ballVx);
+    next.ballPos = flight.position;
+    next.ballVel = flight.velocity;
+    next.spinRateRpm = flight.spinRateRpm;
+    next.spinAxisTiltDeg = flight.spinAxisTiltDeg;
+    next.backspinRpm = flight.backspinRpm;
+    next.sidespinRpm = flight.sidespinRpm;
+    next.ballMoving = flight.moving;
+    next.firstBounceDone = flight.firstBounceDone;
+    next.launchPos = flight.launchPos;
+    next.landingPos = flight.landingPos;
+    next.carryDistance = flight.carryDistance;
+    next.totalDistance = flight.totalDistance;
+    next.offlineDistance = flight.offlineDistance;
+    next.apexHeight = flight.apexHeight;
 
-    next.ballVx += ax * safeDt;
-    next.ballVy += ay * safeDt;
-
-    next.ballX += next.ballVx * safeDt;
-    next.ballY += next.ballVy * safeDt;
-    next.apexY = Math.min(next.apexY, next.ballY);
-
-    if (next.ballY + p.ballRadius >= p.groundY) {
-      next.ballY = p.groundY - p.ballRadius;
-      next.ballVy *= -p.bounceRestitution * (0.68 + 0.32 * next.impactQuality);
-      next.ballVx *= p.rollFriction;
-
-      if (Math.abs(next.ballVy) < p.stopVy) next.ballVy = 0;
-      if (Math.abs(next.ballVx) < p.stopVx && Math.abs(next.ballVy) < p.stopVy) {
-        next.ballVx = 0;
-        next.ballVy = 0;
-        next.ballMoving = false;
-        next.phase = "rest";
-      }
+    if (!flight.moving) {
+      next.phase = "rest";
     }
   }
 
@@ -271,12 +374,30 @@ export function stepSwingModel(state, controls = {}, params = {}, dt = 1 / 60) {
     next.ballMoving = false;
   }
 
-  if (!Number.isFinite(next.ballX) || !Number.isFinite(next.ballY)) {
-    return {
-      ...createInitialState({ ballX: 110, ballY: p.groundY - p.ballRadius }),
+  const finiteValues = [
+    next.ballPos.x,
+    next.ballPos.y,
+    next.ballPos.z,
+    next.ballVel.x,
+    next.ballVel.y,
+    next.ballVel.z,
+    next.spinRateRpm,
+    next.spinAxisTiltDeg,
+    next.carryDistance,
+    next.totalDistance,
+    next.offlineDistance,
+    next.apexHeight,
+  ];
+
+  if (finiteValues.some((value) => !Number.isFinite(value))) {
+    const reset = createInitialState({
+      ballPos: { x: 0, y: p.groundY + p.ballRadius, z: 0 },
       phase: "rest",
-    };
+    });
+    updateCompatibilityFields(reset);
+    return reset;
   }
 
+  updateCompatibilityFields(next);
   return next;
 }
