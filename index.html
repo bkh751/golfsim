@@ -63,8 +63,8 @@
 
     .metric-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
+      grid-template-columns: 1fr;
+      gap: 10px;
     }
 
     .metric-card,
@@ -90,9 +90,9 @@
     }
 
     .metric-card-value {
-      font-size: 18px;
-      line-height: 26px;
-      font-weight: 700;
+      font-size: 20px;
+      line-height: 28px;
+      font-weight: 600;
       color: var(--text);
     }
 
@@ -125,7 +125,7 @@
 
     .info-row .value {
       color: var(--text);
-      font-weight: 700;
+      font-weight: 400;
     }
 
     .status-note {
@@ -326,19 +326,23 @@
       <div class="sidebar-heading">HUD (데이터)</div>
       <div class="metric-grid">
         <div class="metric-card">
-          <div class="metric-card-label"><span class="metric-icon distance">D</span>Distance</div>
-          <div id="hud-distance" class="metric-card-value">-</div>
+          <div class="metric-card-label"><span class="metric-icon distance">C</span>캐리 (Carry)</div>
+          <div id="hud-carry" class="metric-card-value">-</div>
         </div>
         <div class="metric-card">
-          <div class="metric-card-label"><span class="metric-icon wind">W</span>Wind</div>
-          <div id="hud-wind" class="metric-card-value">-</div>
+          <div class="metric-card-label"><span class="metric-icon distance">T</span>총거리 (Total)</div>
+          <div id="hud-total" class="metric-card-value">-</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label"><span class="metric-icon wind">O</span>좌우 편차 (Offline)</div>
+          <div id="hud-offline" class="metric-card-value">-</div>
         </div>
       </div>
       <section class="info-card" aria-label="Ball flight data">
-        <h2>Ball Flight Data</h2>
-        <div class="info-row"><span class="label">Side Spin</span><span id="hud-side-spin" class="value">-</span></div>
-        <div class="info-row"><span class="label">Back Spin</span><span id="hud-back-spin" class="value">-</span></div>
-        <div class="info-row"><span class="label">Ball Speed</span><span id="hud-ball-speed" class="value">-</span></div>
+        <h2>결과 패널</h2>
+        <div class="info-row"><span class="label">볼 스피드 (Ball Speed)</span><span id="hud-ball-speed" class="value">-</span></div>
+        <div class="info-row"><span class="label">백스핀 (Backspin)</span><span id="hud-back-spin" class="value">-</span></div>
+        <div class="info-row"><span class="label">사이드스핀 (Sidespin)</span><span id="hud-side-spin" class="value">-</span></div>
         <div id="hud-status" class="status-note">샷을 준비하세요</div>
       </section>
     </aside>
@@ -406,8 +410,9 @@
     const ballSpeedMphInput = document.getElementById("ball-speed-mph");
     const sideSpinInput = document.getElementById("side-spin-rpm");
     const backSpinInput = document.getElementById("back-spin-rpm");
-    const hudDistance = document.getElementById("hud-distance");
-    const hudWind = document.getElementById("hud-wind");
+    const hudCarry = document.getElementById("hud-carry");
+    const hudTotal = document.getElementById("hud-total");
+    const hudOffline = document.getElementById("hud-offline");
     const hudSideSpin = document.getElementById("hud-side-spin");
     const hudBackSpin = document.getElementById("hud-back-spin");
     const hudBallSpeed = document.getElementById("hud-ball-speed");
@@ -580,14 +585,23 @@
       return Number.isFinite(value) ? `${Math.round(value * 1.09361)}y` : "-";
     }
 
+    function formatHudStatus() {
+      if (state.model.phase === "flight") return "탄도를 관찰하세요";
+      if (state.mode === "result") return "결과를 확인하고 다음 샷을 준비하세요";
+      if (state.charging) return "스윙 강도를 조절하세요";
+      if (state.shotDone) return "샷 데이터를 수집 중입니다";
+      return "샷을 준비하세요";
+    }
+
     function updateChrome() {
       const hasShotResult = state.model.phase === "flight" || state.model.phase === "rest" || state.mode === "result";
-      const windMph = Math.round(Math.hypot(state.wind.x, state.wind.z) * 2.23694);
-      hudDistance.textContent = formatYards(hasShotResult ? state.model.totalDistance : null);
-      hudWind.textContent = `${windMph}mph ${formatWindDirection(state.wind.x, state.wind.z)}`;
-      hudSideSpin.textContent = `${formatPanelMetric(state.model.sidespinRpm, 0, hasShotResult)} rpm`;
-      hudBackSpin.textContent = `${formatPanelMetric(state.model.backspinRpm, 0, hasShotResult)} rpm`;
+      state.message = formatHudStatus();
+      hudCarry.textContent = formatYards(hasShotResult ? state.model.carryDistance : null);
+      hudTotal.textContent = formatYards(hasShotResult ? state.model.totalDistance : null);
+      hudOffline.textContent = `${formatPanelMetric(hasShotResult ? state.model.offlineDistance : null, 1, hasShotResult)} m`;
       hudBallSpeed.textContent = `${formatPanelMetric(mpsToMph(state.model.ballSpeed), 0, hasShotResult)} mph`;
+      hudBackSpin.textContent = `${formatPanelMetric(state.model.backspinRpm, 0, hasShotResult)} rpm`;
+      hudSideSpin.textContent = `${formatPanelMetric(state.model.sidespinRpm, 0, hasShotResult)} rpm`;
       hudStatus.textContent = state.message;
       aimDirectionInput.value = String(Math.round(state.yawDeg));
       aimDirectionValue.textContent = `${Math.round(state.yawDeg)}°`;
@@ -816,7 +830,7 @@
     function beginLaunchCharge() {
       if (state.mode !== "ready" || state.shotDone || state.charging || state.ball.moving) return;
       state.charging = true;
-      state.message = "샷을 준비하세요";
+      state.message = "스윙 강도를 조절하세요";
       updateChrome();
     }
 
@@ -865,7 +879,7 @@
       state.charging = false;
       state.shotDone = true;
       state.totalShots += 1;
-      state.message = "샷을 준비하세요";
+      state.message = "샷 데이터를 수집 중입니다";
     }
 
     function evaluateLanding() {
@@ -878,16 +892,15 @@
         miss: dist,
       };
       let points = 0;
-
       if (dist < 1.6) {
         points = 100 + qualityBonus;
-        state.message = "샷 결과";
+        state.message = "결과를 확인하고 다음 샷을 준비하세요";
       } else if (dist < 6) {
         points = 46 + qualityBonus;
-        state.message = "샷 결과";
+        state.message = "결과를 확인하고 다음 샷을 준비하세요";
       } else if (dist < 12) {
         points = 22 + qualityBonus;
-        state.message = "샷 결과";
+        state.message = "결과를 확인하고 다음 샷을 준비하세요";
       } else {
         points = 6 + qualityBonus;
         state.message = "다음 샷을 준비하세요";
@@ -939,7 +952,7 @@
 
       if (previousPhase !== state.model.phase) {
         if (state.model.phase === "flight") {
-          state.message = "샷 추적 중";
+          state.message = "탄도를 관찰하세요";
           spawnImpactEffect();
         }
         if (state.model.phase === "rest" && state.mode !== "result") {

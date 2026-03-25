@@ -38,4 +38,6 @@ Primary files to inspect first:
 - aero-model.js
 - metrics-agent.js
 - fitting-agent.js
+Follow AGENTS.md for repo policy.
+You do not commit changes yourself, but any suggested commit boundary should follow skills/git-commit-team-ko.
 """

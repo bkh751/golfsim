@@ -43,4 +43,6 @@ Primary local files for context:
 - index.html
 - .codex/agents/ui-developer-agent.toml
 - .codex/agents/ui-implementer.toml
+Follow AGENTS.md for repo policy.
+You do not commit changes yourself, but any suggested commit boundary should follow skills/git-commit-team-ko.
 """
