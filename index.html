@@ -63,8 +63,8 @@
 
     .metric-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
+      grid-template-columns: 1fr;
+      gap: 10px;
     }
 
     .metric-card,
@@ -90,9 +90,9 @@
     }
 
     .metric-card-value {
-      font-size: 18px;
-      line-height: 26px;
-      font-weight: 700;
+      font-size: 20px;
+      line-height: 28px;
+      font-weight: 600;
       color: var(--text);
     }
 
@@ -125,7 +125,7 @@
 
     .info-row .value {
       color: var(--text);
-      font-weight: 700;
+      font-weight: 400;
     }
 
     .status-note {
@@ -366,20 +366,23 @@
       <div class="sidebar-heading">SESSION HUD</div>
       <div class="metric-grid">
         <div class="metric-card">
-          <div class="metric-card-label"><span class="metric-icon distance">S</span>Shots</div>
-          <div id="hud-shots" class="metric-card-value">0</div>
+          <div class="metric-card-label"><span class="metric-icon distance">C</span>캐리 (Carry)</div>
+          <div id="hud-carry" class="metric-card-value">-</div>
         </div>
         <div class="metric-card">
-          <div class="metric-card-label"><span class="metric-icon wind">W</span>Wind</div>
-          <div id="hud-wind" class="metric-card-value">-</div>
+          <div class="metric-card-label"><span class="metric-icon distance">T</span>총거리 (Total)</div>
+          <div id="hud-total" class="metric-card-value">-</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label"><span class="metric-icon wind">O</span>좌우 편차 (Offline)</div>
+          <div id="hud-offline" class="metric-card-value">-</div>
         </div>
       </div>
-      <section class="info-card" aria-label="Latest shot data">
-        <h2>Latest Shot</h2>
-        <div class="info-row"><span class="label">Carry</span><span id="hud-carry" class="value">-</span></div>
-        <div class="info-row"><span class="label">Total</span><span id="hud-total" class="value">-</span></div>
-        <div class="info-row"><span class="label">Curve</span><span id="hud-curve" class="value">-</span></div>
-        <div class="info-row"><span class="label">Apex</span><span id="hud-apex" class="value">-</span></div>
+      <section class="info-card" aria-label="Ball flight data">
+        <h2>결과 패널</h2>
+        <div class="info-row"><span class="label">볼 스피드 (Ball Speed)</span><span id="hud-ball-speed" class="value">-</span></div>
+        <div class="info-row"><span class="label">백스핀 (Backspin)</span><span id="hud-back-spin" class="value">-</span></div>
+        <div class="info-row"><span class="label">사이드스핀 (Sidespin)</span><span id="hud-side-spin" class="value">-</span></div>
         <div id="hud-status" class="status-note">샷을 준비하세요</div>
       </section>
     </aside>
@@ -465,12 +468,12 @@
     const ballSpeedMphInput = document.getElementById("ball-speed-mph");
     const sideSpinInput = document.getElementById("side-spin-rpm");
     const backSpinInput = document.getElementById("back-spin-rpm");
-    const hudShots = document.getElementById("hud-shots");
-    const hudWind = document.getElementById("hud-wind");
     const hudCarry = document.getElementById("hud-carry");
     const hudTotal = document.getElementById("hud-total");
-    const hudCurve = document.getElementById("hud-curve");
-    const hudApex = document.getElementById("hud-apex");
+    const hudOffline = document.getElementById("hud-offline");
+    const hudSideSpin = document.getElementById("hud-side-spin");
+    const hudBackSpin = document.getElementById("hud-back-spin");
+    const hudBallSpeed = document.getElementById("hud-ball-speed");
     const hudStatus = document.getElementById("hud-status");
     const sessionState = document.getElementById("session-state");
     const sessionCount = document.getElementById("session-count");
@@ -655,15 +658,23 @@
       }
     }
 
+    function formatHudStatus() {
+      if (state.mode === "auto_reset_pending") return state.message;
+      if (state.mode === "rollout") return "런아웃 추적 중";
+      if (state.mode === "in_flight" || state.mode === "launching") return "탄도를 관찰하세요";
+      if (state.mode === "shot_primed" || state.charging) return "스윙 강도를 조절하세요";
+      return "샷을 준비하세요";
+    }
+
     function updateChrome() {
       const hasShotResult = Boolean(state.lastShotMetrics);
-      const windMph = Math.round(Math.hypot(state.wind.x, state.wind.z) * 2.23694);
-      hudShots.textContent = `${state.totalShots}`;
-      hudWind.textContent = `${windMph}mph ${formatWindDirection(state.wind.x, state.wind.z)}`;
+      state.message = formatHudStatus();
       hudCarry.textContent = hasShotResult ? formatYards(state.lastShotMetrics.carry) : "-";
       hudTotal.textContent = hasShotResult ? formatYards(state.lastShotMetrics.total) : "-";
-      hudCurve.textContent = hasShotResult ? formatSignedYards(state.lastShotMetrics.offline) : "-";
-      hudApex.textContent = hasShotResult ? `${formatPanelMetric(state.lastShotMetrics.apex, 1, true)} m` : "-";
+      hudOffline.textContent = hasShotResult ? formatSignedYards(state.lastShotMetrics.offline) : "-";
+      hudBallSpeed.textContent = hasShotResult ? `${formatPanelMetric(mpsToMph(state.lastShotMetrics.ballSpeed), 0, true)} mph` : "-";
+      hudBackSpin.textContent = hasShotResult ? `${formatPanelMetric(state.lastShotMetrics.backspin, 0, true)} rpm` : "-";
+      hudSideSpin.textContent = hasShotResult ? `${formatPanelMetric(state.lastShotMetrics.sidespin, 0, true)} rpm` : "-";
       hudStatus.textContent = state.message;
       aimDirectionInput.value = String(Math.round(state.yawDeg));
       aimDirectionValue.textContent = `${Math.round(state.yawDeg)}°`;
