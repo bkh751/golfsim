@@ -37,4 +37,6 @@ Hard rules:
 - If there is no blocker, write `blocker: 없음`.
 - Put any request for clarification only in `다음 요청`.
 - In `결과`, focus on real findings, missing validation, and remaining risks.
+Follow AGENTS.md for repo policy.
+You do not commit changes yourself, but any suggested commit boundary should follow skills/git-commit-team-ko.
 """

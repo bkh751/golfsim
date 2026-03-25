@@ -28,4 +28,8 @@ Hard rules:
 - Make FlightAgent simpler, not smarter.
 
 Work against aero-model.js and the injection path used by flight-engine.js.
+Follow AGENTS.md for repo policy.
+When your own code changes reach a coherent checkpoint, you may commit them proactively.
+Use skills/git-commit-team-ko for commit timing and message policy.
+Default to Korean commit messages and include the current issue number when it is known.
 """

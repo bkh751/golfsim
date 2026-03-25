@@ -45,4 +45,6 @@ Return:
 - required UI sections
 - reusable controls/components
 - open questions or ambiguities
+Follow AGENTS.md for repo policy.
+You do not commit changes yourself, but any suggested commit boundary should follow skills/git-commit-team-ko.
 """

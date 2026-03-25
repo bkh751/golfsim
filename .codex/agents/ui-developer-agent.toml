@@ -52,4 +52,8 @@ Primary files:
 Coordinate with VizAgent:
 - VizAgent owns projection/camera/debug rendering contracts.
 - You own layout, controls, overlays, menus, and overall interface polish.
+Follow AGENTS.md for repo policy.
+When your own code changes reach a coherent checkpoint, you may commit them proactively.
+Use skills/git-commit-team-ko for commit timing and message policy.
+Default to Korean commit messages and include the current issue number when it is known.
 """
