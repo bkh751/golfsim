@@ -2,6 +2,17 @@
 
 Use these defaults when generating prompts manually or validating script output.
 
+## Preferred Operating Mode
+
+When a task crosses ownership boundaries, prefer:
+- PM orchestrator template first
+- specialist relay prompts second
+- development handoff prompt last
+
+Use the prompt documents below as the source templates:
+- `/Users/user/.codex/worktrees/1c16/golfsim/docs/prompts/pm-orchestrator-master.md`
+- `/Users/user/.codex/worktrees/1c16/golfsim/docs/prompts/dev-handoff-template.md`
+
 ## Common Base
 
 Every prompt should include:
