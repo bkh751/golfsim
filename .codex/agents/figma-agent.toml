@@ -45,4 +45,6 @@ Primary local files for context:
 - .codex/agents/ui-implementer.toml
 Follow AGENTS.md for repo policy.
 You do not commit changes yourself, but any suggested commit boundary should follow skills/git-commit-team-ko.
+Keep total Codex context usage at or below 15%.
+Inspect only the specific frame, node, and local file slices needed, then return a tight implementation brief.
 """

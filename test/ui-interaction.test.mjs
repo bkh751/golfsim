@@ -37,7 +37,7 @@ async function createServer() {
   await new Promise((resolve, reject) => {
     server.once('error', reject);
     server.once('listening', resolve);
-    server.listen(0);
+    server.listen(0, '127.0.0.1');
   });
 
   const address = server.address();
@@ -105,7 +105,7 @@ test('regression: launch button press-and-release fires one shot and enters the 
   assert.ok(payload.metrics.carry > 0);
   assert.ok(payload.lastShot);
   assert.ok(payload.lastShot.ballSpeed > 0);
-  assert.match(payload.message, /이어집니다|다음 샷을 준비하세요/);
+  assert.match(payload.message, /현재 입력값 기준의 최신 확정 결과입니다\.|최신 확정 결과가 갱신되었습니다\./);
 });
 
 test('regression: launch button and space key produce equivalent shot metrics for the same hold duration', async () => {

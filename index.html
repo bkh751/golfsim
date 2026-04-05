@@ -90,9 +90,9 @@
     }
 
     .metric-card-value {
-      font-size: 20px;
-      line-height: 28px;
-      font-weight: 600;
+      font-size: 22px;
+      line-height: 30px;
+      font-weight: 700;
       color: var(--text);
     }
 
@@ -107,6 +107,13 @@
       line-height: 27px;
       font-weight: 700;
       color: var(--text);
+    }
+
+    .section-note {
+      margin: -4px 0 12px;
+      font-size: 12px;
+      line-height: 17px;
+      color: var(--muted);
     }
 
     .info-row {
@@ -192,9 +199,7 @@
       font-size: 15px;
       line-height: 20px;
       font-weight: 700;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: normal;
     }
 
     #game-viewport {
@@ -294,6 +299,13 @@
       gap: 10px;
     }
 
+    .button-note {
+      margin: 2px 0 0;
+      font-size: 12px;
+      line-height: 17px;
+      color: var(--muted);
+    }
+
     #reset-btn {
       width: 100%;
       height: 50px;
@@ -363,7 +375,8 @@
 <body>
   <div id="game-shell">
     <aside id="hud-panel" class="sidebar" aria-label="HUD panel">
-      <div class="sidebar-heading">SESSION HUD</div>
+      <div class="sidebar-heading">2. 최신 확정 결과</div>
+      <p class="section-note">먼저 캐리, 총거리, 좌우 편차를 확인하세요.</p>
       <div class="metric-grid">
         <div class="metric-card">
           <div class="metric-card-label"><span class="metric-icon distance">C</span>캐리 (Carry)</div>
@@ -378,33 +391,35 @@
           <div id="hud-offline" class="metric-card-value">-</div>
         </div>
       </div>
-      <section class="info-card" aria-label="Ball flight data">
-        <h2>결과 패널</h2>
+      <p id="hud-context" class="section-note">이 패널은 최신 확정 결과를 보여줍니다.</p>
+      <section class="info-card" aria-label="보조 비행 지표">
+        <h2>보조 지표</h2>
+        <p class="section-note">핵심 결과를 해석할 때 볼 스피드와 스핀을 함께 참고하세요.</p>
         <div class="info-row"><span class="label">볼 스피드 (Ball Speed)</span><span id="hud-ball-speed" class="value">-</span></div>
         <div class="info-row"><span class="label">백스핀 (Backspin)</span><span id="hud-back-spin" class="value">-</span></div>
         <div class="info-row"><span class="label">사이드스핀 (Sidespin)</span><span id="hud-side-spin" class="value">-</span></div>
-        <div id="hud-status" class="status-note">샷을 준비하세요</div>
+        <div id="hud-status" class="status-note">현재 입력값을 확인한 뒤 실행하세요</div>
       </section>
     </aside>
 
     <main id="game-stage" aria-label="Game view">
-      <div class="game-stage-header">Range Session View</div>
+      <div class="game-stage-header">1. 현재 입력값 확인과 비행 추적</div>
       <div class="session-ribbon" aria-label="Session ribbon">
         <div class="session-pill">
-          <span class="session-pill-label">Session State</span>
-          <span id="session-state" class="session-pill-value">Ready</span>
+          <span id="session-state-label" class="session-pill-label">현재 상태</span>
+          <span id="session-state" class="session-pill-value">실행 준비</span>
         </div>
         <div class="session-pill">
-          <span class="session-pill-label">Current Shot</span>
-          <span id="session-count" class="session-pill-value">Shot 0</span>
+          <span class="session-pill-label">현재 방향 입력값</span>
+          <span id="session-count" class="session-pill-value">탄도 15° · 방향 0°</span>
         </div>
         <div class="session-pill">
-          <span class="session-pill-label">Last Result</span>
-          <span id="session-last" class="session-pill-value">대기 중</span>
+          <span class="session-pill-label">현재 볼 입력값</span>
+          <span id="session-last" class="session-pill-value">볼 150 mph · 백스핀 2500 rpm · 사이드스핀 500 rpm</span>
         </div>
         <div class="session-pill">
-          <span class="session-pill-label">Best Carry</span>
-          <span id="session-best" class="session-pill-value">-</span>
+          <span id="session-best-label" class="session-pill-label">최신 결과 기준</span>
+          <span id="session-best" class="session-pill-value">비교 기준 없음</span>
         </div>
       </div>
       <div id="game-viewport">
@@ -413,38 +428,40 @@
     </main>
 
     <aside class="sidebar" aria-label="Control panel">
-      <div class="sidebar-heading">Ball Control</div>
+      <div class="sidebar-heading">3. 현재 입력값 조정</div>
+      <p id="input-context" class="section-note">지금 조정한 값은 다음 실행에 반영됩니다.</p>
       <section class="control-card" aria-label="Aim controls">
-        <h2>Aim Direction</h2>
+        <h2 id="aim-input-heading">현재 방향 입력값</h2>
         <input id="aim-direction" class="aim-range" type="range" min="-24" max="24" step="1" value="0" aria-label="Aim direction">
         <div class="aim-scale">
-          <span>&larr; Left</span>
+          <span>&larr; 왼쪽</span>
           <strong id="aim-direction-value">0°</strong>
-          <span>Right &rarr;</span>
+          <span>오른쪽 &rarr;</span>
         </div>
       </section>
       <section id="control-panel" aria-label="Manual launch controls">
         <div class="control-card">
-          <h2>Ball Parameters</h2>
+          <h2 id="ball-input-heading">현재 볼 입력값</h2>
           <div class="control-row">
-            <label for="side-spin-rpm">Side Spin (rpm)</label>
-            <input id="side-spin-rpm" type="number" min="-4000" max="4000" step="50" value="500" placeholder="Auto">
+            <label for="side-spin-rpm">사이드스핀 (rpm)</label>
+            <input id="side-spin-rpm" type="number" min="-4000" max="4000" step="50" value="500" placeholder="자동">
           </div>
           <div class="control-row">
-            <label for="back-spin-rpm">Back Spin (rpm)</label>
-            <input id="back-spin-rpm" type="number" min="1200" max="7200" step="50" value="2500" placeholder="Auto">
+            <label for="back-spin-rpm">백스핀 (rpm)</label>
+            <input id="back-spin-rpm" type="number" min="1200" max="7200" step="50" value="2500" placeholder="자동">
           </div>
           <div class="control-row">
-            <label for="ball-speed-mph">Ball Speed (mph)</label>
+            <label for="ball-speed-mph">볼 스피드 (mph)</label>
             <input id="ball-speed-mph" type="number" min="0" max="250" step="1" value="150" placeholder="mph">
           </div>
         </div>
       </section>
       <div class="button-stack">
-        <button id="start-btn" type="button">HOLD TO SWING</button>
-        <button id="reset-btn" type="button">NEW SESSION</button>
+        <button id="start-btn" type="button">길게 눌러 실행</button>
+        <button id="reset-btn" type="button">실험 조건 초기화</button>
       </div>
-      <div class="sr-only">Side Spin (rpm) Back Spin (rpm) Ball Speed (mph) HUD (데이터) Ball Flight View Ball Control Aim Direction Ball Parameters</div>
+      <p id="button-note" class="button-note">지금 실행하면 현재 입력값으로 실행합니다.</p>
+      <div class="sr-only">사이드스핀 백스핀 볼 스피드 비행 결과 입력값 조정 방향 입력값 볼 입력값</div>
     </aside>
   </div>
 
@@ -463,6 +480,9 @@
     const startBtn = document.getElementById("start-btn");
     const resetBtn = document.getElementById("reset-btn");
     const controlPanel = document.getElementById("control-panel");
+    const inputContext = document.getElementById("input-context");
+    const aimInputHeading = document.getElementById("aim-input-heading");
+    const ballInputHeading = document.getElementById("ball-input-heading");
     const aimDirectionInput = document.getElementById("aim-direction");
     const aimDirectionValue = document.getElementById("aim-direction-value");
     const ballSpeedMphInput = document.getElementById("ball-speed-mph");
@@ -474,10 +494,14 @@
     const hudSideSpin = document.getElementById("hud-side-spin");
     const hudBackSpin = document.getElementById("hud-back-spin");
     const hudBallSpeed = document.getElementById("hud-ball-speed");
+    const hudContext = document.getElementById("hud-context");
     const hudStatus = document.getElementById("hud-status");
+    const buttonNote = document.getElementById("button-note");
+    const sessionStateLabel = document.getElementById("session-state-label");
     const sessionState = document.getElementById("session-state");
     const sessionCount = document.getElementById("session-count");
     const sessionLast = document.getElementById("session-last");
+    const sessionBestLabel = document.getElementById("session-best-label");
     const sessionBest = document.getElementById("session-best");
 
     const MODEL_PARAMS = {
@@ -503,7 +527,7 @@
       charge: 0.24,
       aimDeg: 15,
       yawDeg: 0,
-      message: "샷을 준비하세요",
+      message: "현재 입력값을 확인한 뒤 실행하세요",
       wind: { x: 0, z: 0 },
       ball: {
         position: { ...WORLD.teePos },
@@ -524,6 +548,7 @@
       trajectorySamples: [],
       previewSamples: [],
       lastShotMetrics: null,
+      lastCommittedInputs: null,
       manualLaunch: {
         ballSpeedMps: null,
         backspinRpm: null,
@@ -644,30 +669,166 @@
     function describeMode(mode) {
       switch (mode) {
         case "shot_primed":
-          return "Primed";
+          return "입력 강도 조정 중";
         case "launching":
-          return "Launching";
+          return "실행 중";
         case "in_flight":
-          return "In Flight";
+          return "비행 결과 확인 중";
         case "rollout":
-          return "Rollout";
+          return "지면 구간 확인 중";
         case "auto_reset_pending":
-          return "Looping";
+          return "결과 정리 중";
         default:
-          return "Ready";
+          return "실행 준비";
       }
+    }
+
+    function formatBallInputSummary() {
+      const ballSpeedText = state.manualLaunch.ballSpeedMps == null
+        ? "볼 속도 자동"
+        : `볼 ${formatPanelMetric(mpsToMph(state.manualLaunch.ballSpeedMps), 0, true)} mph`;
+      const backspinText = state.manualLaunch.backspinRpm == null
+        ? "백스핀 자동"
+        : `백스핀 ${formatPanelMetric(state.manualLaunch.backspinRpm, 0, true)} rpm`;
+      const sidespinText = state.manualLaunch.sideSpinRpm == null
+        ? "사이드스핀 자동"
+        : `사이드스핀 ${formatPanelMetric(state.manualLaunch.sideSpinRpm, 0, true)} rpm`;
+      return `${ballSpeedText} · ${backspinText} · ${sidespinText}`;
+    }
+
+    function formatRecentFlightSummary() {
+      if (!state.lastShotMetrics) return "실행 전 결과 없음";
+      return `캐리 ${formatYards(state.lastShotMetrics.carry)} · 총거리 ${formatYards(state.lastShotMetrics.total)} · 편차 ${formatSignedYards(state.lastShotMetrics.offline)}`;
+    }
+
+    function snapshotCurrentInputs() {
+      return {
+        aimDeg: Number(state.aimDeg.toFixed(2)),
+        yawDeg: Number(state.yawDeg.toFixed(2)),
+        ballSpeedMps: state.manualLaunch.ballSpeedMps == null ? null : Number(state.manualLaunch.ballSpeedMps.toFixed(2)),
+        backspinRpm: state.manualLaunch.backspinRpm == null ? null : Number(state.manualLaunch.backspinRpm.toFixed(0)),
+        sideSpinRpm: state.manualLaunch.sideSpinRpm == null ? null : Number(state.manualLaunch.sideSpinRpm.toFixed(0)),
+      };
+    }
+
+    function sameNullableNumber(a, b, epsilon = 0.01) {
+      if (a == null && b == null) return true;
+      if (a == null || b == null) return false;
+      return Math.abs(a - b) <= epsilon;
+    }
+
+    function hasPendingInputChanges() {
+      if (!state.lastShotMetrics || !state.lastCommittedInputs) return false;
+      const current = snapshotCurrentInputs();
+      return !(
+        sameNullableNumber(current.aimDeg, state.lastCommittedInputs.aimDeg) &&
+        sameNullableNumber(current.yawDeg, state.lastCommittedInputs.yawDeg) &&
+        sameNullableNumber(current.ballSpeedMps, state.lastCommittedInputs.ballSpeedMps) &&
+        sameNullableNumber(current.backspinRpm, state.lastCommittedInputs.backspinRpm, 0.5) &&
+        sameNullableNumber(current.sideSpinRpm, state.lastCommittedInputs.sideSpinRpm, 0.5)
+      );
+    }
+
+    function getChangedInputKeys() {
+      if (!state.lastShotMetrics || !state.lastCommittedInputs) return [];
+      const current = snapshotCurrentInputs();
+      const changedKeys = [];
+      if (!sameNullableNumber(current.aimDeg, state.lastCommittedInputs.aimDeg)) changedKeys.push("aimDeg");
+      if (!sameNullableNumber(current.yawDeg, state.lastCommittedInputs.yawDeg)) changedKeys.push("yawDeg");
+      if (!sameNullableNumber(current.ballSpeedMps, state.lastCommittedInputs.ballSpeedMps)) changedKeys.push("ballSpeedMps");
+      if (!sameNullableNumber(current.backspinRpm, state.lastCommittedInputs.backspinRpm, 0.5)) changedKeys.push("backspinRpm");
+      if (!sameNullableNumber(current.sideSpinRpm, state.lastCommittedInputs.sideSpinRpm, 0.5)) changedKeys.push("sideSpinRpm");
+      return changedKeys;
+    }
+
+    function formatChangedInputSummary(changedKeys) {
+      if (!changedKeys.length) {
+        if (state.lastShotMetrics && state.lastCommittedInputs) {
+          return "현재 입력값이 직전 확정 실행 기준과 일치합니다.";
+        }
+        if (!state.lastShotMetrics && !state.lastCommittedInputs) {
+          return "현재 방향 입력값은 기본값이고, 현재 볼 입력값은 입력창 값이 적용됩니다.";
+        }
+        return "지금 조정한 값은 다음 실행에 반영됩니다.";
+      }
+      const labels = changedKeys.map((key) => {
+        switch (key) {
+          case "aimDeg":
+            return "탄도";
+          case "yawDeg":
+            return "방향";
+          case "ballSpeedMps":
+            return "볼 스피드";
+          case "backspinRpm":
+            return "백스핀";
+          case "sideSpinRpm":
+            return "사이드스핀";
+          default:
+            return key;
+        }
+      });
+      return `현재 입력값 중 직전 확정 실행과 다른 항목: ${labels.join(", ")}`;
+    }
+
+    function formatInputHeading(baseLabel, changedKeys, keysInGroup) {
+      const hasGroupChange = changedKeys.some((key) => keysInGroup.includes(key));
+      return hasGroupChange ? `${baseLabel} (변경됨)` : baseLabel;
+    }
+
+    function currentResultReferenceKind() {
+      if (!state.lastShotMetrics) return "none";
+      if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") return "previous";
+      if (hasPendingInputChanges()) return "previous";
+      return "latest";
+    }
+
+    function formatResultReferenceLabel() {
+      const kind = currentResultReferenceKind();
+      if (kind === "none") return "비교 기준 없음";
+      if (kind === "latest") return "현재 입력값과 같은 기준";
+      return "직전 실행 기준";
+    }
+
+    function formatCurrentStateSummary() {
+      if (state.mode === "shot_primed" || state.charging) return "입력 강도 조정 중";
+      if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") return "새 결과 계산 중";
+      if (hasPendingInputChanges()) return "입력값 수정됨";
+      if (state.mode === "auto_reset_pending") return "새 기준 확정";
+      if (state.lastShotMetrics) return "기준과 일치";
+      return "실행 준비";
+    }
+
+    function formatResultStatusNote() {
+      const kind = currentResultReferenceKind();
+      if (kind === "none") {
+        if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") {
+          return "새 결과를 계산하고 있습니다.";
+        }
+        return "최신 확정 결과와 비교 기준이 아직 없습니다.";
+      }
+      if (kind === "latest") return "현재 입력값 기준의 최신 확정 결과입니다.";
+      if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") {
+        return "새 결과를 계산 중이며, 이 패널은 직전 실행의 최신 확정 결과를 유지합니다.";
+      }
+      return "현재 입력값은 바뀌었고, 이 패널은 직전 실행의 최신 확정 결과를 보여줍니다.";
+    }
+
+    function formatNextActionHint() {
+      if (state.mode === "shot_primed" || state.charging) return "입력 강도를 조정한 뒤 실행";
+      if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") return "새 결과를 계산 중입니다.";
+      if (hasPendingInputChanges()) return "지금 실행하면 변경된 입력을 반영해 다시 실행합니다.";
+      if (state.lastShotMetrics) return "지금 실행하면 동일 조건으로 다시 실행합니다.";
+      return "지금 실행하면 현재 입력값으로 실행합니다.";
     }
 
     function formatHudStatus() {
       if (state.mode === "auto_reset_pending") return state.message;
-      if (state.mode === "rollout") return "런아웃 추적 중";
-      if (state.mode === "in_flight" || state.mode === "launching") return "탄도를 관찰하세요";
-      if (state.mode === "shot_primed" || state.charging) return "스윙 강도를 조절하세요";
-      return "샷을 준비하세요";
+      return formatResultStatusNote();
     }
 
     function updateChrome() {
       const hasShotResult = Boolean(state.lastShotMetrics);
+      const changedInputKeys = getChangedInputKeys();
       state.message = formatHudStatus();
       hudCarry.textContent = hasShotResult ? formatYards(state.lastShotMetrics.carry) : "-";
       hudTotal.textContent = hasShotResult ? formatYards(state.lastShotMetrics.total) : "-";
@@ -675,13 +836,20 @@
       hudBallSpeed.textContent = hasShotResult ? `${formatPanelMetric(mpsToMph(state.lastShotMetrics.ballSpeed), 0, true)} mph` : "-";
       hudBackSpin.textContent = hasShotResult ? `${formatPanelMetric(state.lastShotMetrics.backspin, 0, true)} rpm` : "-";
       hudSideSpin.textContent = hasShotResult ? `${formatPanelMetric(state.lastShotMetrics.sidespin, 0, true)} rpm` : "-";
+      hudContext.textContent = "이 패널은 최신 확정 결과를 보여줍니다.";
       hudStatus.textContent = state.message;
+      buttonNote.textContent = formatNextActionHint();
+      sessionStateLabel.textContent = "현재 상태";
+      sessionBestLabel.textContent = "최신 결과 기준";
+      inputContext.textContent = formatChangedInputSummary(changedInputKeys);
+      aimInputHeading.textContent = formatInputHeading("현재 방향 입력값", changedInputKeys, ["aimDeg", "yawDeg"]);
+      ballInputHeading.textContent = formatInputHeading("현재 볼 입력값", changedInputKeys, ["ballSpeedMps", "backspinRpm", "sideSpinRpm"]);
       aimDirectionInput.value = String(Math.round(state.yawDeg));
       aimDirectionValue.textContent = `${Math.round(state.yawDeg)}°`;
-      sessionState.textContent = describeMode(state.mode);
-      sessionCount.textContent = `Shot ${state.totalShots + (state.mode === "session_ready" ? 1 : 0)}`;
-      sessionLast.textContent = hasShotResult ? `${formatYards(state.lastShotMetrics.total)} / ${formatSignedYards(state.lastShotMetrics.offline)}` : "대기 중";
-      sessionBest.textContent = state.sessionBestCarry > 0 ? formatYards(state.sessionBestCarry) : "-";
+      sessionState.textContent = formatCurrentStateSummary();
+      sessionCount.textContent = `탄도 ${Math.round(state.aimDeg)}° · 방향 ${Math.round(state.yawDeg)}°`;
+      sessionLast.textContent = formatBallInputSummary();
+      sessionBest.textContent = formatResultReferenceLabel();
     }
 
     function applyManualInputs() {
@@ -870,7 +1038,7 @@
       return simulatePreview(estimateShotProfile(currentState), currentState);
     }
 
-    function prepareShotLoop(message = "다음 샷을 준비하세요") {
+    function prepareShotLoop(message = "핵심 결과를 확인한 뒤 입력값을 조정해 다시 실행하세요") {
       state.mode = "session_ready";
       state.charging = false;
       state.charge = 0.24;
@@ -903,18 +1071,19 @@
       state.sessionDistanceTotal = 0;
       state.sessionBestCarry = 0;
       state.lastShotMetrics = null;
+      state.lastCommittedInputs = null;
       state.wind = {
         x: (Math.random() * 2 - 1) * 7.5,
         z: (Math.random() * 2 - 1) * 6,
       };
-      prepareShotLoop("샷을 준비하세요");
+      prepareShotLoop("현재 입력값을 확인한 뒤 실행하세요");
     }
 
     function beginLaunchCharge() {
       if (state.mode !== "session_ready" || state.charging || state.ball.moving) return;
       state.charging = true;
       state.mode = "shot_primed";
-      state.message = "스윙 강도를 조절하세요";
+      state.message = "입력 강도를 조정하고 있습니다";
       updateChrome();
     }
 
@@ -960,10 +1129,11 @@
         manualBackspinRpm: state.manualLaunch.backspinRpm,
         manualSideSpinRpm: state.manualLaunch.sideSpinRpm,
       };
+      state.lastCommittedInputs = snapshotCurrentInputs();
       state.charging = false;
       state.mode = "launching";
       state.totalShots += 1;
-      state.message = "샷 시작";
+      state.message = "입력값으로 시뮬레이션을 실행하고 있습니다";
     }
 
     function finalizeShotLoop() {
@@ -980,7 +1150,7 @@
       state.sessionBestCarry = Math.max(state.sessionBestCarry, state.model.carryDistance);
       state.mode = "auto_reset_pending";
       state.autoResetTimer = 1.15;
-      state.message = `볼 정지. ${formatYards(state.model.totalDistance)} 샷 완료, 다음 샷으로 이어집니다`;
+      state.message = "최신 확정 결과가 갱신되었습니다.";
     }
 
     function update(dt) {
@@ -1025,13 +1195,13 @@
 
       if (state.model.phase === "flight" && state.model.firstBounceDone && state.mode === "in_flight") {
         state.mode = "rollout";
-        state.message = "런아웃 추적 중";
+        state.message = "지면 구간 결과를 확인하고 있습니다";
       }
 
       if (previousPhase !== state.model.phase) {
         if (state.model.phase === "flight") {
           state.mode = "in_flight";
-          state.message = "샷 추적 중";
+          state.message = "비행 결과를 확인하고 있습니다";
           spawnImpactEffect();
         }
         if (state.model.phase === "rest" && state.mode !== "auto_reset_pending") {
@@ -1042,7 +1212,7 @@
       if (state.mode === "auto_reset_pending") {
         state.autoResetTimer = Math.max(0, state.autoResetTimer - dt);
         if (state.autoResetTimer === 0) {
-          prepareShotLoop("다음 샷을 준비하세요");
+          prepareShotLoop("입력값을 조정한 뒤 다시 실행하세요");
         }
       }
     }
@@ -1325,13 +1495,13 @@
 
       ctx.fillStyle = "rgba(235, 246, 255, 0.82)";
       ctx.font = "18px Trebuchet MS";
-      ctx.fillText("Ball Speed, Backspin, Side Spin을 직접 넣고", panelX + 34, panelY + 182);
-      ctx.fillText("연속된 샷 루프로 3D 비행과 런아웃을 계속 확인할 수 있습니다.", panelX + 34, panelY + 210);
+      ctx.fillText("볼 스피드와 스핀 입력값을 직접 조정하고", panelX + 34, panelY + 182);
+      ctx.fillText("같은 화면에서 다시 실행하며 3D 비행과 런아웃을 비교할 수 있습니다.", panelX + 34, panelY + 210);
 
       const stats = [
-        ["3D Flight", "camera + carry + curve"],
-        ["Manual Spin", "backspin / sidespin input"],
-        ["Continuous Loop", "aim, swing, rollout, next"],
+        ["입력값 확인", "aim, ball speed, spin"],
+        ["비행 결과 확인", "carry, curve, rollout"],
+        ["다시 실험", "adjust inputs and compare"],
       ];
       for (let i = 0; i < stats.length; i += 1) {
         const boxX = panelX + 34 + i * ((panelW - 68) / 3);
@@ -1353,7 +1523,7 @@
       ctx.font = "13px Trebuchet MS";
       ctx.fillText("ArrowLeft / ArrowRight: 방위각", panelX + 34, panelY + panelH - 48);
       ctx.fillText("ArrowUp / ArrowDown: 발사각", panelX + 34, panelY + panelH - 28);
-      ctx.fillText("Space: 파워와 스윙  |  R: 새 세션  |  F: 전체화면", panelX + panelW - 312, panelY + panelH - 28);
+      ctx.fillText("Space: 길게 눌러 실행  |  R: 실험 조건 초기화  |  F: 전체화면", panelX + panelW - 372, panelY + panelH - 28);
       ctx.restore();
     }
 
@@ -1484,10 +1654,10 @@
           autoResetTimer: Number(state.autoResetTimer.toFixed(2)),
         },
         controls: {
-          swing: "Space hold/release",
+          swing: "Space 길게 눌러 실행",
           elevation: "ArrowUp/ArrowDown",
           azimuth: "ArrowLeft/ArrowRight",
-          restart: "R new session",
+          restart: "R 실험 조건 초기화",
           fullscreen: "F",
         },
       });

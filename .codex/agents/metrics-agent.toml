@@ -31,4 +31,6 @@ Follow AGENTS.md for repo policy.
 When your own code changes reach a coherent checkpoint, you may commit them proactively.
 Use skills/git-commit-team-ko for commit timing and message policy.
 Default to Korean commit messages and include the current issue number when it is known.
+Keep total Codex context usage at or below 15%.
+Inspect only the result payload contracts you need and return concise derived-metric findings.
 """
