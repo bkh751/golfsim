@@ -64,14 +64,22 @@ test('regression: result panel metric order follows primary then secondary hiera
   assert.ok(sidespinIndex > backspinIndex);
 });
 
+test('regression: auto ready 3 seconds and visible result carry-over markers should exist', () => {
+  const src = fs.readFileSync(INDEX_PATH, 'utf8');
+  assert.match(src, /autoResetTimer = 3/);
+  assert.match(src, /다음 샷을 바로 이어서 실험할 수 있습니다/);
+  assert.match(src, /결과를 확인하는 중입니다/);
+  assert.match(src, /function getVisibleResultMetrics/);
+});
+
 test('regression: figma main layout hooks and state copy rules should exist', () => {
   const src = fs.readFileSync(INDEX_PATH, 'utf8');
   assert.match(src, /id="hud-carry"/);
   assert.match(src, /id="hud-total"/);
   assert.match(src, /id="hud-offline"/);
+  assert.match(src, /id="hud-ball-speed-primary"/);
   assert.match(src, /id="hud-side-spin"/);
   assert.match(src, /id="hud-back-spin"/);
-  assert.match(src, /id="hud-ball-speed"/);
   assert.match(src, /id="session-state"/);
   assert.match(src, /id="game-viewport"/);
   assert.match(src, /id="aim-direction"/);
@@ -93,22 +101,13 @@ test('regression: figma main layout hooks and state copy rules should exist', ()
   assert.match(src, /function formatResultStatusNote/);
   assert.match(src, /function formatNextActionHint/);
   assert.match(src, /formatWindDirection/);
-  assert.match(src, /이 패널은 최신 확정 결과를 보여줍니다\./);
-  assert.match(src, /최신 확정 결과와 비교 기준이 아직 없습니다\./);
-  assert.match(src, /새 결과를 계산 중이며, 이 패널은 직전 실행의 최신 확정 결과를 유지합니다\./);
-  assert.match(src, /현재 입력값은 바뀌었고, 이 패널은 직전 실행의 최신 확정 결과를 보여줍니다\./);
   assert.match(src, /먼저 캐리, 총거리, 좌우 편차를 확인하세요\./);
-  assert.match(src, /핵심 결과를 해석할 때 볼 스피드와 스핀을 함께 참고하세요\./);
-  assert.match(src, /현재 입력값 기준의 최신 확정 결과입니다\./);
-  assert.match(src, /최신 확정 결과가 갱신되었습니다\./);
-  assert.match(src, /새 기준 확정/);
-  assert.match(src, /현재 입력값과 같은 기준/);
-  assert.match(src, /직전 실행 기준/);
-  assert.match(src, /기준과 일치/);
-  assert.match(src, /새 결과를 계산 중입니다\./);
-  assert.match(src, /지금 실행하면 변경된 입력을 반영해 다시 실행합니다\./);
-  assert.match(src, /지금 실행하면 동일 조건으로 다시 실행합니다\./);
-  assert.match(src, /지금 실행하면 현재 입력값으로 실행합니다\./);
+  assert.match(src, /핵심 결과를 해석할 때 스핀 지표를 함께 참고하세요\./);
+  assert.match(src, /샷을 준비하세요/);
+  assert.match(src, /발사 강도를 유지한 뒤 놓으세요/);
+  assert.match(src, /샷 데이터를 수집 중입니다/);
+  assert.match(src, /탄도를 관찰하세요/);
+  assert.match(src, /결과를 확인하는 중입니다/);
 });
 
 test('regression: render payload still includes impact markers', () => {
