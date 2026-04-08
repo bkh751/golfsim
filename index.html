@@ -34,7 +34,7 @@
       width: min(100%, 1535px);
       min-height: min(calc(100vh - 32px), 936px);
       display: grid;
-      grid-template-columns: 368px minmax(0, 1fr) 368px;
+      grid-template-columns: 300px minmax(0, 1fr) 300px;
       gap: 16px;
       background: var(--app-bg);
     }
@@ -63,7 +63,7 @@
 
     .metric-grid {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
     }
 
@@ -337,10 +337,13 @@
           <div class="metric-card-label"><span class="metric-icon wind">O</span>좌우 편차 (Offline)</div>
           <div id="hud-offline" class="metric-card-value">-</div>
         </div>
+        <div class="metric-card">
+          <div class="metric-card-label"><span class="metric-icon distance">B</span>볼 스피드 (Ball Speed)</div>
+          <div id="hud-ball-speed-primary" class="metric-card-value">-</div>
+        </div>
       </div>
       <section class="info-card" aria-label="Ball flight data">
         <h2>결과 패널</h2>
-        <div class="info-row"><span class="label">볼 스피드 (Ball Speed)</span><span id="hud-ball-speed" class="value">-</span></div>
         <div class="info-row"><span class="label">백스핀 (Backspin)</span><span id="hud-back-spin" class="value">-</span></div>
         <div class="info-row"><span class="label">사이드스핀 (Sidespin)</span><span id="hud-side-spin" class="value">-</span></div>
         <div id="hud-status" class="status-note">샷을 준비하세요</div>
@@ -413,9 +416,9 @@
     const hudCarry = document.getElementById("hud-carry");
     const hudTotal = document.getElementById("hud-total");
     const hudOffline = document.getElementById("hud-offline");
+    const hudBallSpeedPrimary = document.getElementById("hud-ball-speed-primary");
     const hudSideSpin = document.getElementById("hud-side-spin");
     const hudBackSpin = document.getElementById("hud-back-spin");
-    const hudBallSpeed = document.getElementById("hud-ball-speed");
     const hudStatus = document.getElementById("hud-status");
 
     const MODEL_PARAMS = {
@@ -465,6 +468,8 @@
       trajectorySamples: [],
       previewSamples: [],
       lastShotMetrics: null,
+      autoReadyAt: null,
+      simTimeMs: 0,
       manualLaunch: {
         ballSpeedMps: null,
         backspinRpm: null,
@@ -585,23 +590,52 @@
       return Number.isFinite(value) ? `${Math.round(value * 1.09361)}y` : "-";
     }
 
+    function getVisibleResultMetrics() {
+      const hasCurrentResult = state.model.phase === "flight" || state.model.phase === "rest" || state.mode === "result";
+      if (hasCurrentResult) {
+        return {
+          carry: state.model.carryDistance,
+          total: state.model.totalDistance,
+          offline: state.model.offlineDistance,
+          ballSpeedMph: mpsToMph(state.model.ballSpeed),
+          backspinRpm: state.model.backspinRpm,
+          sidespinRpm: state.model.sidespinRpm,
+        };
+      }
+
+      if (state.lastShotMetrics) {
+        return {
+          carry: state.lastShotMetrics.carry,
+          total: state.lastShotMetrics.total,
+          offline: state.lastShotMetrics.offline,
+          ballSpeedMph: state.lastShotMetrics.ballSpeedMph,
+          backspinRpm: state.lastShotMetrics.backspinRpm,
+          sidespinRpm: state.lastShotMetrics.sidespinRpm,
+        };
+      }
+
+      return null;
+    }
+
     function formatHudStatus() {
       if (state.model.phase === "flight") return "탄도를 관찰하세요";
-      if (state.mode === "result") return "결과를 확인하고 다음 샷을 준비하세요";
-      if (state.charging) return "스윙 강도를 조절하세요";
+      if (state.mode === "result") return "결과를 확인하는 중입니다";
+      if (state.charging) return "발사 강도를 유지한 뒤 놓으세요";
       if (state.shotDone) return "샷 데이터를 수집 중입니다";
+      if (state.lastShotMetrics) return "다음 샷을 바로 이어서 실험할 수 있습니다";
       return "샷을 준비하세요";
     }
 
     function updateChrome() {
-      const hasShotResult = state.model.phase === "flight" || state.model.phase === "rest" || state.mode === "result";
       state.message = formatHudStatus();
-      hudCarry.textContent = formatYards(hasShotResult ? state.model.carryDistance : null);
-      hudTotal.textContent = formatYards(hasShotResult ? state.model.totalDistance : null);
-      hudOffline.textContent = `${formatPanelMetric(hasShotResult ? state.model.offlineDistance : null, 1, hasShotResult)} m`;
-      hudBallSpeed.textContent = `${formatPanelMetric(mpsToMph(state.model.ballSpeed), 0, hasShotResult)} mph`;
-      hudBackSpin.textContent = `${formatPanelMetric(state.model.backspinRpm, 0, hasShotResult)} rpm`;
-      hudSideSpin.textContent = `${formatPanelMetric(state.model.sidespinRpm, 0, hasShotResult)} rpm`;
+      const metrics = getVisibleResultMetrics();
+      const hasMetrics = Boolean(metrics);
+      hudCarry.textContent = formatYards(metrics?.carry ?? null);
+      hudTotal.textContent = formatYards(metrics?.total ?? null);
+      hudOffline.textContent = `${formatPanelMetric(metrics?.offline ?? null, 1, hasMetrics)} m`;
+      hudBallSpeedPrimary.textContent = `${formatPanelMetric(metrics?.ballSpeedMph ?? null, 0, hasMetrics)} mph`;
+      hudBackSpin.textContent = `${formatPanelMetric(metrics?.backspinRpm ?? null, 0, hasMetrics)} rpm`;
+      hudSideSpin.textContent = `${formatPanelMetric(metrics?.sidespinRpm ?? null, 0, hasMetrics)} rpm`;
       hudStatus.textContent = state.message;
       aimDirectionInput.value = String(Math.round(state.yawDeg));
       aimDirectionValue.textContent = `${Math.round(state.yawDeg)}°`;
@@ -806,11 +840,12 @@
       state.aimDeg = 15;
       state.yawDeg = 0;
       state.shotDone = false;
+      state.autoReadyAt = null;
+      state.simTimeMs = 0;
       state.message = "샷을 준비하세요";
       state.impactEffects = [];
       state.trajectorySamples = [];
       state.previewSamples = [];
-      state.lastShotMetrics = null;
       state.model = createInitialState({ ballPos: WORLD.teePos });
       state.modelControls = createDefaultControls({
         windX: state.wind.x,
@@ -889,6 +924,9 @@
         carry: state.model.carryDistance,
         total: state.model.totalDistance,
         offline: state.model.offlineDistance,
+        ballSpeedMph: mpsToMph(state.model.ballSpeed),
+        backspinRpm: state.model.backspinRpm,
+        sidespinRpm: state.model.sidespinRpm,
         miss: dist,
       };
       let points = 0;
@@ -908,9 +946,11 @@
 
       state.score += points;
       state.mode = "result";
+      state.autoReadyAt = state.simTimeMs + 3000;
     }
 
     function update(dt) {
+      state.simTimeMs += dt * 1000;
       if (keys.has("arrowleft")) state.yawDeg = clamp(state.yawDeg - 28 * dt, -24, 24);
       if (keys.has("arrowright")) state.yawDeg = clamp(state.yawDeg + 28 * dt, -24, 24);
       if (keys.has("arrowup")) state.aimDeg = clamp(state.aimDeg + 16 * dt, 6, 28);
@@ -958,6 +998,11 @@
         if (state.model.phase === "rest" && state.mode !== "result") {
           evaluateLanding();
         }
+      }
+
+      if (state.mode === "result" && state.autoReadyAt != null && state.simTimeMs >= state.autoReadyAt) {
+        resetRound();
+        applyManualInputs();
       }
     }
 
@@ -1404,6 +1449,12 @@
           total: Number(state.model.totalDistance.toFixed(2)),
           apex: Number(state.model.apexHeight.toFixed(2)),
           offline: Number(state.model.offlineDistance.toFixed(2)),
+        },
+        lastShotMetrics: state.lastShotMetrics == null ? null : {
+          carry: Number(state.lastShotMetrics.carry.toFixed(2)),
+          total: Number(state.lastShotMetrics.total.toFixed(2)),
+          offline: Number(state.lastShotMetrics.offline.toFixed(2)),
+          ballSpeedMph: Number(state.lastShotMetrics.ballSpeedMph.toFixed(2)),
         },
         hole: {
           x: state.hole.x,

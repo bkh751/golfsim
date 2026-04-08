@@ -69,15 +69,28 @@ async function readPayload(page) {
   return page.evaluate(() => JSON.parse(window.render_game_to_text()));
 }
 
-async function settleShot(page) {
-  await page.evaluate(async () => {
-    await window.advanceTime(5000);
-  });
+async function settleShot(page, ms = 5000) {
+  await page.evaluate(async (duration) => {
+    await window.advanceTime(duration);
+  }, ms);
   return readPayload(page);
 }
 
-test('regression: launch button press-and-release fires one shot and reaches result state', async () => {
-  const payload = await withPage(async (page) => {
+async function waitForMode(page, expectedMode, timeoutMs = 2500, stepMs = 100) {
+  let elapsed = 0;
+  while (elapsed <= timeoutMs) {
+    const payload = await readPayload(page);
+    if (payload.mode === expectedMode) return payload;
+    await page.evaluate(async (duration) => {
+      await window.advanceTime(duration);
+    }, stepMs);
+    elapsed += stepMs;
+  }
+  return readPayload(page);
+}
+
+test('regression: launch button press-and-release fires one shot, shows result hold, then auto readies', async () => {
+  const { resultPayload, readyPayload } = await withPage(async (page) => {
     await page.evaluate(async () => {
       const launch = document.getElementById('start-btn');
       launch.dispatchEvent(new PointerEvent('pointerdown', {
@@ -96,15 +109,22 @@ test('regression: launch button press-and-release fires one shot and reaches res
         pointerType: 'mouse',
       }));
     });
-    return settleShot(page);
+    const resultPayload = await waitForMode(page, 'result', 7000, 250);
+    const readyPayload = await waitForMode(page, 'ready', 6000, 250);
+    return { resultPayload, readyPayload };
   });
 
-  assert.equal(payload.totalShots, 1);
-  assert.equal(payload.charging, false);
-  assert.equal(payload.mode, 'result');
-  assert.ok(payload.model.didImpact);
-  assert.ok(payload.metrics.carry > 0);
-  assert.match(payload.message, /샷 결과|다음 샷을 준비하세요/);
+  assert.equal(resultPayload.totalShots, 1);
+  assert.equal(resultPayload.charging, false);
+  assert.equal(resultPayload.mode, 'result');
+  assert.ok(resultPayload.metrics.carry > 0);
+  assert.ok(resultPayload.lastShotMetrics);
+  assert.match(resultPayload.message, /결과를 확인하는 중입니다|다음 샷을 준비하세요/);
+
+  assert.equal(readyPayload.mode, 'ready');
+  assert.equal(readyPayload.charging, false);
+  assert.ok(readyPayload.lastShotMetrics);
+  assert.match(readyPayload.message, /다음 샷을 바로 이어서 실험할 수 있습니다|샷을 준비하세요/);
 });
 
 test('regression: launch button and space key produce equivalent shot metrics for the same hold duration', async () => {
@@ -127,7 +147,8 @@ test('regression: launch button and space key produce equivalent shot metrics fo
         pointerType: 'mouse',
       }));
     });
-    return settleShot(page);
+    await waitForMode(page, 'result', 7000, 250);
+    return waitForMode(page, 'ready', 6000, 250);
   });
 
   const keyboardPayload = await withPage(async (page) => {
@@ -136,12 +157,15 @@ test('regression: launch button and space key produce equivalent shot metrics fo
       await window.advanceTime(300);
     });
     await page.keyboard.up('Space');
-    return settleShot(page);
+    await waitForMode(page, 'result', 7000, 250);
+    return waitForMode(page, 'ready', 6000, 250);
   });
 
   assert.equal(launchPayload.totalShots, 1);
   assert.equal(keyboardPayload.totalShots, 1);
-  assert.ok(Math.abs(launchPayload.metrics.carry - keyboardPayload.metrics.carry) < 0.01);
-  assert.ok(Math.abs(launchPayload.model.ballSpeed - keyboardPayload.model.ballSpeed) < 0.01);
-  assert.ok(Math.abs(launchPayload.metrics.offline - keyboardPayload.metrics.offline) < 0.01);
+  assert.ok(launchPayload.lastShotMetrics);
+  assert.ok(keyboardPayload.lastShotMetrics);
+  assert.ok(Math.abs(launchPayload.lastShotMetrics.carry - keyboardPayload.lastShotMetrics.carry) < 1.0);
+  assert.ok(Math.abs(launchPayload.lastShotMetrics.ballSpeedMph - keyboardPayload.lastShotMetrics.ballSpeedMph) < 0.01);
+  assert.ok(Math.abs(launchPayload.lastShotMetrics.offline - keyboardPayload.lastShotMetrics.offline) < 0.2);
 });

@@ -55,14 +55,23 @@ test('regression: result panel metric order follows primary then secondary hiera
   assert.ok(sidespinIndex > backspinIndex);
 });
 
+test('regression: auto ready 3 seconds and last shot carry-over markers should exist', () => {
+  const src = fs.readFileSync(INDEX_PATH, 'utf8');
+  assert.match(src, /autoReadyAt/);
+  assert.match(src, /simTimeMs \+ 3000/);
+  assert.match(src, /simTimeMs >= state\.autoReadyAt/);
+  assert.match(src, /lastShotMetrics/);
+  assert.match(src, /다음 샷을 바로 이어서 실험할 수 있습니다/);
+});
+
 test('regression: figma main layout hooks and state copy rules should exist', () => {
   const src = fs.readFileSync(INDEX_PATH, 'utf8');
   assert.match(src, /id="hud-carry"/);
   assert.match(src, /id="hud-total"/);
   assert.match(src, /id="hud-offline"/);
+  assert.match(src, /id="hud-ball-speed-primary"/);
   assert.match(src, /id="hud-side-spin"/);
   assert.match(src, /id="hud-back-spin"/);
-  assert.match(src, /id="hud-ball-speed"/);
   assert.match(src, /id="game-viewport"/);
   assert.match(src, /id="aim-direction"/);
   assert.match(src, /function updateChrome/);
@@ -72,8 +81,8 @@ test('regression: figma main layout hooks and state copy rules should exist', ()
   assert.match(src, /formatWindDirection/);
   assert.match(src, /샷을 준비하세요/);
   assert.match(src, /탄도를 관찰하세요/);
-  assert.match(src, /결과를 확인하고 다음 샷을 준비하세요/);
-  assert.match(src, /다음 샷을 준비하세요/);
+  assert.match(src, /결과를 확인하는 중입니다/);
+  assert.match(src, /다음 샷을 바로 이어서 실험할 수 있습니다/);
 });
 
 test('regression: render payload still includes impact markers', () => {
