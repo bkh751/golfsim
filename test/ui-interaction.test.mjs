@@ -69,15 +69,21 @@ async function readPayload(page) {
   return page.evaluate(() => JSON.parse(window.render_game_to_text()));
 }
 
-async function settleShot(page) {
-  await page.evaluate(async () => {
-    await window.advanceTime(5000);
-  });
+async function waitForMode(page, expectedMode, timeoutMs = 5000, stepMs = 100) {
+  let elapsed = 0;
+  while (elapsed <= timeoutMs) {
+    const payload = await readPayload(page);
+    if (payload.mode === expectedMode) return payload;
+    await page.evaluate(async (duration) => {
+      await window.advanceTime(duration);
+    }, stepMs);
+    elapsed += stepMs;
+  }
   return readPayload(page);
 }
 
-test('regression: launch button press-and-release fires one shot and enters the continuous loop state', async () => {
-  const payload = await withPage(async (page) => {
+test('regression: launch button press-and-release fires one shot, shows result hold, then auto readies', async () => {
+  const { resultPayload, readyPayload } = await withPage(async (page) => {
     await page.evaluate(async () => {
       const launch = document.getElementById('start-btn');
       launch.dispatchEvent(new PointerEvent('pointerdown', {
@@ -96,16 +102,23 @@ test('regression: launch button press-and-release fires one shot and enters the 
         pointerType: 'mouse',
       }));
     });
-    return settleShot(page);
+    const resultPayload = await waitForMode(page, 'auto_reset_pending', 7000, 200);
+    const readyPayload = await waitForMode(page, 'session_ready', 5000, 200);
+    return { resultPayload, readyPayload };
   });
 
-  assert.equal(payload.totalShots, 1);
-  assert.equal(payload.charging, false);
-  assert.ok(['auto_reset_pending', 'session_ready'].includes(payload.mode));
-  assert.ok(payload.metrics.carry > 0);
-  assert.ok(payload.lastShot);
-  assert.ok(payload.lastShot.ballSpeed > 0);
-  assert.match(payload.message, /현재 입력값 기준의 최신 확정 결과입니다\.|최신 확정 결과가 갱신되었습니다\./);
+  assert.equal(resultPayload.totalShots, 1);
+  assert.equal(resultPayload.charging, false);
+  assert.equal(resultPayload.mode, 'auto_reset_pending');
+  assert.ok(resultPayload.metrics.carry > 0);
+  assert.ok(resultPayload.lastShot);
+  assert.ok(resultPayload.lastShot.ballSpeed > 0);
+  assert.match(resultPayload.message, /결과를 확인하는 중입니다/);
+
+  assert.equal(readyPayload.mode, 'session_ready');
+  assert.equal(readyPayload.charging, false);
+  assert.ok(readyPayload.lastShot);
+  assert.match(readyPayload.message, /다음 샷을 바로 이어서 실험할 수 있습니다/);
 });
 
 test('regression: launch button and space key produce equivalent shot metrics for the same hold duration', async () => {
@@ -128,7 +141,8 @@ test('regression: launch button and space key produce equivalent shot metrics fo
         pointerType: 'mouse',
       }));
     });
-    return settleShot(page);
+    await waitForMode(page, 'auto_reset_pending', 7000, 200);
+    return waitForMode(page, 'session_ready', 5000, 200);
   });
 
   const keyboardPayload = await withPage(async (page) => {
@@ -137,7 +151,8 @@ test('regression: launch button and space key produce equivalent shot metrics fo
       await window.advanceTime(300);
     });
     await page.keyboard.up('Space');
-    return settleShot(page);
+    await waitForMode(page, 'auto_reset_pending', 7000, 200);
+    return waitForMode(page, 'session_ready', 5000, 200);
   });
 
   assert.equal(launchPayload.totalShots, 1);

@@ -34,7 +34,7 @@
       width: min(100%, 1535px);
       min-height: min(calc(100vh - 32px), 936px);
       display: grid;
-      grid-template-columns: 368px minmax(0, 1fr) 368px;
+      grid-template-columns: 300px minmax(0, 1fr) 300px;
       gap: 16px;
       background: var(--app-bg);
     }
@@ -63,7 +63,7 @@
 
     .metric-grid {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
     }
 
@@ -390,12 +390,14 @@
           <div class="metric-card-label"><span class="metric-icon wind">O</span>좌우 편차 (Offline)</div>
           <div id="hud-offline" class="metric-card-value">-</div>
         </div>
+        <div class="metric-card">
+          <div class="metric-card-label"><span class="metric-icon distance">B</span>볼 스피드 (Ball Speed)</div>
+          <div id="hud-ball-speed-primary" class="metric-card-value">-</div>
+        </div>
       </div>
-      <p id="hud-context" class="section-note">이 패널은 최신 확정 결과를 보여줍니다.</p>
       <section class="info-card" aria-label="보조 비행 지표">
         <h2>보조 지표</h2>
-        <p class="section-note">핵심 결과를 해석할 때 볼 스피드와 스핀을 함께 참고하세요.</p>
-        <div class="info-row"><span class="label">볼 스피드 (Ball Speed)</span><span id="hud-ball-speed" class="value">-</span></div>
+        <p class="section-note">핵심 결과를 해석할 때 스핀 지표를 함께 참고하세요.</p>
         <div class="info-row"><span class="label">백스핀 (Backspin)</span><span id="hud-back-spin" class="value">-</span></div>
         <div class="info-row"><span class="label">사이드스핀 (Sidespin)</span><span id="hud-side-spin" class="value">-</span></div>
         <div id="hud-status" class="status-note">현재 입력값을 확인한 뒤 실행하세요</div>
@@ -491,10 +493,9 @@
     const hudCarry = document.getElementById("hud-carry");
     const hudTotal = document.getElementById("hud-total");
     const hudOffline = document.getElementById("hud-offline");
+    const hudBallSpeedPrimary = document.getElementById("hud-ball-speed-primary");
     const hudSideSpin = document.getElementById("hud-side-spin");
     const hudBackSpin = document.getElementById("hud-back-spin");
-    const hudBallSpeed = document.getElementById("hud-ball-speed");
-    const hudContext = document.getElementById("hud-context");
     const hudStatus = document.getElementById("hud-status");
     const buttonNote = document.getElementById("button-note");
     const sessionStateLabel = document.getElementById("session-state-label");
@@ -799,44 +800,54 @@
     }
 
     function formatResultStatusNote() {
-      const kind = currentResultReferenceKind();
-      if (kind === "none") {
-        if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") {
-          return "새 결과를 계산하고 있습니다.";
-        }
-        return "최신 확정 결과와 비교 기준이 아직 없습니다.";
-      }
-      if (kind === "latest") return "현재 입력값 기준의 최신 확정 결과입니다.";
-      if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") {
-        return "새 결과를 계산 중이며, 이 패널은 직전 실행의 최신 확정 결과를 유지합니다.";
-      }
-      return "현재 입력값은 바뀌었고, 이 패널은 직전 실행의 최신 확정 결과를 보여줍니다.";
+      if (state.mode === "shot_primed") return "발사 강도를 유지한 뒤 놓으세요";
+      if (state.mode === "launching") return "샷 데이터를 수집 중입니다";
+      if (state.mode === "in_flight" || state.mode === "rollout") return "탄도를 관찰하세요";
+      if (state.mode === "auto_reset_pending") return "결과를 확인하는 중입니다";
+      if (state.lastShotMetrics) return "다음 샷을 바로 이어서 실험할 수 있습니다";
+      return "샷을 준비하세요";
     }
 
     function formatNextActionHint() {
-      if (state.mode === "shot_primed" || state.charging) return "입력 강도를 조정한 뒤 실행";
-      if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") return "새 결과를 계산 중입니다.";
+      if (state.mode === "shot_primed" || state.charging) return "입력 강도를 유지한 뒤 놓으세요.";
+      if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") return "결과 흐름을 계속 관찰하세요.";
+      if (state.mode === "auto_reset_pending") return "3초 뒤 자동으로 다음 샷 준비 상태로 돌아갑니다.";
       if (hasPendingInputChanges()) return "지금 실행하면 변경된 입력을 반영해 다시 실행합니다.";
       if (state.lastShotMetrics) return "지금 실행하면 동일 조건으로 다시 실행합니다.";
       return "지금 실행하면 현재 입력값으로 실행합니다.";
     }
 
     function formatHudStatus() {
-      if (state.mode === "auto_reset_pending") return state.message;
       return formatResultStatusNote();
     }
 
+    function getVisibleResultMetrics() {
+      const hasCurrentResult = state.model.phase === "flight" || state.model.phase === "rest" || state.mode === "auto_reset_pending";
+      if (hasCurrentResult) {
+        return {
+          carry: state.model.carryDistance,
+          total: state.model.totalDistance,
+          offline: state.model.offlineDistance,
+          ballSpeed: state.model.ballSpeed,
+          backspin: state.model.backspinRpm,
+          sidespin: state.model.sidespinRpm,
+        };
+      }
+
+      return state.lastShotMetrics;
+    }
+
     function updateChrome() {
-      const hasShotResult = Boolean(state.lastShotMetrics);
+      const metrics = getVisibleResultMetrics();
+      const hasShotResult = Boolean(metrics);
       const changedInputKeys = getChangedInputKeys();
       state.message = formatHudStatus();
-      hudCarry.textContent = hasShotResult ? formatYards(state.lastShotMetrics.carry) : "-";
-      hudTotal.textContent = hasShotResult ? formatYards(state.lastShotMetrics.total) : "-";
-      hudOffline.textContent = hasShotResult ? formatSignedYards(state.lastShotMetrics.offline) : "-";
-      hudBallSpeed.textContent = hasShotResult ? `${formatPanelMetric(mpsToMph(state.lastShotMetrics.ballSpeed), 0, true)} mph` : "-";
-      hudBackSpin.textContent = hasShotResult ? `${formatPanelMetric(state.lastShotMetrics.backspin, 0, true)} rpm` : "-";
-      hudSideSpin.textContent = hasShotResult ? `${formatPanelMetric(state.lastShotMetrics.sidespin, 0, true)} rpm` : "-";
-      hudContext.textContent = "이 패널은 최신 확정 결과를 보여줍니다.";
+      hudCarry.textContent = hasShotResult ? formatYards(metrics.carry) : "-";
+      hudTotal.textContent = hasShotResult ? formatYards(metrics.total) : "-";
+      hudOffline.textContent = hasShotResult ? formatSignedYards(metrics.offline) : "-";
+      hudBallSpeedPrimary.textContent = hasShotResult ? `${formatPanelMetric(mpsToMph(metrics.ballSpeed), 0, true)} mph` : "-";
+      hudBackSpin.textContent = hasShotResult ? `${formatPanelMetric(metrics.backspin, 0, true)} rpm` : "-";
+      hudSideSpin.textContent = hasShotResult ? `${formatPanelMetric(metrics.sidespin, 0, true)} rpm` : "-";
       hudStatus.textContent = state.message;
       buttonNote.textContent = formatNextActionHint();
       sessionStateLabel.textContent = "현재 상태";
@@ -1038,7 +1049,7 @@
       return simulatePreview(estimateShotProfile(currentState), currentState);
     }
 
-    function prepareShotLoop(message = "핵심 결과를 확인한 뒤 입력값을 조정해 다시 실행하세요") {
+    function prepareShotLoop(message = "샷을 준비하세요") {
       state.mode = "session_ready";
       state.charging = false;
       state.charge = 0.24;
@@ -1149,8 +1160,8 @@
       state.sessionDistanceTotal += state.model.totalDistance;
       state.sessionBestCarry = Math.max(state.sessionBestCarry, state.model.carryDistance);
       state.mode = "auto_reset_pending";
-      state.autoResetTimer = 1.15;
-      state.message = "최신 확정 결과가 갱신되었습니다.";
+      state.autoResetTimer = 3;
+      state.message = "결과를 확인하는 중입니다";
     }
 
     function update(dt) {
@@ -1212,7 +1223,7 @@
       if (state.mode === "auto_reset_pending") {
         state.autoResetTimer = Math.max(0, state.autoResetTimer - dt);
         if (state.autoResetTimer === 0) {
-          prepareShotLoop("입력값을 조정한 뒤 다시 실행하세요");
+          prepareShotLoop("다음 샷을 바로 이어서 실험할 수 있습니다");
         }
       }
     }
