@@ -6,14 +6,13 @@ Use these defaults when generating prompts manually or validating script output.
 
 Every prompt should include:
 - role declaration
-- `/Users/user/workspace/game/golfsim/AGENTS.md`
-- `/Users/user/workspace/game/golfsim/docs/product.md`
+- 저장소 기본 정책은 이미 적용돼 있다고 보는 전제
 - user-as-relay assumption
-- fixed response order
 - current parent issue
 - optional `현재 확정 내용`
-- optional `현재 blocker`
+- optional `현재 막힘 또는 주의`
 - current request
+- short free-form response expectation
 
 ## `pm`
 
@@ -63,9 +62,7 @@ Focus:
 - Completion Notes
 
 Completion note format:
-- 구현 내용:
-- 테스트 결과:
-- 남은 리스크:
+- 구현 내용, 테스트 결과, 남은 리스크만 짧게 정리
 
 ## `review`
 

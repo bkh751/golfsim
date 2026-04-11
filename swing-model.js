@@ -36,18 +36,19 @@ export const DEFAULT_PARAMS = Object.freeze({
   strikeSpinGain: 420,
   spinMin: 1400,
   spinMax: 7200,
-  gravity: 28,
-  dragCoeff: 0.00115,
-  magnusCoeff: 0.00048,
-  sideMagnusScale: 0.95,
-  spinDecayAir: 0.996,
+  // Calibrated against TrackMan and USGA driver benchmark windows while keeping the real ball size.
+  gravity: 9.81,
+  dragCoeff: 0.00078,
+  magnusCoeff: 0.00017,
+  sideMagnusScale: 0.88,
+  spinDecayAir: 0.998,
   spinDecayGround: 0.88,
-  bounceRestitution: 0.34,
-  bounceLateralRestitution: 0.82,
-  rollFrictionForward: 0.992,
-  rollFrictionLateral: 0.955,
-  stopVxz: 7,
-  stopVy: 3.5,
+  bounceRestitution: 0.18,
+  bounceLateralRestitution: 0.88,
+  rollFrictionForward: 0.995,
+  rollFrictionLateral: 0.985,
+  stopVxz: 1.6,
+  stopVy: 1.6,
   windMin: -14,
   windMax: 14,
   ballRadius: 0.02135,
@@ -183,7 +184,7 @@ export function createDefaultControls(overrides = {}) {
     initiateSwing: false,
     powerNorm: 0.5,
     tempoNorm: 0.7,
-    aimDeg: 14,
+    aimDeg: 10.4,
     yawDeg: 0,
     loftDeltaDeg: 0,
     strikeOffsetX: 0,
@@ -328,27 +329,38 @@ export function stepSwingModel(state, controls = {}, params = {}, dt = 1 / 60) {
   }
 
   if (next.phase === "flight") {
-    const flight = stepFlightState(
-      createFlightState({
-        position: next.ballPos,
-        velocity: next.ballVel,
-        spinRateRpm: next.spinRateRpm,
-        spinAxisTiltDeg: next.spinAxisTiltDeg,
-        backspinRpm: next.backspinRpm,
-        sidespinRpm: next.sidespinRpm,
-        moving: next.ballMoving,
-        firstBounceDone: next.firstBounceDone,
-        launchPos: next.launchPos,
-        landingPos: next.landingPos,
-        apexHeight: next.apexHeight,
-      }),
-      {
-        wind: { x: u.windX, y: 0, z: u.windZ },
-      },
-      p,
-      safeDt,
-      DEFAULT_AERO_MODEL
-    );
+    const environment = {
+      wind: { x: u.windX, y: 0, z: u.windZ },
+    };
+    const flightStep = 1 / 240;
+    let remainingDt = safeDt;
+    let flight = createFlightState({
+      position: next.ballPos,
+      velocity: next.ballVel,
+      spinRateRpm: next.spinRateRpm,
+      spinAxisTiltDeg: next.spinAxisTiltDeg,
+      backspinRpm: next.backspinRpm,
+      sidespinRpm: next.sidespinRpm,
+      moving: next.ballMoving,
+      firstBounceDone: next.firstBounceDone,
+      launchDeg: next.launchDeg,
+      launchAzimuthDeg: next.launchAzimuthDeg,
+      launchPos: next.launchPos,
+      landingPos: next.landingPos,
+      apexHeight: next.apexHeight,
+    });
+
+    while (remainingDt > 1e-9 && flight.moving) {
+      const dtStep = Math.min(flightStep, remainingDt);
+      flight = stepFlightState(
+        flight,
+        environment,
+        p,
+        dtStep,
+        DEFAULT_AERO_MODEL
+      );
+      remainingDt -= dtStep;
+    }
 
     next.ballPos = flight.position;
     next.ballVel = flight.velocity;

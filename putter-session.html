@@ -1,0 +1,1311 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>golfsim Putter Sensor Mode</title>
+  <style>
+    :root {
+      --bg: #08111d;
+      --panel: rgba(16, 27, 43, 0.9);
+      --panel-soft: rgba(23, 37, 58, 0.82);
+      --line: rgba(147, 197, 253, 0.16);
+      --text: #eff6ff;
+      --muted: #96accb;
+      --brand: #7dd3fc;
+      --brand-soft: rgba(125, 211, 252, 0.16);
+      --ok: #6ee7b7;
+      --warn: #fdba74;
+      --danger: #fb7185;
+      --shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 26%),
+        radial-gradient(circle at bottom right, rgba(110, 231, 183, 0.12), transparent 24%),
+        linear-gradient(180deg, #091321 0%, #060d17 100%);
+      color: var(--text);
+      font-family: "Pretendard", "Apple SD Gothic Neo", sans-serif;
+      padding: 18px;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    select,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1360px, 100%);
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero,
+    .panel,
+    .summary-card,
+    .history-item {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .hero {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      background:
+        linear-gradient(135deg, rgba(125, 211, 252, 0.14), rgba(16, 27, 43, 0.12) 35%),
+        linear-gradient(180deg, rgba(12, 20, 34, 0.98), rgba(10, 17, 29, 0.96));
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--brand);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 12px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(28px, 3.6vw, 46px);
+      line-height: 1.06;
+    }
+
+    .hero p {
+      margin: 12px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 780px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .link-chip,
+    .ghost-button,
+    .primary-button,
+    .target-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 10px 16px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 160ms ease, filter 160ms ease, box-shadow 160ms ease;
+    }
+
+    .primary-button {
+      background: linear-gradient(135deg, #7dd3fc, #60a5fa);
+      color: #08111d;
+      font-weight: 800;
+    }
+
+    .ghost-button,
+    .link-chip,
+    .target-button {
+      background: rgba(125, 211, 252, 0.08);
+      color: var(--text);
+      border-color: rgba(125, 211, 252, 0.18);
+    }
+
+    .target-button.is-active {
+      background: rgba(110, 231, 183, 0.14);
+      border-color: rgba(110, 231, 183, 0.34);
+      color: #d1fae5;
+    }
+
+    .primary-button:hover,
+    .ghost-button:hover,
+    .link-chip:hover,
+    .target-button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .summary-card {
+      padding: 16px 18px;
+      min-height: 124px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .summary-label {
+      margin: 0;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .summary-value {
+      margin: 0;
+      font-size: clamp(22px, 2.8vw, 34px);
+      font-weight: 800;
+    }
+
+    .summary-note {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(330px, 0.88fr);
+      gap: 18px;
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .panel h2,
+    .panel h3,
+    .panel p {
+      margin: 0;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .panel-subtitle {
+      margin-top: 6px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 66px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #06111c;
+    }
+
+    .badge.ok { background: var(--ok); }
+    .badge.warn { background: var(--warn); }
+    .badge.danger { background: var(--danger); color: #fff4f6; }
+
+    .visual-panel {
+      display: grid;
+      gap: 14px;
+    }
+
+    .green-stage {
+      position: relative;
+      min-height: 560px;
+      border-radius: 22px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top, rgba(255, 255, 255, 0.08), transparent 32%),
+        linear-gradient(180deg, #13311e 0%, #0f2618 52%, #0a1b11 100%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    #putt-view {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .stage-overlay {
+      position: absolute;
+      inset: 14px 16px auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      pointer-events: none;
+    }
+
+    .overlay-card {
+      max-width: 280px;
+      border-radius: 18px;
+      padding: 14px 16px;
+      background: rgba(7, 17, 29, 0.74);
+      border: 1px solid rgba(125, 211, 252, 0.14);
+      backdrop-filter: blur(12px);
+    }
+
+    .overlay-card p {
+      margin-top: 6px;
+      color: rgba(239, 246, 255, 0.76);
+      line-height: 1.5;
+      font-size: 13px;
+    }
+
+    .overlay-kicker {
+      color: var(--brand);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric-box,
+    .control-group,
+    .history-panel {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+      padding: 14px;
+    }
+
+    .metric-box strong,
+    .control-group strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-value {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .metric-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .side-panel {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .target-row,
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .control-group {
+      display: grid;
+      gap: 12px;
+    }
+
+    .control-label {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight: 600;
+    }
+
+    .control-help {
+      margin: -4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    input[type="range"],
+    select {
+      width: 100%;
+      accent-color: #7dd3fc;
+    }
+
+    select {
+      border-radius: 14px;
+      background: rgba(8, 17, 29, 0.88);
+      color: var(--text);
+      border: 1px solid rgba(125, 211, 252, 0.18);
+      padding: 10px 12px;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 10px;
+      max-height: 290px;
+      overflow: auto;
+    }
+
+    .history-item {
+      padding: 12px 14px;
+      background: rgba(15, 25, 40, 0.84);
+    }
+
+    .history-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+
+    .history-title {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .history-copy {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 1080px) {
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .green-stage {
+        min-height: 500px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 12px;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-actions {
+        align-items: flex-start;
+      }
+
+      .summary-grid,
+      .mini-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .green-stage {
+        min-height: 420px;
+      }
+
+      .stage-overlay {
+        position: static;
+        display: grid;
+        gap: 10px;
+        padding: 14px 14px 0;
+      }
+
+      .overlay-card {
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">golfsim advanced sensor mode</p>
+        <h1>퍼터 세션 · 고급 센서 모드</h1>
+        <p>휴대폰 센서를 이용해 퍼팅 스트로크의 거리감, 시작 라인, 템포를 연습하는 모바일 우선 세션입니다. 메인 게임 안 퍼터 세션이 빠른 거리감 훈련용이라면, 이 페이지는 센서 캘리브레이션과 스트로크 이력을 더 깊게 다루는 고급 모드입니다.</p>
+      </div>
+      <div class="hero-actions">
+        <a class="link-chip" href="./index.html">레인지 세션으로 돌아가기</a>
+        <button id="refresh-reset" class="ghost-button" type="button">세션 초기화</button>
+      </div>
+    </header>
+
+    <section class="summary-grid" aria-label="퍼터 세션 요약">
+      <article class="summary-card">
+        <p class="summary-label">현재 상태</p>
+        <p id="summary-state" class="summary-value">준비</p>
+        <p id="summary-state-note" class="summary-note">센서를 연결하거나 수동 스트로크로 시작하세요.</p>
+      </article>
+      <article class="summary-card">
+        <p class="summary-label">타깃</p>
+        <p id="summary-target" class="summary-value">3.0m</p>
+        <p id="summary-green" class="summary-note">그린 보통 · Stimp 10</p>
+      </article>
+      <article class="summary-card">
+        <p class="summary-label">직전 결과</p>
+        <p id="summary-result" class="summary-value">결과 없음</p>
+        <p id="summary-result-note" class="summary-note">첫 스트로크 후 거리 오차와 라인 오차가 표시됩니다.</p>
+      </article>
+      <article class="summary-card">
+        <p class="summary-label">센서</p>
+        <p id="summary-sensor" class="summary-value">대기</p>
+        <p id="summary-sensor-note" class="summary-note">DeviceMotion 권한과 캘리브레이션 상태를 보여줍니다.</p>
+      </article>
+    </section>
+
+    <section class="workspace">
+      <section class="panel visual-panel">
+        <div class="panel-header">
+          <div>
+            <h2>실전형 퍼팅 그린</h2>
+            <p class="panel-subtitle">컵은 목표 거리 선상에 고정되고, 현재 스트로크와 최근 퍼팅 결과가 같은 좌표계에서 누적됩니다.</p>
+          </div>
+          <span id="sensor-pill" class="badge warn">sensor idle</span>
+        </div>
+        <div class="green-stage">
+          <div class="stage-overlay">
+            <div class="overlay-card">
+              <div class="overlay-kicker">stroke</div>
+              <strong id="overlay-stroke">준비</strong>
+              <p id="overlay-stroke-note">센서 연결 후 캘리브레이션을 하고, 스트로크 대기로 들어가면 실제 퍼팅처럼 한 번에 흔들어 주세요.</p>
+            </div>
+            <div class="overlay-card">
+              <div class="overlay-kicker">live</div>
+              <strong id="overlay-live">볼 스피드 0.00 m/s</strong>
+              <p id="overlay-live-note">실시간 센서 강도와 템포 평가가 여기서 갱신됩니다.</p>
+            </div>
+          </div>
+          <canvas id="putt-view" width="1080" height="620" aria-label="퍼터 세션 그린"></canvas>
+        </div>
+        <div class="mini-grid">
+          <article class="metric-box">
+            <strong>거리 오차</strong>
+            <div id="metric-distance-error" class="metric-value">-</div>
+            <div id="metric-distance-note" class="metric-note">짧게/길게 여부를 표시합니다.</div>
+          </article>
+          <article class="metric-box">
+            <strong>라인 오차</strong>
+            <div id="metric-line-error" class="metric-value">-</div>
+            <div id="metric-line-note" class="metric-note">시작 라인 또는 홀 통과 시 좌우 오차입니다.</div>
+          </article>
+          <article class="metric-box">
+            <strong>볼 스피드</strong>
+            <div id="metric-ball-speed" class="metric-value">-</div>
+            <div id="metric-ball-speed-note" class="metric-note">센서 또는 수동 fallback에서 계산된 초기 속도입니다.</div>
+          </article>
+          <article class="metric-box">
+            <strong>템포 / 품질</strong>
+            <div id="metric-tempo" class="metric-value">-</div>
+            <div id="metric-tempo-note" class="metric-note">리듬과 스트로크 품질을 100점 기준으로 환산합니다.</div>
+          </article>
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <section class="panel control-group">
+          <div>
+            <h2>세션 규칙</h2>
+            <p class="panel-subtitle">이번 MVP는 평평한 그린과 하나의 컵만 다루고, 거리 조절과 시작 라인 피드백에 집중합니다.</p>
+          </div>
+          <div>
+            <div class="control-label">목표 거리</div>
+            <div id="target-row" class="target-row">
+              <button class="target-button is-active" type="button" data-target="1.5">1.5m</button>
+              <button class="target-button" type="button" data-target="3">3.0m</button>
+              <button class="target-button" type="button" data-target="5">5.0m</button>
+              <button class="target-button" type="button" data-target="8">8.0m</button>
+            </div>
+          </div>
+          <label>
+            <span class="control-label">그린 속도</span>
+            <select id="green-speed">
+              <option value="slow">느림 · Stimp 8.5</option>
+              <option value="medium" selected>보통 · Stimp 10</option>
+              <option value="fast">빠름 · Stimp 11.5</option>
+            </select>
+          </label>
+          <p class="control-help">빠른 그린일수록 같은 스트로크로 더 멀리 굴러갑니다.</p>
+        </section>
+
+        <section class="panel control-group">
+          <div>
+            <h2>센서 입력</h2>
+            <p class="panel-subtitle">휴대폰 상단이 목표 방향을 향하도록 세우고, 주소 자세에서 캘리브레이션 후 스트로크를 시작합니다.</p>
+          </div>
+          <div class="button-row">
+            <button id="connect-sensor" class="primary-button" type="button">센서 연결</button>
+            <button id="calibrate-sensor" class="ghost-button" type="button">캘리브레이션</button>
+            <button id="arm-stroke" class="ghost-button" type="button">스트로크 대기</button>
+          </div>
+          <div class="mini-grid">
+            <article class="metric-box">
+              <strong>권한 상태</strong>
+              <div id="permission-status" class="metric-value">idle</div>
+              <div id="permission-note" class="metric-note">iOS에서는 첫 탭 때 권한 요청이 뜹니다.</div>
+            </article>
+            <article class="metric-box">
+              <strong>센서 강도</strong>
+              <div id="sensor-live" class="metric-value">0.00</div>
+              <div id="sensor-live-note" class="metric-note">noise floor를 넘기면 실제 스트로크로 판단합니다.</div>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel control-group">
+          <div>
+            <h2>fallback QA</h2>
+            <p class="panel-subtitle">센서가 없거나 권한을 거부해도 같은 물리 모델로 거리감과 라인 감을 검증할 수 있습니다.</p>
+          </div>
+          <label>
+            <span class="control-label">수동 스트로크 강도</span>
+            <input id="manual-power" type="range" min="0" max="100" step="1" value="55" />
+          </label>
+          <p id="manual-power-note" class="control-help">현재 강도 55 · 기준적으로 3m 퍼트 정도를 겨냥합니다.</p>
+          <div class="button-row">
+            <button id="manual-putt" class="ghost-button" type="button">수동 스트로크 실행</button>
+          </div>
+        </section>
+
+        <section class="panel history-panel">
+          <div class="panel-header">
+            <div>
+              <h2>최근 퍼팅 이력</h2>
+              <p class="panel-subtitle">최근 6개 퍼트를 거리 오차와 라인 오차 기준으로 바로 비교합니다.</p>
+            </div>
+            <span id="history-count" class="badge ok">0</span>
+          </div>
+          <div id="history-list" class="history-list"></div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script type="module">
+    import {
+      GREEN_PRESETS,
+      TARGET_DISTANCES_M,
+      analyzeStrokeSamples,
+      createManualStrokeProfile,
+      describePuttResult,
+      simulatePutt,
+    } from "./putt-model.js";
+
+    const canvas = document.getElementById("putt-view");
+    const ctx = canvas.getContext("2d");
+    const refreshResetBtn = document.getElementById("refresh-reset");
+    const connectSensorBtn = document.getElementById("connect-sensor");
+    const calibrateSensorBtn = document.getElementById("calibrate-sensor");
+    const armStrokeBtn = document.getElementById("arm-stroke");
+    const greenSpeedSelect = document.getElementById("green-speed");
+    const manualPowerInput = document.getElementById("manual-power");
+    const manualPowerNote = document.getElementById("manual-power-note");
+    const manualPuttBtn = document.getElementById("manual-putt");
+    const targetRow = document.getElementById("target-row");
+    const historyList = document.getElementById("history-list");
+    const historyCount = document.getElementById("history-count");
+    const sensorPill = document.getElementById("sensor-pill");
+
+    const summaryState = document.getElementById("summary-state");
+    const summaryStateNote = document.getElementById("summary-state-note");
+    const summaryTarget = document.getElementById("summary-target");
+    const summaryGreen = document.getElementById("summary-green");
+    const summaryResult = document.getElementById("summary-result");
+    const summaryResultNote = document.getElementById("summary-result-note");
+    const summarySensor = document.getElementById("summary-sensor");
+    const summarySensorNote = document.getElementById("summary-sensor-note");
+
+    const overlayStroke = document.getElementById("overlay-stroke");
+    const overlayStrokeNote = document.getElementById("overlay-stroke-note");
+    const overlayLive = document.getElementById("overlay-live");
+    const overlayLiveNote = document.getElementById("overlay-live-note");
+
+    const permissionStatus = document.getElementById("permission-status");
+    const permissionNote = document.getElementById("permission-note");
+    const sensorLive = document.getElementById("sensor-live");
+    const sensorLiveNote = document.getElementById("sensor-live-note");
+
+    const metricDistanceError = document.getElementById("metric-distance-error");
+    const metricDistanceNote = document.getElementById("metric-distance-note");
+    const metricLineError = document.getElementById("metric-line-error");
+    const metricLineNote = document.getElementById("metric-line-note");
+    const metricBallSpeed = document.getElementById("metric-ball-speed");
+    const metricBallSpeedNote = document.getElementById("metric-ball-speed-note");
+    const metricTempo = document.getElementById("metric-tempo");
+    const metricTempoNote = document.getElementById("metric-tempo-note");
+
+    const MAX_HISTORY = 6;
+    const BASE_WORLD_WIDTH = 9.5;
+
+    const state = {
+      mode: "ready",
+      message: "센서를 연결하거나 수동 스트로크로 시작하세요.",
+      targetDistanceM: 3,
+      greenPresetId: "medium",
+      strokeCount: 0,
+      history: [],
+      lastResult: null,
+      ball: {
+        trajectory: [{ x: 0, z: 0 }],
+        progress: 1,
+        position: { x: 0, z: 0 },
+        active: false,
+      },
+      sensor: {
+        supported: typeof DeviceMotionEvent !== "undefined",
+        permission: "idle",
+        connected: false,
+        calibrated: false,
+        calibrationActive: false,
+        calibrationSamples: [],
+        baselineMagnitude: 0,
+        noiseFloor: 0.18,
+        liveMagnitude: 0,
+        captureArmed: false,
+        captureActive: false,
+        captureSamples: [],
+        quietMs: 0,
+        lastTimestamp: 0,
+        lastStroke: null,
+      },
+      manualPower: 55,
+    };
+
+    let motionListenerAttached = false;
+    let lastFrameTime = performance.now();
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function currentGreenPreset() {
+      return GREEN_PRESETS[state.greenPresetId] ?? GREEN_PRESETS.medium;
+    }
+
+    function getWorldWidth() {
+      return Math.max(BASE_WORLD_WIDTH, state.targetDistanceM + 2.2);
+    }
+
+    function worldToCanvas(point) {
+      const paddingX = 72;
+      const paddingY = 64;
+      const width = getWorldWidth();
+      const minZ = -1.6;
+      const maxZ = 1.6;
+      const x = paddingX + (point.x / width) * (canvas.width - paddingX * 2);
+      const y = canvas.height - paddingY - ((point.z - minZ) / (maxZ - minZ)) * (canvas.height - paddingY * 2);
+      return { x, y };
+    }
+
+    function setMode(mode, message) {
+      state.mode = mode;
+      if (message) {
+        state.message = message;
+      }
+    }
+
+    function strokeStateLabel() {
+      switch (state.mode) {
+        case "calibrating":
+          return "캘리브레이션";
+        case "armed":
+          return "스트로크 대기";
+        case "tracking":
+          return "롤 재생 중";
+        case "result":
+          return "결과 확인";
+        default:
+          return "준비";
+      }
+    }
+
+    function sensorStatusLabel() {
+      if (!state.sensor.supported) return "unsupported";
+      if (!state.sensor.connected) return "idle";
+      if (state.sensor.captureActive) return "capturing";
+      if (state.sensor.captureArmed) return "armed";
+      if (state.sensor.calibrated) return "ready";
+      return "connected";
+    }
+
+    function updateTargetButtons() {
+      targetRow.querySelectorAll(".target-button").forEach((button) => {
+        button.classList.toggle("is-active", Number(button.dataset.target) === state.targetDistanceM);
+      });
+    }
+
+    function updateUi() {
+      const greenPreset = currentGreenPreset();
+      const last = state.lastResult;
+      const sensorReady = state.sensor.supported && state.sensor.connected && state.sensor.calibrated;
+      const permissionTone = state.sensor.permission === "denied" ? "danger" : sensorReady ? "ok" : "warn";
+
+      summaryState.textContent = strokeStateLabel();
+      summaryStateNote.textContent = state.message;
+      summaryTarget.textContent = `${state.targetDistanceM.toFixed(1)}m`;
+      summaryGreen.textContent = `그린 ${greenPreset.label} · Stimp ${greenPreset.stimp}`;
+      summaryResult.textContent = last ? (last.simulation.madePutt ? "홀인" : describePuttResult(last.simulation)) : "결과 없음";
+      summaryResultNote.textContent = last
+        ? `${last.analysis.source === "sensor" ? "센서" : "fallback"} · 품질 ${last.analysis.qualityScore}점`
+        : "첫 스트로크 후 거리 오차와 라인 오차가 표시됩니다.";
+      summarySensor.textContent = sensorStatusLabel();
+      summarySensorNote.textContent = sensorReady
+        ? `noise floor ${state.sensor.noiseFloor.toFixed(2)} · 실사용 준비`
+        : state.sensor.supported
+          ? "DeviceMotion 권한과 캘리브레이션 상태를 보여줍니다."
+          : "이 브라우저에서는 센서가 없어 fallback QA만 가능합니다.";
+
+      overlayStroke.textContent = strokeStateLabel();
+      overlayStrokeNote.textContent = state.message;
+      overlayLive.textContent = last
+        ? `볼 스피드 ${last.analysis.ballSpeedMps.toFixed(2)} m/s`
+        : `볼 스피드 ${state.sensor.liveMagnitude.toFixed(2)} m/s²`;
+      overlayLiveNote.textContent = last
+        ? `시작 라인 ${last.analysis.startDirectionDeg.toFixed(1)}° · 템포 ${last.analysis.tempoScore}`
+        : `실시간 센서 강도 ${state.sensor.liveMagnitude.toFixed(2)} · noise ${state.sensor.noiseFloor.toFixed(2)}`;
+
+      permissionStatus.textContent = state.sensor.permission;
+      permissionNote.textContent = sensorReady
+        ? "권한과 캘리브레이션이 완료되어 실제 스트로크를 받을 수 있습니다."
+        : "iOS에서는 첫 탭 때 권한 요청이 뜨고, 연결 후 반드시 캘리브레이션을 먼저 해야 합니다.";
+      sensorLive.textContent = state.sensor.liveMagnitude.toFixed(2);
+      sensorLiveNote.textContent = `noise floor ${state.sensor.noiseFloor.toFixed(2)} · ${state.sensor.captureArmed ? "armed" : "idle"}`;
+
+      metricDistanceError.textContent = last ? `${last.simulation.distanceErrorM >= 0 ? "+" : ""}${last.simulation.distanceErrorM.toFixed(2)}m` : "-";
+      metricDistanceNote.textContent = last ? describePuttResult(last.simulation) : "짧게/길게 여부를 표시합니다.";
+      metricLineError.textContent = last ? `${last.simulation.lateralMissM >= 0 ? "+" : ""}${last.simulation.lateralMissM.toFixed(2)}m` : "-";
+      metricLineNote.textContent = last ? `시작 라인 ${last.analysis.startDirectionDeg.toFixed(1)}°` : "시작 라인 또는 홀 통과 시 좌우 오차입니다.";
+      metricBallSpeed.textContent = last ? `${last.analysis.ballSpeedMps.toFixed(2)} m/s` : "-";
+      metricBallSpeedNote.textContent = last
+        ? `${last.analysis.source === "sensor" ? "센서" : "fallback"} 입력 · peak ${last.analysis.peakAcceleration?.toFixed?.(2) ?? "0.00"}`
+        : "센서 또는 수동 fallback에서 계산된 초기 속도입니다.";
+      metricTempo.textContent = last ? `${last.analysis.tempoScore} / ${last.analysis.qualityScore}` : "-";
+      metricTempoNote.textContent = last
+        ? `tempo ${last.analysis.tempoScore} · smoothness ${last.analysis.smoothnessScore}`
+        : "리듬과 스트로크 품질을 100점 기준으로 환산합니다.";
+
+      manualPowerNote.textContent = `현재 강도 ${state.manualPower} · ${state.targetDistanceM.toFixed(1)}m 퍼트를 기준으로 같은 물리 모델을 사용합니다.`;
+      updateTargetButtons();
+      greenSpeedSelect.value = state.greenPresetId;
+
+      sensorPill.className = `badge ${permissionTone}`;
+      sensorPill.textContent = sensorStatusLabel();
+
+      calibrateSensorBtn.disabled = !state.sensor.supported || !state.sensor.connected;
+      armStrokeBtn.disabled = !sensorReady || state.sensor.captureActive;
+      connectSensorBtn.disabled = !state.sensor.supported && state.sensor.permission !== "granted";
+      renderHistory();
+    }
+
+    function renderHistory() {
+      historyCount.textContent = String(state.history.length);
+      historyCount.className = `badge ${state.history.length ? "ok" : "warn"}`;
+      historyList.innerHTML = state.history.length
+        ? state.history
+            .map((entry) => `
+              <article class="history-item">
+                <div class="history-head">
+                  <div class="history-title">퍼트 ${entry.strokeNo} · ${entry.analysis.source === "sensor" ? "센서" : "fallback"}</div>
+                  <span class="badge ${entry.simulation.madePutt ? "ok" : Math.abs(entry.simulation.distanceErrorM) < 0.25 ? "warn" : "danger"}">${entry.simulation.madePutt ? "made" : "miss"}</span>
+                </div>
+                <div class="history-copy">거리 오차 ${entry.simulation.distanceErrorM.toFixed(2)}m · 라인 ${entry.simulation.lateralMissM.toFixed(2)}m</div>
+                <div class="history-copy">볼 스피드 ${entry.analysis.ballSpeedMps.toFixed(2)} m/s · 템포 ${entry.analysis.tempoScore} · 품질 ${entry.analysis.qualityScore}</div>
+              </article>
+            `)
+            .join("")
+        : `<div class="history-item"><div class="history-copy">아직 퍼팅 이력이 없습니다.</div></div>`;
+    }
+
+    function drawGreen() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      gradient.addColorStop(0, "#19472a");
+      gradient.addColorStop(0.45, "#144023");
+      gradient.addColorStop(1, "#0d2617");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const outer = {
+        x: worldToCanvas({ x: 0, z: 1.45 }).x,
+        y: worldToCanvas({ x: 0, z: 1.45 }).y,
+      };
+      const left = worldToCanvas({ x: 0, z: 1.2 });
+      const right = worldToCanvas({ x: getWorldWidth(), z: -1.2 });
+
+      ctx.fillStyle = "rgba(209, 250, 229, 0.04)";
+      ctx.beginPath();
+      ctx.roundRect(left.x - 30, outer.y - 36, right.x - left.x + 60, left.y - right.y + 72, 36);
+      ctx.fill();
+
+      const cupPoint = worldToCanvas({ x: state.targetDistanceM, z: 0 });
+      const teePoint = worldToCanvas({ x: 0, z: 0 });
+
+      ctx.strokeStyle = "rgba(255,255,255,0.08)";
+      ctx.setLineDash([8, 12]);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(teePoint.x, teePoint.y);
+      ctx.lineTo(cupPoint.x, cupPoint.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      const targetRing = 28;
+      ctx.strokeStyle = "rgba(125, 211, 252, 0.4)";
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.arc(cupPoint.x, cupPoint.y, targetRing, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = "#06111c";
+      ctx.beginPath();
+      ctx.arc(cupPoint.x, cupPoint.y, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.26)";
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(239,246,255,0.76)";
+      ctx.font = "12px Pretendard";
+      ctx.fillText(`${state.targetDistanceM.toFixed(1)}m`, cupPoint.x - 18, cupPoint.y - 20);
+
+      state.history.slice().reverse().forEach((entry, index) => {
+        const marker = worldToCanvas({ x: entry.simulation.stopDistanceM, z: entry.simulation.lateralMissM });
+        const alpha = 0.2 + (index + 1) / Math.max(1, state.history.length) * 0.16;
+        ctx.fillStyle = `rgba(125, 211, 252, ${alpha.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(marker.x, marker.y, 8, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function drawTrajectory() {
+      const last = state.lastResult;
+      if (!last || !last.simulation.trajectory?.length) return;
+      const visibleTrajectory = last.simulation.trajectory.map((point) => worldToCanvas(point));
+      ctx.strokeStyle = "rgba(125, 211, 252, 0.74)";
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(visibleTrajectory[0].x, visibleTrajectory[0].y);
+      for (let index = 1; index < visibleTrajectory.length - 1; index += 1) {
+        const midX = (visibleTrajectory[index].x + visibleTrajectory[index + 1].x) * 0.5;
+        const midY = (visibleTrajectory[index].y + visibleTrajectory[index + 1].y) * 0.5;
+        ctx.quadraticCurveTo(visibleTrajectory[index].x, visibleTrajectory[index].y, midX, midY);
+      }
+      const lastPoint = visibleTrajectory[visibleTrajectory.length - 1];
+      ctx.lineTo(lastPoint.x, lastPoint.y);
+      ctx.stroke();
+    }
+
+    function drawBall() {
+      const point = worldToCanvas(state.ball.position);
+      const shadowY = point.y + 16;
+
+      ctx.fillStyle = "rgba(0,0,0,0.22)";
+      ctx.beginPath();
+      ctx.ellipse(point.x, shadowY, 18, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      const halo = ctx.createRadialGradient(point.x, point.y, 6, point.x, point.y, 28);
+      halo.addColorStop(0, "rgba(255,255,255,0.98)");
+      halo.addColorStop(0.55, "rgba(227, 244, 255, 0.92)");
+      halo.addColorStop(1, "rgba(125, 211, 252, 0.12)");
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(4, 12, 24, 0.28)";
+      ctx.stroke();
+    }
+
+    function render() {
+      drawGreen();
+      drawTrajectory();
+      drawBall();
+      updateUi();
+    }
+
+    function setBallTrajectory(simulation) {
+      state.ball.trajectory = simulation.trajectory.map((point) => ({ ...point }));
+      state.ball.position = { ...state.ball.trajectory[0] };
+      state.ball.progress = 0;
+      state.ball.active = true;
+    }
+
+    function commitResult(analysis, simulation) {
+      state.strokeCount += 1;
+      const record = {
+        strokeNo: state.strokeCount,
+        analysis,
+        simulation,
+      };
+      state.lastResult = record;
+      state.history = [record, ...state.history].slice(0, MAX_HISTORY);
+      setBallTrajectory(simulation);
+      setMode("tracking", simulation.madePutt ? "홀인 라인을 재생합니다." : "볼이 굴러가는 결과를 재생합니다.");
+    }
+
+    function runStroke(analysis) {
+      const simulation = simulatePutt({
+        ballSpeedMps: analysis.ballSpeedMps,
+        targetDistanceM: state.targetDistanceM,
+        startDirectionDeg: analysis.startDirectionDeg,
+        greenStimp: currentGreenPreset().stimp,
+      });
+      state.sensor.lastStroke = analysis;
+      commitResult(analysis, simulation);
+    }
+
+    function resetCapture() {
+      state.sensor.captureActive = false;
+      state.sensor.captureArmed = false;
+      state.sensor.captureSamples = [];
+      state.sensor.quietMs = 0;
+      state.sensor.lastTimestamp = 0;
+    }
+
+    function finalizeCalibration() {
+      const samples = state.sensor.calibrationSamples;
+      if (samples.length < 8) {
+        setMode("ready", "캘리브레이션 샘플이 부족합니다. 휴대폰을 고정한 채 다시 시도하세요.");
+        state.sensor.calibrationActive = false;
+        return;
+      }
+      const magnitudes = samples.map((sample) => sample.magnitude);
+      const averageMagnitude = magnitudes.reduce((sum, value) => sum + value, 0) / magnitudes.length;
+      const averageForward = samples.reduce((sum, sample) => sum + Math.abs(sample.forward), 0) / samples.length;
+      const variance = magnitudes.reduce((sum, value) => sum + (value - averageMagnitude) ** 2, 0) / samples.length;
+      const deviation = Math.sqrt(variance);
+      state.sensor.baselineMagnitude = averageMagnitude;
+      state.sensor.noiseFloor = clamp(averageForward + deviation * 1.4 + 0.09, 0.12, 0.7);
+      state.sensor.calibrated = true;
+      state.sensor.calibrationActive = false;
+      state.sensor.calibrationSamples = [];
+      setMode("ready", `캘리브레이션 완료 · noise floor ${state.sensor.noiseFloor.toFixed(2)} 기준으로 실제 스트로크를 감지합니다.`);
+    }
+
+    function processSensorSample(sample) {
+      state.sensor.liveMagnitude = sample.magnitude;
+
+      if (state.sensor.calibrationActive) {
+        state.sensor.calibrationSamples.push(sample);
+        if (state.sensor.calibrationSamples.length >= 18) {
+          finalizeCalibration();
+        }
+      }
+
+      if (!state.sensor.captureArmed && !state.sensor.captureActive) {
+        return;
+      }
+
+      const threshold = Math.max(0.18, state.sensor.noiseFloor * 2.1);
+      const magnitude = Math.abs(sample.forward) > Math.abs(sample.magnitude) ? Math.abs(sample.forward) : sample.magnitude;
+
+      if (!state.sensor.captureActive) {
+        if (magnitude >= threshold) {
+          state.sensor.captureActive = true;
+          state.sensor.captureSamples = [sample];
+          state.sensor.lastTimestamp = sample.timestamp;
+          state.sensor.quietMs = 0;
+          setMode("tracking", "센서 스트로크를 포착했습니다. 결과를 계산합니다.");
+        }
+        return;
+      }
+
+      const previousTimestamp = state.sensor.lastTimestamp || sample.timestamp;
+      const deltaMs = clamp(sample.timestamp - previousTimestamp, 4, 120);
+      state.sensor.lastTimestamp = sample.timestamp;
+      state.sensor.captureSamples.push(sample);
+
+      if (magnitude < state.sensor.noiseFloor * 1.15) {
+        state.sensor.quietMs += deltaMs;
+      } else {
+        state.sensor.quietMs = 0;
+      }
+
+      const captureDuration = sample.timestamp - state.sensor.captureSamples[0].timestamp;
+      if ((state.sensor.quietMs >= 180 && captureDuration >= 180) || captureDuration >= 1400) {
+        const analysis = analyzeStrokeSamples(state.sensor.captureSamples, {
+          noiseFloor: state.sensor.noiseFloor,
+        });
+        resetCapture();
+        if (!analysis.valid) {
+          setMode("ready", "유효한 스트로크를 만들지 못했습니다. 더 크게 또는 더 매끈하게 스트로크해 보세요.");
+          return;
+        }
+        runStroke(analysis);
+      }
+    }
+
+    function sampleFromMotionEvent(event) {
+      const acceleration = event.acceleration || event.accelerationIncludingGravity || {};
+      const x = Number.isFinite(acceleration.x) ? acceleration.x : 0;
+      const y = Number.isFinite(acceleration.y) ? acceleration.y : 0;
+      const z = Number.isFinite(acceleration.z) ? acceleration.z : 0;
+      const magnitude = Math.hypot(x, y, z);
+      return {
+        timestamp: Number.isFinite(event.timeStamp) ? event.timeStamp : performance.now(),
+        x,
+        y,
+        z,
+        magnitude,
+        forward: -y,
+        lateral: x,
+        twist: Number.isFinite(event.rotationRate?.gamma) ? event.rotationRate.gamma : 0,
+      };
+    }
+
+    function attachMotionListener() {
+      if (motionListenerAttached) return;
+      window.addEventListener("devicemotion", (event) => {
+        processSensorSample(sampleFromMotionEvent(event));
+      });
+      motionListenerAttached = true;
+    }
+
+    async function connectSensors() {
+      if (!state.sensor.supported) {
+        state.sensor.permission = "unsupported";
+        setMode("ready", "이 기기에서는 DeviceMotion을 지원하지 않아 fallback QA만 가능합니다.");
+        render();
+        return;
+      }
+
+      try {
+        if (typeof DeviceMotionEvent.requestPermission === "function") {
+          const result = await DeviceMotionEvent.requestPermission();
+          state.sensor.permission = result === "granted" ? "granted" : "denied";
+        } else {
+          state.sensor.permission = "granted";
+        }
+      } catch {
+        state.sensor.permission = "denied";
+      }
+
+      if (state.sensor.permission === "granted") {
+        attachMotionListener();
+        state.sensor.connected = true;
+        setMode("ready", "센서 연결 완료. 휴대폰을 주소 자세로 고정한 뒤 캘리브레이션을 진행하세요.");
+      } else {
+        setMode("ready", "센서 권한이 거부되었습니다. 수동 fallback으로도 같은 물리 모델을 검증할 수 있습니다.");
+      }
+      render();
+    }
+
+    function startCalibration() {
+      if (!state.sensor.connected) {
+        setMode("ready", "먼저 센서를 연결해야 합니다.");
+        render();
+        return;
+      }
+      state.sensor.calibrationActive = true;
+      state.sensor.calibrationSamples = [];
+      setMode("calibrating", "휴대폰을 주소 자세로 1초 정도 고정해 주세요.");
+      render();
+    }
+
+    function armStrokeCapture() {
+      if (!state.sensor.calibrated) {
+        setMode("ready", "센서 캘리브레이션을 먼저 완료해야 합니다.");
+        render();
+        return;
+      }
+      state.sensor.captureArmed = true;
+      state.sensor.captureActive = false;
+      state.sensor.captureSamples = [];
+      state.sensor.quietMs = 0;
+      setMode("armed", "이제 실제 퍼팅처럼 한 번의 스트로크를 해 보세요.");
+      render();
+    }
+
+    function runManualStroke() {
+      const analysis = createManualStrokeProfile({
+        power: state.manualPower,
+        lineAdjustmentDeg: 0,
+      });
+      runStroke(analysis);
+      render();
+    }
+
+    function resetSession() {
+      state.mode = "ready";
+      state.message = "센서를 연결하거나 수동 스트로크로 시작하세요.";
+      state.strokeCount = 0;
+      state.history = [];
+      state.lastResult = null;
+      state.ball = {
+        trajectory: [{ x: 0, z: 0 }],
+        progress: 1,
+        position: { x: 0, z: 0 },
+        active: false,
+      };
+      resetCapture();
+      render();
+    }
+
+    function update(dt) {
+      if (!state.ball.active || !state.lastResult) return;
+      const duration = Math.max(0.8, state.lastResult.simulation.rollTimeMs / 1000);
+      state.ball.progress = clamp(state.ball.progress + dt / duration, 0, 1);
+      const trajectory = state.ball.trajectory;
+      const scaledIndex = state.ball.progress * Math.max(0, trajectory.length - 1);
+      const index = Math.floor(scaledIndex);
+      const nextIndex = Math.min(trajectory.length - 1, index + 1);
+      const localT = scaledIndex - index;
+      const from = trajectory[index];
+      const to = trajectory[nextIndex];
+      state.ball.position = {
+        x: lerp(from.x, to.x, localT),
+        z: lerp(from.z, to.z, localT),
+      };
+      if (state.ball.progress >= 1) {
+        state.ball.active = false;
+        setMode("result", state.lastResult.simulation.madePutt ? "홀인했습니다. 다시 스트로크하거나 타깃 거리를 바꿔보세요." : "결과를 읽고 다시 스트로크할 수 있습니다.");
+      }
+    }
+
+    function frame(now) {
+      const dt = Math.min(0.033, (now - lastFrameTime) / 1000 || 0.016);
+      lastFrameTime = now;
+      update(dt);
+      render();
+      requestAnimationFrame(frame);
+    }
+
+    function setTargetDistance(nextTarget) {
+      state.targetDistanceM = clamp(nextTarget, TARGET_DISTANCES_M[0], TARGET_DISTANCES_M[TARGET_DISTANCES_M.length - 1]);
+      if (state.lastResult) {
+        state.message = "타깃 거리를 바꿨습니다. 다시 스트로크해 새 결과를 확인하세요.";
+      }
+      render();
+    }
+
+    function setGreenPreset(id) {
+      state.greenPresetId = GREEN_PRESETS[id] ? id : "medium";
+      if (state.lastResult) {
+        state.message = "그린 속도를 바꿨습니다. 같은 강도에서 얼마나 달라지는지 다시 확인하세요.";
+      }
+      render();
+    }
+
+    function setManualPower(value) {
+      state.manualPower = clamp(Number(value), 0, 100);
+      render();
+    }
+
+    function renderStatePayload() {
+      return JSON.stringify({
+        mode: state.mode,
+        message: state.message,
+        targetDistanceM: state.targetDistanceM,
+        greenPreset: currentGreenPreset(),
+        strokeCount: state.strokeCount,
+        sensor: {
+          supported: state.sensor.supported,
+          permission: state.sensor.permission,
+          connected: state.sensor.connected,
+          calibrated: state.sensor.calibrated,
+          captureArmed: state.sensor.captureArmed,
+          captureActive: state.sensor.captureActive,
+          noiseFloor: Number(state.sensor.noiseFloor.toFixed(3)),
+          liveMagnitude: Number(state.sensor.liveMagnitude.toFixed(3)),
+          lastStroke: state.sensor.lastStroke,
+        },
+        lastResult: state.lastResult,
+        history: state.history,
+        ball: {
+          position: {
+            x: Number(state.ball.position.x.toFixed(3)),
+            z: Number(state.ball.position.z.toFixed(3)),
+          },
+          active: state.ball.active,
+          progress: Number(state.ball.progress.toFixed(3)),
+        },
+      });
+    }
+
+    window.render_putter_session_to_text = renderStatePayload;
+    window.advance_putter_time = async (ms) => {
+      const step = 1000 / 60;
+      const loops = Math.max(1, Math.round(ms / step));
+      for (let index = 0; index < loops; index += 1) {
+        update(step / 1000);
+      }
+      render();
+    };
+    window.feed_putter_motion = (sample) => {
+      processSensorSample({
+        timestamp: Number.isFinite(sample.timestamp) ? sample.timestamp : performance.now(),
+        x: Number.isFinite(sample.x) ? sample.x : 0,
+        y: Number.isFinite(sample.y) ? sample.y : 0,
+        z: Number.isFinite(sample.z) ? sample.z : 0,
+        magnitude: Number.isFinite(sample.magnitude) ? sample.magnitude : Math.hypot(sample.x ?? 0, sample.y ?? 0, sample.z ?? 0),
+        forward: Number.isFinite(sample.forward) ? sample.forward : -(sample.y ?? 0),
+        lateral: Number.isFinite(sample.lateral) ? sample.lateral : (sample.x ?? 0),
+        twist: Number.isFinite(sample.twist) ? sample.twist : 0,
+      });
+      render();
+    };
+    window.putterDebug = {
+      forceSensorReady() {
+        state.sensor.permission = "granted";
+        state.sensor.connected = true;
+        state.sensor.calibrated = true;
+        state.sensor.noiseFloor = 0.18;
+        render();
+      },
+      armStrokeCapture,
+      resetSession,
+    };
+
+    refreshResetBtn.addEventListener("click", resetSession);
+    connectSensorBtn.addEventListener("click", connectSensors);
+    calibrateSensorBtn.addEventListener("click", startCalibration);
+    armStrokeBtn.addEventListener("click", armStrokeCapture);
+    manualPuttBtn.addEventListener("click", runManualStroke);
+    greenSpeedSelect.addEventListener("change", () => setGreenPreset(greenSpeedSelect.value));
+    manualPowerInput.addEventListener("input", () => setManualPower(manualPowerInput.value));
+    targetRow.addEventListener("click", (event) => {
+      const button = event.target.closest(".target-button");
+      if (!button) return;
+      setTargetDistance(Number(button.dataset.target));
+    });
+
+    render();
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>

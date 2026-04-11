@@ -14,3 +14,13 @@ command = "npm run dev"
 name = "test"
 icon = "tool"
 command = "npm run action:test"
+
+[[actions]]
+name = "dashboard"
+icon = "tool"
+command = "python3 scripts/codex-harness-dashboard.py"
+
+[[actions]]
+name = "harness-worker"
+icon = "tool"
+command = "python3 scripts/codex-harness-worker.py"

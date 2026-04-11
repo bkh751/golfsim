@@ -1,6 +1,6 @@
 ---
 name: relay-prompts
-description: Generate relay-style prompts for PM, planning, design, development, and review work in the golfsim repository. Use when you need a reusable prompt that follows this repo's AGENTS.md, docs/product.md, parent-issue workflow, and fixed response protocol.
+description: Generate short relay prompts for PM, planning, design, development, and review work in the golfsim repository. Use when you need a reusable prompt that follows this repo's policy context, parent-issue workflow, and free-form compact collaboration style without repeating boilerplate file paths.
 ---
 
 # Relay Prompts
@@ -8,15 +8,10 @@ description: Generate relay-style prompts for PM, planning, design, development,
 Use this skill to generate copy-paste prompts for team handoff in this repository.
 
 This skill is repo-specific. It always assumes:
-- [`AGENTS.md`](/Users/user/workspace/game/golfsim/AGENTS.md) is the collaboration policy
-- [`docs/product.md`](/Users/user/workspace/game/golfsim/docs/product.md) is the product policy
+- 저장소 기본 협업 정책과 제품 방향은 이미 컨텍스트에 적용돼 있다
 - the user is the relay between teams
-- prompts must enforce the fixed response order:
-  - 상태
-  - 이해한 범위
-  - 결과
-  - blocker
-  - 다음 요청
+- prompts should be short, explicit, and free-form
+- fixed response templates should not be enforced
 
 ## Inputs
 
@@ -33,11 +28,11 @@ If any required input is missing, do not invent it. Ask for the missing field di
 
 ## Workflow
 
-1. Read [`AGENTS.md`](/Users/user/workspace/game/golfsim/AGENTS.md) and [`docs/product.md`](/Users/user/workspace/game/golfsim/docs/product.md) if you need to confirm current rules.
+1. 필요할 때만 [`AGENTS.md`](/Users/user/workspace/game/golfsim/AGENTS.md) 와 [`docs/product.md`](/Users/user/workspace/game/golfsim/docs/product.md) 를 확인한다.
 2. Generate a relay prompt for the requested role.
-3. Include `confirmed_context` only as an explicit `현재 확정 내용` section.
-4. Include `blocker_context` only as an explicit `현재 blocker` section.
-5. Keep the prompt short and mechanical. Do not add long explanations.
+3. Include `confirmed_context` only when it changes the next decision.
+4. Include `blocker_context` only when it is truly blocking or redirects the ask.
+5. Keep the prompt short, direct, and easy to relay. Do not add long explanations.
 
 ## Preferred Path
 
@@ -55,7 +50,8 @@ If the script is not appropriate, follow the role defaults in [references/templa
 ## Output Rules
 
 - Always include absolute repo paths.
-- Always include the fixed response order.
 - Always include the parent issue section.
+- Do not restate `AGENTS.md` or `docs/product.md` paths in the prompt unless the user explicitly asks for them.
 - Never invent confirmed decisions or blockers.
 - Keep role-specific additions limited to what that team needs next.
+- Prefer compact asks over verbose templates.

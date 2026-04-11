@@ -8,6 +8,7 @@
     "dev": "node scripts/serve.mjs",
     "action": "node scripts/run-action.mjs",
     "action:test": "node scripts/run-action.mjs test-actions.json",
+    "benchmark:flight": "node scripts/physics-benchmark.mjs",
     "test": "node --test test/*.mjs"
   },
   "keywords": [],

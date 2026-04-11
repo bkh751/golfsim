@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>golfsim Codex Harness Dashboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">golfsim internal operations</p>
+          <h1>Codex Harness Dashboard</h1>
+          <p class="hero-copy">오케스트레이터 상태, 훅 결과, worker 진행 상황, roundtable 산출물을 보여주는 운영 화면이며 repair queue 승인만 예외적으로 허용합니다.</p>
+        </div>
+        <div class="hero-actions">
+          <button id="refresh-button" type="button">새로고침</button>
+          <p id="last-updated" class="muted">불러오는 중...</p>
+        </div>
+      </header>
+
+      <section class="summary-grid" id="summary-grid"></section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2>라우팅 그래프</h2>
+          <p class="muted">dispatch, roundtable, combined 히스토리를 슬라이딩 윈도우로 시각화</p>
+        </div>
+        <div class="routing-toolbar">
+          <label class="routing-control">
+            <span>모드</span>
+            <select id="routing-mode">
+              <option value="combined">통합</option>
+              <option value="roundtable">라운드테이블</option>
+              <option value="dispatch">디스패치</option>
+            </select>
+          </label>
+          <label class="routing-control routing-control-wide">
+            <span id="routing-window-size-label">윈도우 크기 5</span>
+            <input id="routing-window-size" type="range" min="1" max="12" value="5" />
+          </label>
+          <label class="routing-control routing-control-wide">
+            <span id="routing-window-start-label">시작 위치 1</span>
+            <input id="routing-window-start" type="range" min="0" max="0" value="0" />
+          </label>
+        </div>
+        <div class="routing-layout">
+          <article class="card">
+            <div id="routing-summary"></div>
+            <div id="routing-graph" class="routing-graph"></div>
+          </article>
+          <article class="card">
+            <div class="card-header">
+              <h3>window turns</h3>
+              <span id="routing-window-badge" class="badge badge-ok">0</span>
+            </div>
+            <div id="routing-turns" class="routing-turns"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2>지금 필요한 판단</h2>
+          <p class="muted">당장 봐야 할 것, 현재 약한 지점, 안정 신호를 먼저 보여줍니다.</p>
+        </div>
+        <div class="card-grid" id="priority-grid"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2>운영 워크스페이스</h2>
+          <p class="muted">중요한 정보는 overview에 고정하고, 상세 정보는 탭으로 전환합니다.</p>
+        </div>
+        <div class="workspace-shell">
+          <div class="workspace-tabs" id="workspace-tabs">
+            <button class="workspace-tab is-active" type="button" data-panel="overview">오버뷰 <span class="workspace-tab-badge" id="badge-overview">0</span></button>
+            <button class="workspace-tab" type="button" data-panel="improvements">작업 개선 <span class="workspace-tab-badge" id="badge-improvements">0</span></button>
+            <button class="workspace-tab" type="button" data-panel="teams">팀 상태 <span class="workspace-tab-badge" id="badge-teams">0</span></button>
+            <button class="workspace-tab" type="button" data-panel="rounds">라운드 <span class="workspace-tab-badge" id="badge-rounds">0</span></button>
+            <button class="workspace-tab" type="button" data-panel="hooks">훅 <span class="workspace-tab-badge" id="badge-hooks">0</span></button>
+            <button class="workspace-tab" type="button" data-panel="evidence">근거/초안 <span class="workspace-tab-badge" id="badge-evidence">0</span></button>
+            <button class="workspace-tab" type="button" data-panel="logs">이벤트 로그 <span class="workspace-tab-badge" id="badge-logs">0</span></button>
+          </div>
+          <div class="workspace-panels">
+            <section class="workspace-panel is-active" id="panel-overview">
+              <div class="card-grid" id="effectiveness-grid"></div>
+              <div class="card-grid" id="protocol-grid"></div>
+              <div class="card-grid" id="synthesis-grid"></div>
+            </section>
+            <section class="workspace-panel" id="panel-improvements">
+              <div class="card-grid" id="improvements-grid"></div>
+              <div class="card-grid" id="design-backlog-grid"></div>
+              <div class="card-grid" id="repair-grid"></div>
+            </section>
+            <section class="workspace-panel" id="panel-teams">
+              <div class="card-grid" id="teams-grid"></div>
+            </section>
+            <section class="workspace-panel" id="panel-rounds">
+              <div class="card-grid" id="worker-grid"></div>
+              <div class="round-grid" id="rounds-grid"></div>
+            </section>
+            <section class="workspace-panel" id="panel-hooks">
+              <div class="card-grid" id="hooks-grid"></div>
+            </section>
+            <section class="workspace-panel" id="panel-evidence">
+              <div class="card-grid" id="reference-grid"></div>
+              <div class="card-grid" id="findings-grid"></div>
+            </section>
+            <section class="workspace-panel" id="panel-logs">
+              <div class="log-list" id="logs-list"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

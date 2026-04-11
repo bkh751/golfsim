@@ -19,6 +19,10 @@ export function createImpactContext(overrides = {}) {
 }
 
 export function createImpactOutput(context, controls, params) {
+  const manualLaunchMode =
+    Number.isFinite(controls.manualBallSpeedMps) ||
+    Number.isFinite(controls.manualBackspinRpm) ||
+    Number.isFinite(controls.manualSideSpinRpm);
   const strikePenalty = Math.abs(controls.strikeOffsetX) * 0.12 + Math.abs(controls.strikeOffsetY) * 0.09;
   const powerTransfer = 0.34 + controls.powerNorm * 0.72;
   const smash = clamp(
@@ -33,20 +37,24 @@ export function createImpactOutput(context, controls, params) {
     controls.loftDeltaDeg +
     params.attackLoftCoupling * context.attackAngleDeg -
     Math.abs(controls.strikeOffsetY) * 2.4;
-  const launchElevationDeg = clamp(
-    controls.aimDeg +
-      0.2 * context.attackAngleDeg +
-      0.48 * dynamicLoftDeg -
-      params.strikeLaunchPenalty * controls.strikeOffsetY,
-    3,
-    48
-  );
+  const launchElevationDeg = manualLaunchMode
+    ? clamp(controls.aimDeg, 3, 48)
+    : clamp(
+      controls.aimDeg +
+        0.2 * context.attackAngleDeg +
+        0.48 * dynamicLoftDeg -
+        params.strikeLaunchPenalty * controls.strikeOffsetY,
+      3,
+      48
+    );
   const faceToPathDeg = controls.faceAngleBias - controls.clubPathBias + controls.strikeOffsetX * 5.5;
-  const launchAzimuthDeg = clamp(
-    controls.yawDeg + controls.clubPathBias * 0.55 + controls.faceAngleBias * 0.35 + controls.strikeOffsetX * 2.8,
-    -35,
-    35
-  );
+  const launchAzimuthDeg = manualLaunchMode
+    ? clamp(controls.yawDeg, -35, 35)
+    : clamp(
+      controls.yawDeg + controls.clubPathBias * 0.55 + controls.faceAngleBias * 0.35 + controls.strikeOffsetX * 2.8,
+      -35,
+      35
+    );
   const computedSpinRateRpm = clamp(
     params.spinBase +
       (dynamicLoftDeg - context.attackAngleDeg) * params.spinLoftGain +
@@ -92,6 +100,8 @@ export function createImpactOutput(context, controls, params) {
         y: ballSpeed * Math.sin(launchRad),
         z: ballSpeed * Math.cos(launchRad) * Math.sin(azimuthRad),
       },
+      launchDeg: launchElevationDeg,
+      launchAzimuthDeg,
       spinRateRpm,
       spinAxisTiltDeg,
       backspinRpm,

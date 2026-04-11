@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { createFlightState, stepFlightState } from '../flight-engine.js';
 import { createImpactContext, createImpactOutput } from '../impact-agent.js';
 import { DEFAULT_PARAMS, createDefaultControls } from '../swing-model.js';
 import { compareShotMetrics, suggestParameterUpdates } from '../fitting-agent.js';
@@ -98,4 +99,37 @@ test('fitting agent compares measured vs simulated shots and suggests bounded up
   assert.notEqual(tuned.dragCoeff, DEFAULT_PARAMS.dragCoeff);
   assert.notEqual(tuned.magnusCoeff, DEFAULT_PARAMS.magnusCoeff);
   assert.notEqual(tuned.sideMagnusScale, DEFAULT_PARAMS.sideMagnusScale);
+});
+
+test('flight engine calibration stays close to trackman tour-average driver carry window', () => {
+  const mphToMps = (mph) => mph * 0.44704;
+  const launchDeg = 10.4;
+  const backspinRpm = 2545;
+  const launchRad = launchDeg * Math.PI / 180;
+
+  let state = createFlightState({
+    position: { x: 0, y: DEFAULT_PARAMS.ballRadius, z: 0 },
+    velocity: {
+      x: mphToMps(171) * Math.cos(launchRad),
+      y: mphToMps(171) * Math.sin(launchRad),
+      z: 0,
+    },
+    spinRateRpm: backspinRpm,
+    spinAxisTiltDeg: 0,
+    backspinRpm,
+    sidespinRpm: 0,
+    moving: true,
+    launchPos: { x: 0, y: DEFAULT_PARAMS.ballRadius, z: 0 },
+    landingPos: { x: 0, y: DEFAULT_PARAMS.ballRadius, z: 0 },
+    apexHeight: DEFAULT_PARAMS.ballRadius,
+  });
+
+  for (let i = 0; i < 5000 && state.moving; i += 1) {
+    state = stepFlightState(state, { wind: { x: 0, y: 0, z: 0 }, airDensity: 1 }, DEFAULT_PARAMS, 1 / 240);
+  }
+
+  const carryYards = state.carryDistance * 1.09361;
+  const totalYards = state.totalDistance * 1.09361;
+  assert.ok(carryYards > 276 && carryYards < 288, `carry ${carryYards.toFixed(1)} yd`);
+  assert.ok(totalYards > 300 && totalYards < 320, `total ${totalYards.toFixed(1)} yd`);
 });

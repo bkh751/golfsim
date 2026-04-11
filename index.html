@@ -23,30 +23,41 @@
 
     body {
       margin: 0;
-      min-height: 100vh;
+      height: 100dvh;
       padding: 16px;
       background: #ffffff;
       font-family: "Inter", "Noto Sans KR", "Segoe UI", sans-serif;
       color: var(--text);
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
     }
 
     #game-shell {
       width: min(100%, 1535px);
-      min-height: min(calc(100vh - 32px), 936px);
+      height: calc(100dvh - 32px);
       display: grid;
-      grid-template-columns: 300px minmax(0, 1fr) 300px;
+      grid-template-columns: 368px minmax(0, 1fr) 368px;
       gap: 16px;
       background: var(--app-bg);
+      position: relative;
+      overflow: hidden;
+      margin: 0 auto;
+      flex: 1;
     }
 
     .sidebar {
       display: flex;
       flex-direction: column;
       gap: 16px;
-      min-height: min(calc(100vh - 32px), 936px);
+      min-height: 0;
+      height: 100%;
       background: var(--panel);
       border-radius: 10px;
       padding: 16px;
+      overflow: auto;
+      overscroll-behavior: contain;
     }
 
     .sidebar-heading {
@@ -59,6 +70,9 @@
       color: #ffffff;
       font-size: 14px;
       font-weight: 500;
+      position: sticky;
+      top: 0;
+      z-index: 2;
     }
 
     .metric-grid {
@@ -98,6 +112,103 @@
 
     .info-card {
       padding: 16px 17px 15px;
+    }
+
+    .comparison-summary {
+      margin: 0 0 8px;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .comparison-context {
+      margin: 0 0 12px;
+      font-size: 12px;
+      line-height: 17px;
+      color: var(--muted);
+    }
+
+    .comparison-role-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .comparison-role-card {
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      background: rgba(245, 247, 250, 0.92);
+      padding: 10px 12px;
+    }
+
+    .comparison-role-label {
+      margin: 0 0 4px;
+      font-size: 12px;
+      line-height: 16px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .comparison-role-value {
+      margin: 0;
+      font-size: 13px;
+      line-height: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .comparison-role-note {
+      margin: 4px 0 0;
+      font-size: 12px;
+      line-height: 17px;
+      color: var(--muted);
+    }
+
+    .shot-history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .shot-history-item {
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      background: rgba(245, 247, 250, 0.92);
+      padding: 10px 12px;
+    }
+
+    .shot-history-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+
+    .shot-history-title {
+      font-size: 13px;
+      line-height: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .shot-history-delta {
+      font-size: 11px;
+      line-height: 16px;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .shot-history-metrics,
+    .shot-history-inputs,
+    .shot-history-empty {
+      font-size: 12px;
+      line-height: 17px;
+      color: var(--muted);
     }
 
     .info-card h2,
@@ -142,8 +253,46 @@
       color: var(--muted);
     }
 
+    .aux-button-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .aux-button-row button {
+      min-height: 42px;
+    }
+
+    .ready-meter {
+      margin-top: 12px;
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(18, 32, 44, 0.08);
+      overflow: hidden;
+    }
+
+    .ready-meter-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, rgba(43, 127, 255, 0.94), rgba(121, 225, 178, 0.94));
+      box-shadow: 0 0 22px rgba(43, 127, 255, 0.22);
+      transition: width 120ms linear, opacity 140ms ease;
+      opacity: 0.78;
+    }
+
+    .ready-meter-label {
+      margin-top: 8px;
+      font-size: 12px;
+      line-height: 17px;
+      color: var(--muted);
+    }
+
     #game-stage {
-      min-height: min(calc(100vh - 32px), 936px);
+      min-height: 0;
+      height: 100%;
       background: var(--surface);
       border: 2px solid #d1d5dc;
       border-radius: 10px;
@@ -183,6 +332,10 @@
       min-width: 0;
     }
 
+    .session-pill-overview {
+      padding: 8px 10px;
+    }
+
     .session-pill-label {
       display: block;
       color: var(--muted);
@@ -199,11 +352,74 @@
       font-size: 15px;
       line-height: 20px;
       font-weight: 700;
-      white-space: normal;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-height: 20px;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+    }
+
+    .session-details {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .session-details-summary {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .session-details-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .session-pill-meta {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 15px;
+    }
+
+    .session-detail-list {
+      display: grid;
+      gap: 6px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(18, 32, 44, 0.08);
+    }
+
+    .session-detail-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .session-detail-key {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 15px;
+      flex-shrink: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .session-detail-value {
+      color: #12202c;
+      font-size: 13px;
+      line-height: 17px;
+      font-weight: 700;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
     }
 
     #game-viewport {
       flex: 1;
+      min-height: 0;
       width: 100%;
       border-radius: 10px;
       overflow: hidden;
@@ -218,6 +434,18 @@
       display: block;
       outline: none;
       cursor: crosshair;
+      user-select: none;
+      touch-action: none;
+    }
+
+    #game-viewport[data-camera-interaction="fixed-ready"],
+    #game[data-camera-interaction="fixed-ready"] {
+      cursor: grab;
+    }
+
+    #game-viewport[data-camera-interaction="fixed-dragging"],
+    #game[data-camera-interaction="fixed-dragging"] {
+      cursor: grabbing;
     }
 
     #start-btn {
@@ -256,7 +484,8 @@
       font-weight: 500;
     }
 
-    .control-row input {
+    .control-row input,
+    .control-row select {
       width: 100%;
       border: 1px solid var(--panel-border);
       background: var(--surface);
@@ -267,11 +496,110 @@
       height: 38px;
     }
 
+    .button-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .button-row button {
+      flex: 1 1 140px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid #d1d5dc;
+      background: rgba(255, 255, 255, 0.94);
+      color: var(--text);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .button-row button.primary {
+      background: rgba(43, 127, 255, 0.12);
+      border-color: rgba(43, 127, 255, 0.28);
+      color: #1c4fb8;
+    }
+
+    .session-only {
+      display: none !important;
+    }
+
+    #game-shell[data-session-kind="range"] .session-only.range,
+    #game-shell[data-session-kind="putter"] .session-only.putter {
+      display: flex !important;
+    }
+
+    #game-shell[data-session-kind="range"] .session-only.range.block,
+    #game-shell[data-session-kind="putter"] .session-only.putter.block {
+      display: block !important;
+    }
+
     .control-card {
       padding: 16px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+    }
+
+    .putter-guide-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .putter-guide-step {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 12px 12px 11px;
+      border-radius: 12px;
+      border: 1px solid rgba(209, 213, 220, 0.88);
+      background: rgba(255, 255, 255, 0.74);
+    }
+
+    .putter-guide-step[data-state="active"] {
+      border-color: rgba(43, 127, 255, 0.34);
+      background: rgba(43, 127, 255, 0.08);
+    }
+
+    .putter-guide-step[data-state="done"] {
+      border-color: rgba(84, 145, 102, 0.3);
+      background: rgba(84, 145, 102, 0.1);
+    }
+
+    .putter-step-index {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: rgba(16, 32, 44, 0.9);
+      color: #f7fbff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .putter-step-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .putter-step-title {
+      margin: 0;
+      font-size: 13px;
+      line-height: 17px;
+      font-weight: 700;
+      color: #12202c;
+    }
+
+    .putter-step-note {
+      margin: 0;
+      font-size: 12px;
+      line-height: 17px;
+      color: var(--muted);
     }
 
     .aim-range {
@@ -299,11 +627,181 @@
       gap: 10px;
     }
 
+    .is-hidden {
+      display: none !important;
+    }
+
+    .panel-toggle {
+      display: none;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 28;
+      width: 42px;
+      min-height: 112px;
+      border: 0;
+      border-radius: 14px;
+      background: rgba(8, 22, 38, 0.84);
+      color: #f4fbff;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 16px;
+      cursor: pointer;
+      box-shadow: 0 14px 34px rgba(8, 22, 38, 0.18);
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      justify-content: center;
+      align-items: center;
+      padding: 12px 8px;
+    }
+
+    .panel-toggle.left {
+      left: 10px;
+    }
+
+    .panel-toggle.right {
+      right: 10px;
+    }
+
+    .panel-scrim {
+      display: none;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+      background: transparent;
+    }
+
     .button-note {
       margin: 2px 0 0;
       font-size: 12px;
       line-height: 17px;
       color: var(--muted);
+    }
+
+    .session-link {
+      width: 100%;
+      min-height: 44px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      border: 1px solid #d1d5dc;
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    #game-shell[data-session-kind="putter"] .session-link {
+      display: inline-flex !important;
+    }
+
+    .control-row-note {
+      margin: 2px 0 0;
+      font-size: 12px;
+      line-height: 17px;
+      color: var(--muted);
+      transition: color 120ms ease, transform 120ms ease;
+    }
+
+    .control-row-note.is-live {
+      color: #12202c;
+      font-weight: 700;
+      transform: translateY(-1px);
+    }
+
+    .camera-reset-row button {
+      flex: 1 1 auto;
+    }
+
+    .camera-reset-overlay-wrap {
+      position: absolute;
+      top: 116px;
+      left: 24px;
+      z-index: 9;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .camera-overlay-hint {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(8, 22, 38, 0.76);
+      color: rgba(235, 246, 255, 0.9);
+      font-size: 12px;
+      line-height: 16px;
+      box-shadow: 0 10px 22px rgba(8, 22, 38, 0.16);
+      white-space: nowrap;
+    }
+
+    .camera-reset-overlay,
+    .camera-reset-row button {
+      min-height: 38px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 216, 141, 0.34);
+      background: rgba(8, 22, 38, 0.82);
+      color: #fff4da;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 0 14px;
+      cursor: pointer;
+    }
+
+    .camera-reset-overlay {
+      pointer-events: auto;
+    }
+
+    .camera-reset-overlay:disabled,
+    .camera-reset-row button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    .session-jump-tab {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 9;
+      min-width: 42px;
+      min-height: 148px;
+      padding: 14px 10px;
+      border: 1px solid rgba(84, 145, 102, 0.28);
+      border-radius: 16px;
+      background: rgba(8, 22, 38, 0.84);
+      color: #eff8f2;
+      box-shadow: 0 16px 36px rgba(8, 22, 38, 0.18);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-size: 12px;
+      line-height: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+
+    .session-jump-tab:hover {
+      transform: translateY(-50%) translateX(2px);
+      background: rgba(16, 37, 60, 0.9);
+      border-color: rgba(122, 219, 156, 0.42);
+    }
+
+    .session-jump-tab:active {
+      transform: translateY(-50%);
+    }
+
+    .session-jump-tab small {
+      font-size: 10px;
+      line-height: 12px;
+      color: rgba(210, 235, 219, 0.82);
+      font-weight: 600;
     }
 
     #reset-btn {
@@ -352,6 +850,95 @@
       border: 0;
     }
 
+    @media (max-width: 1240px) {
+      body {
+        padding: 12px;
+      }
+
+      #game-shell {
+        width: min(100%, 1180px);
+        height: calc(100dvh - 24px);
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      #game-stage {
+        order: 1;
+      }
+
+      #hud-panel,
+      #control-sidebar {
+        position: absolute;
+        top: 12px;
+        bottom: 12px;
+        width: min(344px, calc(100vw - 70px));
+        min-height: auto;
+        z-index: 27;
+        box-shadow: 0 22px 44px rgba(8, 22, 38, 0.2);
+        transition: transform 180ms ease, opacity 160ms ease, box-shadow 180ms ease;
+      }
+
+      #hud-panel {
+        left: 12px;
+        transform: translateX(calc(-100% - 22px));
+      }
+
+      #control-sidebar {
+        right: 12px;
+        transform: translateX(calc(100% + 22px));
+      }
+
+      #game-shell[data-compact="true"][data-left-open="true"] #hud-panel {
+        transform: translateX(0);
+      }
+
+      #game-shell[data-compact="true"][data-right-open="true"] #control-sidebar {
+        transform: translateX(0);
+      }
+
+      #game-shell[data-compact="true"] .panel-toggle,
+      #game-shell[data-compact="true"] .panel-scrim {
+        display: flex;
+      }
+
+      .session-jump-tab {
+        top: 16px;
+        left: 16px;
+        transform: none;
+        min-height: 40px;
+        min-width: auto;
+        padding: 10px 14px;
+        writing-mode: horizontal-tb;
+        text-orientation: mixed;
+        border-radius: 999px;
+      }
+
+      .session-jump-tab:hover,
+      .session-jump-tab:active {
+        transform: none;
+      }
+
+      .panel-scrim {
+        position: absolute;
+        inset: 0;
+        z-index: 26;
+        background: rgba(8, 22, 38, 0.18);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 160ms ease;
+      }
+
+      #game-shell[data-compact="true"][data-left-open="true"] .panel-scrim,
+      #game-shell[data-compact="true"][data-right-open="true"] .panel-scrim {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      #game-shell[data-compact="true"][data-left-open="true"] .panel-toggle.left,
+      #game-shell[data-compact="true"][data-right-open="true"] .panel-toggle.right {
+        background: rgba(43, 127, 255, 0.9);
+      }
+    }
+
     @media (max-width: 720px) {
       body {
         padding: 10px;
@@ -361,51 +948,159 @@
         grid-template-columns: 1fr;
       }
 
+      #game-stage {
+        order: 1;
+      }
+
+      #control-sidebar {
+        order: 2;
+      }
+
+      #hud-panel {
+        order: 3;
+      }
+
       .sidebar,
       #game-stage {
-        min-height: 360px;
+        min-height: 0;
+      }
+
+      #hud-panel,
+      #control-sidebar {
+        width: min(328px, calc(100vw - 38px));
       }
 
       .session-ribbon {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: 1fr;
       }
+
+      .button-stack {
+        position: sticky;
+        bottom: 0;
+        padding-top: 10px;
+        background: linear-gradient(180deg, rgba(249, 250, 251, 0), rgba(249, 250, 251, 0.96) 22%);
+      }
+    }
+
+    #game-shell[data-height-compact="true"] {
+      gap: 12px;
+    }
+
+    #game-shell[data-height-compact="true"] .sidebar,
+    #game-shell[data-height-compact="true"] #game-stage {
+      padding: 12px;
+    }
+
+    #game-shell[data-height-compact="true"] .sidebar {
+      gap: 12px;
+    }
+
+    #game-shell[data-height-compact="true"] .control-card,
+    #game-shell[data-height-compact="true"] .info-card {
+      padding: 14px;
+    }
+
+    #game-shell[data-height-compact="true"] .section-note,
+    #game-shell[data-height-compact="true"] .control-row-note,
+    #game-shell[data-height-compact="true"] .ready-meter-label,
+    #game-shell[data-height-compact="true"] .button-note {
+      font-size: 11px;
+      line-height: 15px;
+    }
+
+    #game-shell[data-height-compact="true"] .session-ribbon {
+      gap: 8px;
+    }
+
+    #game-shell[data-height-compact="true"] .session-pill {
+      padding: 8px 10px;
+    }
+
+    #game-shell[data-height-compact="true"] .session-pill-overview {
+      padding: 8px 10px;
+    }
+
+    #game-shell[data-height-compact="true"] .session-pill-value {
+      font-size: 13px;
+      line-height: 17px;
+    }
+
+    #game-shell[data-height-compact="true"] .metric-card-value {
+      font-size: 19px;
+      line-height: 25px;
+    }
+
+    #game-shell[data-height-compact="true"] .camera-reset-overlay-wrap {
+      top: 108px;
+      gap: 8px;
+    }
+
+    #game-shell[data-height-compact="true"] .camera-overlay-hint {
+      padding: 8px 12px;
+      font-size: 11px;
+      line-height: 14px;
     }
   </style>
 </head>
 <body>
   <div id="game-shell">
     <aside id="hud-panel" class="sidebar" aria-label="HUD panel">
-      <div class="sidebar-heading">2. 최신 확정 결과</div>
-      <p class="section-note">먼저 캐리, 총거리, 좌우 편차를 확인하세요.</p>
+      <div id="hud-panel-heading" class="sidebar-heading">2. 현재 샷</div>
+      <p class="section-note">현재 샷 핵심 4개를 먼저 읽고, 아래에서 직전 샷 변화를 확인하세요.</p>
       <div class="metric-grid">
         <div class="metric-card">
-          <div class="metric-card-label"><span class="metric-icon distance">C</span>캐리 (Carry)</div>
-          <div id="hud-carry" class="metric-card-value">-</div>
+          <div id="hud-metric-label-1" class="metric-card-label"><span class="metric-icon distance">B</span>볼 스피드 (Ball Speed)</div>
+          <div id="hud-ball-speed" class="metric-card-value">-</div>
         </div>
         <div class="metric-card">
-          <div class="metric-card-label"><span class="metric-icon distance">T</span>총거리 (Total)</div>
-          <div id="hud-total" class="metric-card-value">-</div>
+          <div id="hud-metric-label-2" class="metric-card-label"><span class="metric-icon distance">C</span>캐리 (Carry)</div>
+          <div id="hud-club-head-speed" class="metric-card-value">-</div>
         </div>
         <div class="metric-card">
-          <div class="metric-card-label"><span class="metric-icon wind">O</span>좌우 편차 (Offline)</div>
-          <div id="hud-offline" class="metric-card-value">-</div>
+          <div id="hud-metric-label-3" class="metric-card-label"><span class="metric-icon wind">T</span>토탈 (Total)</div>
+          <div id="hud-impact-quality" class="metric-card-value">-</div>
         </div>
         <div class="metric-card">
-          <div class="metric-card-label"><span class="metric-icon distance">B</span>볼 스피드 (Ball Speed)</div>
-          <div id="hud-ball-speed-primary" class="metric-card-value">-</div>
+          <div id="hud-metric-label-4" class="metric-card-label"><span class="metric-icon wind">O</span>오프라인 (Offline)</div>
+          <div id="hud-smash" class="metric-card-value">-</div>
         </div>
       </div>
-      <section class="info-card" aria-label="보조 비행 지표">
-        <h2>보조 지표</h2>
-        <p class="section-note">핵심 결과를 해석할 때 스핀 지표를 함께 참고하세요.</p>
-        <div class="info-row"><span class="label">백스핀 (Backspin)</span><span id="hud-back-spin" class="value">-</span></div>
-        <div class="info-row"><span class="label">사이드스핀 (Sidespin)</span><span id="hud-side-spin" class="value">-</span></div>
+      <p id="hud-context" class="section-note">이 패널은 현재 샷 결과를 보여줍니다.</p>
+      <section class="info-card" aria-label="다음 샷 준비와 준비 신호">
+        <h2 id="ready-section-heading">다음 샷 준비</h2>
+        <p id="ready-section-note" class="section-note">현재 샷 품질을 읽은 뒤, 더 짧아진 준비 신호를 보고 바로 다시 치세요.</p>
+        <div id="ready-meter" class="ready-meter" aria-hidden="true">
+          <div id="ready-meter-fill" class="ready-meter-fill"></div>
+        </div>
+        <div id="ready-meter-label" class="ready-meter-label">첫 샷 준비 완료</div>
         <div id="hud-status" class="status-note">현재 입력값을 확인한 뒤 실행하세요</div>
+      </section>
+      <section class="info-card" aria-label="현재 샷 직전 샷 변화">
+        <h2 id="comparison-section-heading">현재 샷 · 직전 샷 · 변화</h2>
+        <p id="comparison-summary" class="comparison-summary">아직 현재 샷이 없습니다.</p>
+        <p id="comparison-context" class="comparison-context">첫 샷을 실행하면 현재 샷이 표시됩니다.</p>
+        <div class="comparison-role-grid">
+          <div id="comparison-current-card" class="comparison-role-card">
+            <p id="comparison-current-label" class="comparison-role-label">현재 샷</p>
+            <p id="comparison-current-value" class="comparison-role-value">아직 현재 샷이 없습니다.</p>
+            <p id="comparison-current-note" class="comparison-role-note">첫 실행 후 현재 샷이 표시됩니다.</p>
+          </div>
+          <div id="comparison-previous-card" class="comparison-role-card">
+            <p id="comparison-previous-label" class="comparison-role-label">직전 샷</p>
+            <p id="comparison-previous-value" class="comparison-role-value">직전 샷이 아직 없습니다.</p>
+            <p id="comparison-previous-note" class="comparison-role-note">두 번째 실행부터 직전 샷이 표시됩니다.</p>
+          </div>
+          <div id="comparison-change-card" class="comparison-role-card">
+            <p id="comparison-change-label" class="comparison-role-label">변화</p>
+            <p id="comparison-change-value" class="comparison-role-value">변화가 아직 없습니다.</p>
+            <p id="comparison-change-note" class="comparison-role-note">직전 샷이 생기면 변화가 계산됩니다.</p>
+          </div>
+        </div>
       </section>
     </aside>
 
     <main id="game-stage" aria-label="Game view">
-      <div class="game-stage-header">1. 현재 입력값 확인과 비행 추적</div>
+      <div id="game-stage-heading" class="game-stage-header">1. 현재 입력값 확인과 비행 추적</div>
       <div class="session-ribbon" aria-label="Session ribbon">
         <div class="session-pill">
           <span id="session-state-label" class="session-pill-label">현재 상태</span>
@@ -413,25 +1108,113 @@
         </div>
         <div class="session-pill">
           <span class="session-pill-label">현재 방향 입력값</span>
-          <span id="session-count" class="session-pill-value">탄도 15° · 방향 0°</span>
+          <span id="session-count" class="session-pill-value">탄도 10° · 방향 0°</span>
         </div>
-        <div class="session-pill">
-          <span class="session-pill-label">현재 볼 입력값</span>
-          <span id="session-last" class="session-pill-value">볼 150 mph · 백스핀 2500 rpm · 사이드스핀 500 rpm</span>
+        <div class="session-pill session-pill-overview">
+          <details id="session-input-overview" class="session-details" open>
+            <summary class="session-details-summary">
+              <span class="session-pill-label">현재 볼 입력값</span>
+              <span id="session-last" class="session-pill-value">볼 150 mph · 세부값 보기</span>
+              <span class="session-pill-meta">입력 오버뷰</span>
+            </summary>
+            <div class="session-detail-list">
+              <div class="session-detail-row">
+                <span id="session-input-ball-key" class="session-detail-key">볼 스피드</span>
+                <span id="session-input-ball" class="session-detail-value">150 mph</span>
+              </div>
+              <div class="session-detail-row">
+                <span id="session-input-backspin-key" class="session-detail-key">백스핀</span>
+                <span id="session-input-backspin" class="session-detail-value">2500 rpm</span>
+              </div>
+              <div class="session-detail-row">
+                <span id="session-input-sidespin-key" class="session-detail-key">사이드스핀</span>
+                <span id="session-input-sidespin" class="session-detail-value">+0000 rpm</span>
+              </div>
+            </div>
+          </details>
         </div>
-        <div class="session-pill">
-          <span id="session-best-label" class="session-pill-label">최신 결과 기준</span>
-          <span id="session-best" class="session-pill-value">비교 기준 없음</span>
+        <div class="session-pill session-pill-overview">
+          <details id="session-result-overview" class="session-details" open>
+            <summary class="session-details-summary">
+              <span id="session-best-label" class="session-pill-label">직전 샷</span>
+              <span id="session-best" class="session-pill-value">직전 샷 없음</span>
+              <span class="session-pill-meta">결과 오버뷰</span>
+            </summary>
+            <div class="session-detail-list">
+              <div class="session-detail-row">
+                <span id="session-result-primary-key" class="session-detail-key">캐리</span>
+                <span id="session-result-primary" class="session-detail-value">-</span>
+              </div>
+              <div class="session-detail-row">
+                <span id="session-result-secondary-key" class="session-detail-key">토탈</span>
+                <span id="session-result-secondary" class="session-detail-value">-</span>
+              </div>
+              <div class="session-detail-row">
+                <span id="session-result-tertiary-key" class="session-detail-key">오프라인</span>
+                <span id="session-result-tertiary" class="session-detail-value">-</span>
+              </div>
+            </div>
+          </details>
         </div>
       </div>
       <div id="game-viewport">
         <canvas id="game" width="1080" height="608" tabindex="0" aria-label="Golf swing simulator"></canvas>
+        <button
+          id="putter-shortcut-tab"
+          class="session-jump-tab session-only range"
+          type="button"
+          aria-label="퍼터 세션으로 이동"
+        >퍼터 세션 이동 <small>거리감 훈련</small></button>
+        <div id="camera-overlay-controls" class="camera-reset-overlay-wrap is-hidden" aria-live="polite">
+          <div id="camera-overlay-hint" class="camera-overlay-hint">좌드래그 이동 · 우드래그 회전 · 휠 줌 · Esc 리셋</div>
+          <button id="camera-reset-overlay" class="camera-reset-overlay" type="button">시점 리셋</button>
+        </div>
       </div>
     </main>
 
-    <aside class="sidebar" aria-label="Control panel">
-      <div class="sidebar-heading">3. 현재 입력값 조정</div>
+    <aside id="control-sidebar" class="sidebar" aria-label="Control panel">
+      <div id="control-sidebar-heading" class="sidebar-heading">3. 현재 입력값 조정</div>
       <p id="input-context" class="section-note">지금 조정한 값은 다음 실행에 반영됩니다.</p>
+      <section class="control-card" aria-label="Session mode controls">
+        <h2>세션 모드</h2>
+        <div class="control-row">
+          <label for="session-mode">훈련 세션</label>
+          <select id="session-mode" aria-label="Session mode">
+            <option value="range" selected>레인지 세션</option>
+            <option value="putter">퍼터 세션</option>
+          </select>
+        </div>
+        <p id="session-mode-note" class="control-row-note">레인지 세션은 비행과 비교 중심, 퍼터 세션은 거리감과 스타트 라인 중심입니다.</p>
+      </section>
+      <section id="putter-guide-card" class="control-card session-only putter block" aria-label="Putter session checklist">
+        <h2>퍼터 세션 가이드</h2>
+        <p id="putter-guide-summary" class="section-note">홀 거리와 그린을 먼저 정한 뒤, 수동 또는 모션 스트로크로 거리감을 연습하세요.</p>
+        <div class="putter-guide-list">
+          <div id="putter-step-distance" class="putter-guide-step" data-state="done">
+            <span class="putter-step-index">1</span>
+            <div class="putter-step-copy">
+              <p class="putter-step-title">홀까지 거리 선택</p>
+              <p id="putter-step-distance-note" class="putter-step-note">홀 4.0m · 표준 그린</p>
+            </div>
+          </div>
+          <div id="putter-step-input" class="putter-guide-step" data-state="active">
+            <span class="putter-step-index">2</span>
+            <div class="putter-step-copy">
+              <p class="putter-step-title">수동 또는 모션 스트로크 준비</p>
+              <p id="putter-step-input-note" class="putter-step-note">수동 스트로크가 기본입니다.</p>
+            </div>
+          </div>
+          <div id="putter-step-result" class="putter-guide-step" data-state="pending">
+            <span class="putter-step-index">3</span>
+            <div class="putter-step-copy">
+              <p class="putter-step-title">퍼트 실행과 결과 확인</p>
+              <p id="putter-step-result-note" class="putter-step-note">실행 후 남은 거리와 라인을 확인합니다.</p>
+            </div>
+          </div>
+        </div>
+        <a id="putter-advanced-link" class="session-link session-only putter" href="./putter-session.html">고급 센서 모드 열기</a>
+        <p id="putter-advanced-note" class="control-row-note">전용 페이지에서는 센서 캘리브레이션, 스트로크 대기, 최근 이력을 더 자세히 볼 수 있습니다.</p>
+      </section>
       <section class="control-card" aria-label="Aim controls">
         <h2 id="aim-input-heading">현재 방향 입력값</h2>
         <input id="aim-direction" class="aim-range" type="range" min="-24" max="24" step="1" value="0" aria-label="Aim direction">
@@ -440,13 +1223,36 @@
           <strong id="aim-direction-value">0°</strong>
           <span>오른쪽 &rarr;</span>
         </div>
+        <div id="camera-mode-row" class="control-row session-only range block">
+          <label for="camera-mode">카메라 모드</label>
+          <select id="camera-mode" aria-label="Camera mode">
+            <option value="follow" selected>볼 추적</option>
+            <option value="fixed-tee">티박스 고정</option>
+          </select>
+          <p id="camera-mode-note" class="control-row-note">현재 볼 추적 · C 다음 / Shift+C 이전</p>
+        </div>
+        <div class="button-row camera-reset-row session-only range block">
+          <button id="camera-reset-btn" type="button">시점 리셋</button>
+        </div>
+        <div class="control-row">
+          <label for="distance-unit">기록 단위</label>
+          <select id="distance-unit" aria-label="Distance display unit">
+            <option value="m" selected>미터 (m)</option>
+            <option value="yd">야드 (yd)</option>
+          </select>
+          <p
+            id="distance-unit-note"
+            class="control-row-note"
+            title="직전 샷, 비교 카드, 실시간 비행 배지의 거리 표시 단위를 바꿉니다."
+          >직전 샷 기록과 HUD 표시에 적용</p>
+        </div>
       </section>
       <section id="control-panel" aria-label="Manual launch controls">
-        <div class="control-card">
+        <div id="range-ball-input-card" class="control-card session-only range block">
           <h2 id="ball-input-heading">현재 볼 입력값</h2>
           <div class="control-row">
             <label for="side-spin-rpm">사이드스핀 (rpm)</label>
-            <input id="side-spin-rpm" type="number" min="-4000" max="4000" step="50" value="500" placeholder="자동">
+            <input id="side-spin-rpm" type="number" min="-4000" max="4000" step="50" value="0" placeholder="자동">
           </div>
           <div class="control-row">
             <label for="back-spin-rpm">백스핀 (rpm)</label>
@@ -457,14 +1263,51 @@
             <input id="ball-speed-mph" type="number" min="0" max="250" step="1" value="150" placeholder="mph">
           </div>
         </div>
+        <div id="putter-input-card" class="control-card session-only putter block">
+          <h2 id="putter-input-heading">퍼터 입력값</h2>
+          <div class="control-row">
+            <label for="putt-distance-m">홀까지 거리 (m)</label>
+            <input id="putt-distance-m" type="number" min="1" max="15" step="0.5" value="4.0" placeholder="m">
+          </div>
+          <div class="control-row">
+            <label for="putt-stroke-speed">수동 스트로크 속도 (m/s)</label>
+            <input id="putt-stroke-speed" type="range" min="0.4" max="3.5" step="0.05" value="3.10">
+            <p id="putt-stroke-speed-value" class="control-row-note">3.10 m/s</p>
+          </div>
+          <div class="control-row">
+            <label for="putt-green-speed">그린 감쇠 계수</label>
+            <input id="putt-green-speed" type="range" min="1.1" max="2.1" step="0.05" value="1.55">
+            <p id="putt-green-speed-value" class="control-row-note">표준 그린</p>
+          </div>
+        </div>
+        <div id="putter-motion-card" class="control-card session-only putter block">
+          <h2>모션 스트로크</h2>
+          <p id="motion-status" class="section-note">휴대폰을 퍼터처럼 잡고 기준을 맞춘 뒤 스트로크 대기로 전환하세요.</p>
+          <div class="button-row">
+            <button id="motion-permission-btn" class="primary" type="button">모션 권한</button>
+            <button id="motion-calibrate-btn" type="button">기준 잡기</button>
+            <button id="motion-arm-btn" type="button">스트로크 대기</button>
+          </div>
+          <div class="info-row">
+            <span class="label">센서 상태</span>
+            <span id="motion-summary" class="value">대기</span>
+          </div>
+          <div class="info-row">
+            <span class="label">마지막 스트로크</span>
+            <span id="motion-last-stroke" class="value">없음</span>
+          </div>
+        </div>
       </section>
       <div class="button-stack">
-        <button id="start-btn" type="button">길게 눌러 실행</button>
+        <button id="start-btn" type="button">바로 실행</button>
         <button id="reset-btn" type="button">실험 조건 초기화</button>
       </div>
-      <p id="button-note" class="button-note">지금 실행하면 현재 입력값으로 실행합니다.</p>
-      <div class="sr-only">사이드스핀 백스핀 볼 스피드 비행 결과 입력값 조정 방향 입력값 볼 입력값</div>
+      <p id="button-note" class="button-note">지금 실행하면 현재 입력값으로 바로 칩니다.</p>
+      <div class="sr-only">사이드스핀 백스핀 볼 스피드 비행 결과 입력값 조정 방향 입력값 볼 입력값 카메라 모드</div>
     </aside>
+    <button id="hud-toggle" class="panel-toggle left" type="button" aria-controls="hud-panel" aria-expanded="false">샷 정보</button>
+    <button id="control-toggle" class="panel-toggle right" type="button" aria-controls="control-sidebar" aria-expanded="false">입력 패널</button>
+    <button id="panel-scrim" class="panel-scrim" type="button" aria-label="패널 닫기"></button>
   </div>
 
   <script type="module">
@@ -474,41 +1317,135 @@
       createDefaultControls,
       stepSwingModel,
     } from "./swing-model.js";
+    import { computeAeroCoefficients } from "./aero-model.js";
+    import {
+      DEFAULT_PUTT_PARAMS,
+      createPuttControls,
+      createPuttState,
+      stepPuttState,
+    } from "./putt-model.js";
+    import {
+      DEFAULT_SESSION_KIND,
+      SESSION_KIND_PUTTER,
+      SESSION_MODE_STORAGE_KEY,
+      buildSessionContractPayload,
+      persistSessionKind,
+      restoreSessionKind,
+    } from "./session-contract.js";
 
     const canvas = document.getElementById("game");
+    const gameViewport = document.getElementById("game-viewport");
     const ctx = canvas.getContext("2d");
     const shell = document.getElementById("game-shell");
-    const gameViewport = document.getElementById("game-viewport");
     const startBtn = document.getElementById("start-btn");
     const resetBtn = document.getElementById("reset-btn");
+    const hudToggle = document.getElementById("hud-toggle");
+    const controlToggle = document.getElementById("control-toggle");
+    const panelScrim = document.getElementById("panel-scrim");
     const controlPanel = document.getElementById("control-panel");
+    const sessionModeSelect = document.getElementById("session-mode");
+    const sessionModeNote = document.getElementById("session-mode-note");
+    const gameStageHeading = document.getElementById("game-stage-heading");
+    const hudPanelHeading = document.getElementById("hud-panel-heading");
+    const controlSidebarHeading = document.getElementById("control-sidebar-heading");
     const inputContext = document.getElementById("input-context");
     const aimInputHeading = document.getElementById("aim-input-heading");
     const ballInputHeading = document.getElementById("ball-input-heading");
+    const putterInputHeading = document.getElementById("putter-input-heading");
+    const readySectionHeading = document.getElementById("ready-section-heading");
+    const readySectionNote = document.getElementById("ready-section-note");
+    const comparisonSectionHeading = document.getElementById("comparison-section-heading");
     const aimDirectionInput = document.getElementById("aim-direction");
     const aimDirectionValue = document.getElementById("aim-direction-value");
+    const cameraModeSelect = document.getElementById("camera-mode");
+    const cameraModeRow = document.getElementById("camera-mode-row");
+    const cameraModeNote = document.getElementById("camera-mode-note");
+    const cameraResetBtn = document.getElementById("camera-reset-btn");
+    const cameraResetOverlay = document.getElementById("camera-reset-overlay");
+    const cameraOverlayControls = document.getElementById("camera-overlay-controls");
+    const cameraOverlayHint = document.getElementById("camera-overlay-hint");
+    const putterShortcutTab = document.getElementById("putter-shortcut-tab");
+    const distanceUnitSelect = document.getElementById("distance-unit");
+    const distanceUnitNote = document.getElementById("distance-unit-note");
+    const hudMetricLabel1 = document.getElementById("hud-metric-label-1");
+    const hudMetricLabel2 = document.getElementById("hud-metric-label-2");
+    const hudMetricLabel3 = document.getElementById("hud-metric-label-3");
+    const hudMetricLabel4 = document.getElementById("hud-metric-label-4");
     const ballSpeedMphInput = document.getElementById("ball-speed-mph");
     const sideSpinInput = document.getElementById("side-spin-rpm");
     const backSpinInput = document.getElementById("back-spin-rpm");
-    const hudCarry = document.getElementById("hud-carry");
-    const hudTotal = document.getElementById("hud-total");
-    const hudOffline = document.getElementById("hud-offline");
-    const hudBallSpeedPrimary = document.getElementById("hud-ball-speed-primary");
-    const hudSideSpin = document.getElementById("hud-side-spin");
-    const hudBackSpin = document.getElementById("hud-back-spin");
+    const puttDistanceInput = document.getElementById("putt-distance-m");
+    const puttStrokeSpeedInput = document.getElementById("putt-stroke-speed");
+    const puttStrokeSpeedValue = document.getElementById("putt-stroke-speed-value");
+    const puttGreenSpeedInput = document.getElementById("putt-green-speed");
+    const puttGreenSpeedValue = document.getElementById("putt-green-speed-value");
+    const motionPermissionBtn = document.getElementById("motion-permission-btn");
+    const motionCalibrateBtn = document.getElementById("motion-calibrate-btn");
+    const motionArmBtn = document.getElementById("motion-arm-btn");
+    const motionStatus = document.getElementById("motion-status");
+    const motionSummary = document.getElementById("motion-summary");
+    const motionLastStroke = document.getElementById("motion-last-stroke");
+    const hudBallSpeed = document.getElementById("hud-ball-speed");
+    const hudClubHeadSpeed = document.getElementById("hud-club-head-speed");
+    const hudImpactQuality = document.getElementById("hud-impact-quality");
+    const hudSmash = document.getElementById("hud-smash");
+    const readyMeterFill = document.getElementById("ready-meter-fill");
+    const readyMeterLabel = document.getElementById("ready-meter-label");
+    const hudContext = document.getElementById("hud-context");
     const hudStatus = document.getElementById("hud-status");
+    const comparisonSummary = document.getElementById("comparison-summary");
+    const comparisonContext = document.getElementById("comparison-context");
+    const comparisonCurrentCard = document.getElementById("comparison-current-card");
+    const comparisonPreviousCard = document.getElementById("comparison-previous-card");
+    const comparisonChangeCard = document.getElementById("comparison-change-card");
+    const comparisonCurrentLabel = document.getElementById("comparison-current-label");
+    const comparisonPreviousLabel = document.getElementById("comparison-previous-label");
+    const comparisonChangeLabel = document.getElementById("comparison-change-label");
+    const comparisonCurrentValue = document.getElementById("comparison-current-value");
+    const comparisonCurrentNote = document.getElementById("comparison-current-note");
+    const comparisonPreviousValue = document.getElementById("comparison-previous-value");
+    const comparisonPreviousNote = document.getElementById("comparison-previous-note");
+    const comparisonChangeValue = document.getElementById("comparison-change-value");
+    const comparisonChangeNote = document.getElementById("comparison-change-note");
     const buttonNote = document.getElementById("button-note");
     const sessionStateLabel = document.getElementById("session-state-label");
     const sessionState = document.getElementById("session-state");
     const sessionCount = document.getElementById("session-count");
     const sessionLast = document.getElementById("session-last");
+    const sessionInputOverview = document.getElementById("session-input-overview");
+    const sessionInputBallKey = document.getElementById("session-input-ball-key");
+    const sessionInputBall = document.getElementById("session-input-ball");
+    const sessionInputBackspinKey = document.getElementById("session-input-backspin-key");
+    const sessionInputBackspin = document.getElementById("session-input-backspin");
+    const sessionInputSidespinKey = document.getElementById("session-input-sidespin-key");
+    const sessionInputSidespin = document.getElementById("session-input-sidespin");
     const sessionBestLabel = document.getElementById("session-best-label");
     const sessionBest = document.getElementById("session-best");
+    const sessionResultOverview = document.getElementById("session-result-overview");
+    const sessionResultPrimaryKey = document.getElementById("session-result-primary-key");
+    const sessionResultPrimary = document.getElementById("session-result-primary");
+    const sessionResultSecondaryKey = document.getElementById("session-result-secondary-key");
+    const sessionResultSecondary = document.getElementById("session-result-secondary");
+    const sessionResultTertiaryKey = document.getElementById("session-result-tertiary-key");
+    const sessionResultTertiary = document.getElementById("session-result-tertiary");
+    const putterGuideSummary = document.getElementById("putter-guide-summary");
+    const putterStepDistance = document.getElementById("putter-step-distance");
+    const putterStepDistanceNote = document.getElementById("putter-step-distance-note");
+    const putterStepInput = document.getElementById("putter-step-input");
+    const putterStepInputNote = document.getElementById("putter-step-input-note");
+    const putterStepResult = document.getElementById("putter-step-result");
+    const putterStepResultNote = document.getElementById("putter-step-result-note");
+    const compactLayoutQuery = window.matchMedia("(max-width: 1240px)");
 
     const MODEL_PARAMS = {
       ...DEFAULT_PARAMS,
       groundY: 0,
     };
+    const PUTT_PARAMS = {
+      ...DEFAULT_PUTT_PARAMS,
+      groundY: 0,
+    };
+    const DEFAULT_PUTT_CONTROLS = createPuttControls();
 
     const WORLD = {
       fairwayLength: 390,
@@ -516,18 +1453,86 @@
       teePos: { x: 0, y: MODEL_PARAMS.ballRadius, z: 0 },
       meterMarkers: [50, 100, 150, 200, 250, 300, 350],
     };
+    const PUTT_WORLD = {
+      greenLength: 16,
+      greenHalfWidth: 2.6,
+      teePos: { x: 0, y: PUTT_PARAMS.ballRadius, z: 0 },
+      meterMarkers: [1, 2, 3, 4, 5, 6, 8, 10, 12, 15],
+    };
+    const AUTO_READY_SECONDS = 2;
+    const CAMERA_MODE_STORAGE_KEY = "golfsim.cameraMode";
+    const DISTANCE_UNIT_STORAGE_KEY = "golfsim.distanceUnit";
+    const HEIGHT_COMPACT_BREAKPOINT = 820;
+    const MAX_SHOT_HISTORY = 7;
+    const MAX_HISTORY_TRAJECTORY_SAMPLES = 96;
+    const HOTKEY_BALL_SPEED_STEP_MPH = 1;
+    const HOTKEY_SIDE_SPIN_STEP_RPM = 50;
+    const CAMERA_PAN_WORLD_SCALE = 0.085;
+    const CAMERA_ORBIT_SPEED = 0.015;
+    const CAMERA_ZOOM_STEP = 0.018;
+    const CAMERA_MODES = [
+      "follow",
+      "fixed-tee",
+    ];
+    const DISTANCE_UNITS = Object.freeze({
+      m: { suffix: "m", scale: 1 },
+      yd: { suffix: "y", scale: 1.09361 },
+    });
+    const NEUTRAL_SWING = Object.freeze({
+      powerNorm: 0.68,
+      tempoNorm: 0.9,
+      strikeOffsetX: 0,
+      strikeOffsetY: 0,
+      faceAngleBias: 0,
+      clubPathBias: 0,
+    });
+
+    function getFixedCameraPreset(mode = "fixed-tee") {
+      const presets = {
+        "fixed-tee": {
+          position: { x: -16.9, y: 4.8, z: 0 },
+          target: { x: 10, y: 1.25, z: 0 },
+          fov: 48,
+        },
+      };
+      return presets[mode] ?? presets["fixed-tee"];
+    }
+
+    function createDefaultCameraManual(mode = "fixed-tee") {
+      const preset = getFixedCameraPreset(mode);
+      const relative = sub3(preset.position, preset.target);
+      return {
+        active: mode === "fixed-tee",
+        dirty: false,
+        panX: 0,
+        panZ: 0,
+        yaw: 0,
+        pitch: 0,
+        distance: length3(relative),
+        dragMode: "none",
+        lastX: 0,
+        lastY: 0,
+        pointerId: null,
+      };
+    }
 
     const state = {
+      sessionKind: DEFAULT_SESSION_KIND,
       mode: "session_ready",
       totalShots: 0,
       sessionDistanceTotal: 0,
       sessionBestCarry: 0,
+      sceneTime: 0,
       autoResetTimer: 0,
+      cameraNoticeTimer: 0,
+      cameraNoticeSource: "",
       charging: false,
-      chargeDir: 1,
-      charge: 0.24,
-      aimDeg: 15,
+      charge: 1,
+      aimDeg: 10.4,
       yawDeg: 0,
+      cameraMode: "follow",
+      isHeightCompact: false,
+      distanceUnit: "m",
       message: "현재 입력값을 확인한 뒤 실행하세요",
       wind: { x: 0, z: 0 },
       ball: {
@@ -545,10 +1550,14 @@
         up: { x: 0, y: 1, z: 0 },
         fov: 48,
       },
+      cameraManual: createDefaultCameraManual(),
       impactEffects: [],
       trajectorySamples: [],
       previewSamples: [],
-      lastShotMetrics: null,
+      detachedFlights: [],
+      currentShot: null,
+      previousShot: null,
+      recentShots: [],
       lastCommittedInputs: null,
       manualLaunch: {
         ballSpeedMps: null,
@@ -557,6 +1566,28 @@
       },
       model: createInitialState({ ballPos: WORLD.teePos }),
       modelControls: createDefaultControls(),
+      putt: {
+        model: createPuttState({ position: PUTT_WORLD.teePos }),
+        controls: { ...DEFAULT_PUTT_CONTROLS },
+        holeDistanceM: DEFAULT_PUTT_CONTROLS.holeDistanceM,
+        greenDecel: PUTT_PARAMS.greenDecel,
+        manualStrokeSpeedMps: DEFAULT_PUTT_CONTROLS.strokeSpeedMps,
+        motion: {
+          supported: "DeviceMotionEvent" in window,
+          permission: "idle",
+          calibrated: false,
+          listening: false,
+          armed: false,
+          baseline: { x: 0, y: 0, z: 0 },
+          lastSample: { x: 0, y: 0, z: 0 },
+          strokeActive: false,
+          strokeStartTime: 0,
+          peakForward: 0,
+          peakLateral: 0,
+          lastStroke: null,
+          pendingStroke: null,
+        },
+      },
     };
 
     const keys = new Set();
@@ -635,10 +1666,325 @@
       return mps / 0.44704;
     }
 
+    function getDistanceUnitConfig(unit = state.distanceUnit) {
+      return DISTANCE_UNITS[unit] ?? DISTANCE_UNITS.m;
+    }
+
+    function roundDistanceForDisplay(value, unit = state.distanceUnit) {
+      if (!Number.isFinite(value)) return 0;
+      return Math.round(value * getDistanceUnitConfig(unit).scale);
+    }
+
+    function formatDistanceValue(value, digits = 0, signed = false, unit = state.distanceUnit) {
+      if (!Number.isFinite(value)) return "-";
+      const config = getDistanceUnitConfig(unit);
+      const scaledValue = value * config.scale;
+      const roundedValue = digits === 0 ? Math.round(scaledValue) : Number(scaledValue.toFixed(digits));
+      if (roundedValue === 0) return `0${config.suffix}`;
+      const sign = signed && roundedValue > 0 ? "+" : "";
+      const text = digits === 0 ? String(Math.round(scaledValue)) : roundedValue.toFixed(digits);
+      return `${sign}${text}${config.suffix}`;
+    }
+
     function parseOptionalNumber(rawValue) {
       if (rawValue == null || rawValue === "") return null;
       const value = Number(rawValue);
       return Number.isFinite(value) ? value : null;
+    }
+
+    function isPutterSession() {
+      return state.sessionKind === "putter";
+    }
+
+    function getActiveBallRadius() {
+      return isPutterSession() ? PUTT_PARAMS.ballRadius : MODEL_PARAMS.ballRadius;
+    }
+
+    function getActiveTeePos() {
+      return isPutterSession() ? PUTT_WORLD.teePos : WORLD.teePos;
+    }
+
+    function formatStrokeSpeed(value) {
+      return Number.isFinite(value) ? `${value.toFixed(2)} m/s` : "-";
+    }
+
+    function formatTempoScore(value) {
+      return Number.isFinite(value) ? `${Math.round(value * 100)}점` : "-";
+    }
+
+    function getPuttHolePosition() {
+      return {
+        x: state.putt.holeDistanceM,
+        y: PUTT_PARAMS.ballRadius,
+        z: 0,
+      };
+    }
+
+    function getPuttDistanceValue() {
+      const value = parseOptionalNumber(puttDistanceInput.value);
+      return clamp(value ?? state.putt.holeDistanceM, 1, 15);
+    }
+
+    function getPuttStrokeSpeedValue() {
+      const value = parseOptionalNumber(puttStrokeSpeedInput.value);
+      return clamp(value ?? state.putt.manualStrokeSpeedMps, 0.4, 3.5);
+    }
+
+    function getPuttGreenDecelValue() {
+      const value = parseOptionalNumber(puttGreenSpeedInput.value);
+      return clamp(value ?? state.putt.greenDecel, 1.1, 2.1);
+    }
+
+    function describeGreenDecel(value) {
+      if (value <= 1.32) return "매우 빠른 그린";
+      if (value <= 1.5) return "빠른 그린";
+      if (value <= 1.7) return "표준 그린";
+      if (value <= 1.9) return "조금 느린 그린";
+      return "느린 그린";
+    }
+
+    function updatePuttControlNotes() {
+      puttStrokeSpeedValue.textContent = `${getPuttStrokeSpeedValue().toFixed(2)} m/s`;
+      puttGreenSpeedValue.textContent = describeGreenDecel(getPuttGreenDecelValue());
+    }
+
+    function setPutterGuideStepState(element, stateName, noteElement, note) {
+      element.dataset.state = stateName;
+      noteElement.textContent = note;
+    }
+
+    function updatePutterGuide() {
+      const holeReady = Number.isFinite(state.putt.holeDistanceM) && state.putt.holeDistanceM >= 1;
+      setPutterGuideStepState(
+        putterStepDistance,
+        holeReady ? "done" : "active",
+        putterStepDistanceNote,
+        `홀 ${formatDistanceValue(state.putt.holeDistanceM, 1)} · ${describeGreenDecel(state.putt.greenDecel)}`
+      );
+
+      if (!state.putt.motion.supported) {
+        setPutterGuideStepState(
+          putterStepInput,
+          "done",
+          putterStepInputNote,
+          `센서 미지원 · 수동 스트로크 ${formatStrokeSpeed(state.putt.manualStrokeSpeedMps)} 사용`
+        );
+      } else if (state.putt.motion.pendingStroke) {
+        setPutterGuideStepState(
+          putterStepInput,
+          "done",
+          putterStepInputNote,
+          "센서 스트로크 준비 완료 · 실행 시 이 값을 사용합니다."
+        );
+      } else if (state.putt.motion.armed) {
+        setPutterGuideStepState(
+          putterStepInput,
+          "done",
+          putterStepInputNote,
+          "모션 스트로크 대기 중 · 실제 퍼팅처럼 한 번에 흔드세요."
+        );
+      } else if (state.putt.motion.permission === "granted" && state.putt.motion.calibrated) {
+        setPutterGuideStepState(
+          putterStepInput,
+          "done",
+          putterStepInputNote,
+          `수동 스트로크 기본 사용 · 센서 사용 시 기준이 잡혀 있습니다.`
+        );
+      } else if (state.putt.motion.permission === "granted") {
+        setPutterGuideStepState(
+          putterStepInput,
+          "active",
+          putterStepInputNote,
+          "수동 스트로크 기본 사용 · 센서 사용 시 기준 잡기와 스트로크 대기를 진행하세요."
+        );
+      } else if (state.putt.motion.permission === "denied") {
+        setPutterGuideStepState(
+          putterStepInput,
+          "done",
+          putterStepInputNote,
+          `권한 없음 · 수동 스트로크 ${formatStrokeSpeed(state.putt.manualStrokeSpeedMps)} 로 계속 연습합니다.`
+        );
+      } else {
+        setPutterGuideStepState(
+          putterStepInput,
+          "active",
+          putterStepInputNote,
+          `수동 스트로크 ${formatStrokeSpeed(state.putt.manualStrokeSpeedMps)} 가 기본입니다. 센서를 쓰려면 모션 권한을 먼저 허용하세요.`
+        );
+      }
+
+      if (!state.currentShot) {
+        setPutterGuideStepState(
+          putterStepResult,
+          "active",
+          putterStepResultNote,
+          "퍼트를 실행하면 남은 거리와 라인 결과가 여기에 쌓입니다."
+        );
+        putterGuideSummary.textContent = "홀 거리와 그린을 먼저 정한 뒤, 수동 또는 모션 스트로크로 거리감을 연습하세요.";
+        return;
+      }
+
+      if (state.currentShot.holed) {
+        setPutterGuideStepState(
+          putterStepResult,
+          "done",
+          putterStepResultNote,
+          `홀 아웃 성공 · 롤 ${formatDistanceValue(state.currentShot.total, 2)} · 라인 ${formatSignedYards(state.currentShot.offline)}`
+        );
+        putterGuideSummary.textContent = "홀 아웃에 성공했습니다. 같은 조건으로 반복하거나 거리를 바꿔 다시 연습하세요.";
+        return;
+      }
+
+      const remaining = Number.isFinite(state.currentShot.remainingDistance)
+        ? state.currentShot.remainingDistance
+        : Math.abs(state.currentShot.paceError);
+      const resultState = (state.mode === "launching" || state.mode === "rollout" || state.mode === "auto_reset_pending")
+        ? "active"
+        : "done";
+      setPutterGuideStepState(
+        putterStepResult,
+        resultState,
+        putterStepResultNote,
+        `남은 ${formatDistanceValue(remaining, 2)} · 롤 ${formatDistanceValue(state.currentShot.total, 2)} · 라인 ${formatSignedYards(state.currentShot.offline)}`
+      );
+      putterGuideSummary.textContent = "남은 거리와 라인을 먼저 읽고, 같은 조건으로 거리감을 반복 조정하세요.";
+    }
+
+    function createMotionSample(raw = {}) {
+      return {
+        x: Number.isFinite(raw.x) ? raw.x : 0,
+        y: Number.isFinite(raw.y) ? raw.y : 0,
+        z: Number.isFinite(raw.z) ? raw.z : 0,
+      };
+    }
+
+    function resetMotionCapture() {
+      state.putt.motion.strokeActive = false;
+      state.putt.motion.strokeStartTime = 0;
+      state.putt.motion.peakForward = 0;
+      state.putt.motion.peakLateral = 0;
+    }
+
+    function buildMotionStroke() {
+      const motion = state.putt.motion;
+      const durationMs = Math.max(80, state.sceneTime * 1000 - motion.strokeStartTime);
+      const strokeSpeedMps = clamp(0.5 + motion.peakForward * 0.18, 0.35, 3.5);
+      const lineAngleDeg = clamp(motion.peakLateral * 0.9, -10, 10);
+      const tempoScore = clamp(1 - Math.min(1, Math.abs(durationMs - 280) / 260) - Math.min(0.3, Math.abs(lineAngleDeg) * 0.015), 0.35, 0.98);
+      return {
+        strokeSpeedMps,
+        lineAngleDeg,
+        tempoScore,
+        durationMs,
+      };
+    }
+
+    function updateMotionStatus(message, summary = null) {
+      motionStatus.textContent = message;
+      if (summary != null) motionSummary.textContent = summary;
+    }
+
+    function handleMotionSample(sampleInput) {
+      if (!isPutterSession()) return;
+      const motion = state.putt.motion;
+      const sample = createMotionSample(sampleInput);
+      motion.lastSample = sample;
+      if (motion.permission === "idle" && motion.supported) {
+        motion.permission = "granted";
+      }
+      if (!motion.armed) return;
+      const forward = sample.x - motion.baseline.x;
+      const lateral = sample.y - motion.baseline.y;
+      const startThreshold = 0.7;
+      const settleThreshold = 0.18;
+      if (!motion.strokeActive && forward > startThreshold) {
+        motion.strokeActive = true;
+        motion.strokeStartTime = state.sceneTime * 1000;
+        motion.peakForward = forward;
+        motion.peakLateral = lateral;
+        updateMotionStatus("스트로크 감지 중입니다. 임팩트 구간을 읽고 있습니다.", "감지 중");
+        return;
+      }
+      if (!motion.strokeActive) return;
+      motion.peakForward = Math.max(motion.peakForward, forward);
+      motion.peakLateral = Math.abs(lateral) > Math.abs(motion.peakLateral) ? lateral : motion.peakLateral;
+      if (forward <= settleThreshold) {
+        motion.strokeActive = false;
+        motion.armed = false;
+        motion.pendingStroke = buildMotionStroke();
+        motion.lastStroke = motion.pendingStroke;
+        motionLastStroke.textContent = `${formatStrokeSpeed(motion.pendingStroke.strokeSpeedMps)} · 라인 ${motion.pendingStroke.lineAngleDeg.toFixed(1)}° · 템포 ${formatTempoScore(motion.pendingStroke.tempoScore)}`;
+        updateMotionStatus("센서 스트로크가 준비되었습니다. 실행하면 이 값을 사용합니다.", "센서 준비됨");
+      }
+    }
+
+    async function ensureMotionPermission() {
+      const motion = state.putt.motion;
+      if (!motion.supported) {
+        motion.permission = "unavailable";
+        updateMotionStatus("이 기기나 브라우저는 DeviceMotion을 지원하지 않습니다. 수동 스트로크 속도를 사용하세요.", "지원 안 됨");
+        return;
+      }
+      try {
+        const permissionFn = window.DeviceMotionEvent?.requestPermission;
+        if (typeof permissionFn === "function") {
+          const result = await permissionFn.call(window.DeviceMotionEvent);
+          motion.permission = result === "granted" ? "granted" : "denied";
+        } else {
+          motion.permission = "granted";
+        }
+      } catch {
+        motion.permission = "denied";
+      }
+      updateMotionStatus(
+        motion.permission === "granted"
+          ? "모션 권한이 활성화되었습니다. 기준을 잡은 뒤 스트로크 대기로 전환하세요."
+          : "모션 권한을 받지 못했습니다. 수동 스트로크 속도를 사용하세요.",
+        motion.permission === "granted" ? "권한 허용" : "권한 거부"
+      );
+    }
+
+    function calibrateMotion() {
+      const motion = state.putt.motion;
+      motion.baseline = { ...motion.lastSample };
+      motion.calibrated = true;
+      motion.pendingStroke = null;
+      resetMotionCapture();
+      updateMotionStatus("현재 휴대폰 자세를 기준 자세로 저장했습니다.", "기준 저장됨");
+      motionLastStroke.textContent = "없음";
+    }
+
+    function armMotionStroke() {
+      const motion = state.putt.motion;
+      if (!motion.calibrated) {
+        updateMotionStatus("먼저 기준 잡기를 눌러 현재 자세를 고정하세요.", "기준 필요");
+        return;
+      }
+      motion.armed = true;
+      motion.pendingStroke = null;
+      resetMotionCapture();
+      updateMotionStatus("퍼터 스트로크를 시작하세요. 앞으로 미는 가속을 감지합니다.", "스트로크 대기");
+      motionLastStroke.textContent = "대기 중";
+    }
+
+    function consumePuttStroke() {
+      const motion = state.putt.motion;
+      if (motion.pendingStroke) {
+        const stroke = { ...motion.pendingStroke };
+        motion.pendingStroke = null;
+        return {
+          source: "sensor",
+          strokeSpeedMps: stroke.strokeSpeedMps,
+          lineAngleDeg: stroke.lineAngleDeg,
+          tempoScore: stroke.tempoScore,
+        };
+      }
+      return {
+        source: "manual",
+        strokeSpeedMps: state.putt.manualStrokeSpeedMps,
+        lineAngleDeg: state.yawDeg * 0.42,
+        tempoScore: 0.78,
+      };
     }
 
     function syncSpeedInputs() {
@@ -651,6 +1997,84 @@
       state.previewSamples = sampleTrajectoryPreview(state, state.model);
     }
 
+    function syncPuttInputs() {
+      state.putt.holeDistanceM = getPuttDistanceValue();
+      state.putt.manualStrokeSpeedMps = getPuttStrokeSpeedValue();
+      state.putt.greenDecel = getPuttGreenDecelValue();
+      state.putt.controls = createPuttControls({
+        ...state.putt.controls,
+        holeDistanceM: state.putt.holeDistanceM,
+        strokeSpeedMps: state.putt.manualStrokeSpeedMps,
+      });
+      updatePuttControlNotes();
+      if (isPutterSession() && !state.ball.moving) {
+        state.previewSamples = sampleTrajectoryPreview(state, state.putt.model);
+      }
+    }
+
+    function parseInputBound(rawValue, fallback) {
+      const parsed = Number(rawValue);
+      return Number.isFinite(parsed) ? parsed : fallback;
+    }
+
+    function refreshInputDrivenState() {
+      applyManualInputs();
+      if (state.cameraMode !== "follow") {
+        syncBallFromModel();
+        buildFlightCamera(state, true);
+        syncBallFromModel();
+      }
+      updateChrome();
+      render();
+    }
+
+    function setBallSpeedInputMph(nextMph) {
+      const min = parseInputBound(ballSpeedMphInput.min, 0);
+      const max = parseInputBound(ballSpeedMphInput.max, 250);
+      const clampedMph = clamp(Math.round(nextMph), min, max);
+      ballSpeedMphInput.value = String(clampedMph);
+      syncSpeedInputs();
+      refreshInputDrivenState();
+    }
+
+    function nudgeBallSpeedInput(deltaMph) {
+      const fallbackMph = state.manualLaunch.ballSpeedMps == null ? 150 : mpsToMph(state.manualLaunch.ballSpeedMps);
+      const currentMph = parseOptionalNumber(ballSpeedMphInput.value) ?? fallbackMph;
+      setBallSpeedInputMph(currentMph + deltaMph);
+    }
+
+    function setSideSpinInputRpm(nextSpinRpm) {
+      const min = parseInputBound(sideSpinInput.min, -4000);
+      const max = parseInputBound(sideSpinInput.max, 4000);
+      const step = parseInputBound(sideSpinInput.step, HOTKEY_SIDE_SPIN_STEP_RPM);
+      const snappedSpin = Math.round(nextSpinRpm / step) * step;
+      const clampedSpin = clamp(snappedSpin, min, max);
+      sideSpinInput.value = String(clampedSpin);
+      refreshInputDrivenState();
+    }
+
+    function nudgeSideSpinInput(direction) {
+      const currentSpin = parseOptionalNumber(sideSpinInput.value) ?? 0;
+      const nextSpin = currentSpin + direction * HOTKEY_SIDE_SPIN_STEP_RPM;
+      setSideSpinInputRpm(nextSpin);
+    }
+
+    function setBackSpinInputRpm(nextSpinRpm) {
+      const min = parseInputBound(backSpinInput.min, 1200);
+      const max = parseInputBound(backSpinInput.max, 7200);
+      const step = parseInputBound(backSpinInput.step, HOTKEY_SIDE_SPIN_STEP_RPM);
+      const snappedSpin = Math.round(nextSpinRpm / step) * step;
+      const clampedSpin = clamp(snappedSpin, min, max);
+      backSpinInput.value = String(clampedSpin);
+      refreshInputDrivenState();
+    }
+
+    function nudgeBackSpinInput(direction) {
+      const currentSpin = parseOptionalNumber(backSpinInput.value) ?? 2500;
+      const step = parseInputBound(backSpinInput.step, HOTKEY_SIDE_SPIN_STEP_RPM);
+      setBackSpinInputRpm(currentSpin + direction * step);
+    }
+
     function formatWindDirection(x, z) {
       if (Math.abs(x) < 0.25 && Math.abs(z) < 0.25) return "Calm";
       if (Math.abs(x) >= Math.abs(z)) return x >= 0 ? "E" : "W";
@@ -658,19 +2082,15 @@
     }
 
     function formatYards(value) {
-      return Number.isFinite(value) ? `${Math.round(value * 1.09361)}y` : "-";
+      return formatDistanceValue(value);
     }
 
     function formatSignedYards(value) {
-      if (!Number.isFinite(value)) return "-";
-      const yards = Math.round(value * 1.09361);
-      return `${yards > 0 ? "+" : ""}${yards}y`;
+      return formatDistanceValue(value, 0, true);
     }
 
     function describeMode(mode) {
       switch (mode) {
-        case "shot_primed":
-          return "입력 강도 조정 중";
         case "launching":
           return "실행 중";
         case "in_flight":
@@ -685,21 +2105,367 @@
     }
 
     function formatBallInputSummary() {
-      const ballSpeedText = state.manualLaunch.ballSpeedMps == null
-        ? "볼 속도 자동"
-        : `볼 ${formatPanelMetric(mpsToMph(state.manualLaunch.ballSpeedMps), 0, true)} mph`;
-      const backspinText = state.manualLaunch.backspinRpm == null
-        ? "백스핀 자동"
-        : `백스핀 ${formatPanelMetric(state.manualLaunch.backspinRpm, 0, true)} rpm`;
-      const sidespinText = state.manualLaunch.sideSpinRpm == null
-        ? "사이드스핀 자동"
-        : `사이드스핀 ${formatPanelMetric(state.manualLaunch.sideSpinRpm, 0, true)} rpm`;
-      return `${ballSpeedText} · ${backspinText} · ${sidespinText}`;
+      if (isPutterSession()) {
+        return `홀 ${formatDistanceValue(state.putt.holeDistanceM, 1)} · 세부값 보기`;
+      }
+      const speedText = state.manualLaunch.ballSpeedMps == null
+        ? "자동"
+        : `${String(Math.round(mpsToMph(state.manualLaunch.ballSpeedMps))).padStart(3, "0")} mph`;
+      return `볼 ${speedText} · 세부값 보기`;
+    }
+
+    function formatBallInputDetailValue(kind) {
+      if (isPutterSession()) {
+        if (kind === "ball") return formatDistanceValue(state.putt.holeDistanceM, 1);
+        if (kind === "backspin") return formatStrokeSpeed(state.putt.manualStrokeSpeedMps);
+        return describeGreenDecel(state.putt.greenDecel);
+      }
+      const formatSigned = (value) => `${value >= 0 ? "+" : "-"}${String(Math.abs(Math.round(value))).padStart(4, "0")} rpm`;
+      if (kind === "ball") {
+        return state.manualLaunch.ballSpeedMps == null
+          ? "자동"
+          : `${String(Math.round(mpsToMph(state.manualLaunch.ballSpeedMps))).padStart(3, "0")} mph`;
+      }
+      if (kind === "backspin") {
+        return state.manualLaunch.backspinRpm == null
+          ? "자동"
+          : `${String(Math.round(state.manualLaunch.backspinRpm)).padStart(4, "0")} rpm`;
+      }
+      return state.manualLaunch.sideSpinRpm == null
+        ? "자동"
+        : formatSigned(state.manualLaunch.sideSpinRpm);
+    }
+
+    function formatSessionResultDetail(kind) {
+      if (isPutterSession()) {
+        if (!state.currentShot) return kind === "primary" ? "-" : "대기 중";
+        if (kind === "primary") {
+          return state.currentShot.holed
+            ? "홀 아웃"
+            : `남은 ${formatDistanceValue(Math.abs(state.currentShot.remainingDistance ?? state.currentShot.paceError), 2)}`;
+        }
+        if (kind === "secondary") return `롤 ${formatDistanceValue(state.currentShot.total, 2)}`;
+        return `라인 ${formatSignedYards(state.currentShot.offline)}`;
+      }
+      const live = getLiveFlightMetrics();
+      if (live) {
+        if (kind === "primary") return `거리 ${formatDistanceValue(live.distanceMeters, 1)}`;
+        if (kind === "secondary") return `커브 ${formatDistanceValue(Math.abs(live.curveMeters), 1)}`;
+        return `방향 ${formatCurveDirection(live.curveMeters)}`;
+      }
+      const record = state.currentShot;
+      if (!record) {
+        if (kind === "primary") return "-";
+        return "대기 중";
+      }
+      if (kind === "primary") return formatDistanceValue(record.carry, 1);
+      if (kind === "secondary") return formatDistanceValue(record.total, 1);
+      return formatSignedYards(record.offline);
     }
 
     function formatRecentFlightSummary() {
-      if (!state.lastShotMetrics) return "실행 전 결과 없음";
-      return `캐리 ${formatYards(state.lastShotMetrics.carry)} · 총거리 ${formatYards(state.lastShotMetrics.total)} · 편차 ${formatSignedYards(state.lastShotMetrics.offline)}`;
+      if (!state.currentShot) return "실행 전 결과 없음";
+      if (state.currentShot.sessionKind === "putter") {
+        if (state.currentShot.holed) return `샷 ${state.currentShot.shotNo} · 홀 아웃 성공`;
+        return `남은 ${formatDistanceValue(Math.abs(state.currentShot.remainingDistance ?? state.currentShot.paceError), 2)} · 라인 ${formatSignedYards(state.currentShot.offline)}`;
+      }
+      return formatShotPrimaryMetrics(state.currentShot);
+    }
+
+    function formatSignedYardDelta(value) {
+      return formatDistanceValue(value, 0, true);
+    }
+
+    function formatCenterDelta(currentOffline, previousOffline) {
+      const change = Math.abs(previousOffline) - Math.abs(currentOffline);
+      const distanceValue = Math.abs(roundDistanceForDisplay(change));
+      const suffix = getDistanceUnitConfig().suffix;
+      if (distanceValue === 0) return "편차 변화 없음";
+      return change > 0 ? `편차 ${distanceValue}${suffix} 더 중앙` : `편차 ${distanceValue}${suffix} 더 벗어남`;
+    }
+
+    function formatShotPrimaryMetrics(record) {
+      if (!record) return "-";
+      if (record.sessionKind === "putter") {
+        if (record.holed) return `홀 아웃 · 롤 ${formatDistanceValue(record.total, 2)} · 라인 ${formatSignedYards(record.offline)}`;
+        return `남은 ${formatDistanceValue(Math.abs(record.remainingDistance ?? record.paceError), 2)} · 롤 ${formatDistanceValue(record.total, 2)} · 라인 ${formatSignedYards(record.offline)}`;
+      }
+      return `캐리 ${formatYards(record.carry)} · 총거리 ${formatYards(record.total)} · 편차 ${formatSignedYards(record.offline)}`;
+    }
+
+    function getLiveFlightMetrics(modelState = state.model, ballPos = state.ball.position) {
+      if (isPutterSession()) return null;
+      if (!["launching", "in_flight", "rollout"].includes(state.mode)) return null;
+      const launchPos = modelState.launchPos ?? WORLD.teePos;
+      const azimuthDeg = Number.isFinite(modelState.launchAzimuthDeg) ? modelState.launchAzimuthDeg : state.yawDeg;
+      const azimuthRad = azimuthDeg * Math.PI / 180;
+      const deltaX = ballPos.x - launchPos.x;
+      const deltaZ = ballPos.z - launchPos.z;
+      const distanceMeters = Math.max(0, Math.hypot(deltaX, deltaZ));
+      const downrangeMeters = deltaX * Math.cos(azimuthRad) + deltaZ * Math.sin(azimuthRad);
+      const curveMeters = deltaX * -Math.sin(azimuthRad) + deltaZ * Math.cos(azimuthRad);
+      return {
+        distanceMeters,
+        downrangeMeters,
+        curveMeters,
+      };
+    }
+
+    function formatCurveDirection(curveMeters) {
+      if (!Number.isFinite(curveMeters) || Math.abs(curveMeters) < 0.15) return "중앙";
+      return curveMeters > 0 ? "우" : "좌";
+    }
+
+    function formatLiveFlightSummary() {
+      const live = getLiveFlightMetrics();
+      if (!live) return "실시간 비행 정보 없음";
+      return `거리 ${formatDistanceValue(live.distanceMeters, 1)} · 커브 ${formatDistanceValue(Math.abs(live.curveMeters), 1)} ${formatCurveDirection(live.curveMeters)}`;
+    }
+
+    function formatShotInputSummary(record) {
+      if (!record) return "샷 정보 없음";
+      return `샷 ${record.shotNo} · 탄도 ${Math.round(record.inputs.aimDeg)}° · 방향 ${Math.round(record.inputs.yawDeg)}°`;
+    }
+
+    function buildShotChange(current, previous) {
+      if (!current || !previous) return null;
+      return {
+        carryDelta: current.carry - previous.carry,
+        totalDelta: current.total - previous.total,
+        offlineDelta: current.offline - previous.offline,
+        centerText: formatCenterDelta(current.offline, previous.offline),
+      };
+    }
+
+    function formatComparisonSummary() {
+      if (!state.currentShot) return "아직 현재 샷이 없습니다.";
+      if (state.currentShot.sessionKind === "putter") {
+        if (!state.previousShot) return "현재 퍼트만 있습니다. 한 번 더 스트로크하면 변화가 생깁니다.";
+        const remainingDelta = (state.currentShot.remainingDistance ?? Math.abs(state.currentShot.paceError))
+          - (state.previousShot.remainingDistance ?? Math.abs(state.previousShot.paceError));
+        const lineDelta = state.currentShot.offline - state.previousShot.offline;
+        return `직전 퍼트 대비 남은 거리 ${formatSignedYardDelta(remainingDelta)} · 라인 ${formatSignedYardDelta(lineDelta)} · 템포 ${formatTempoScore(state.currentShot.impactQuality)}`;
+      }
+      if (!state.previousShot) return "현재 샷만 있습니다. 한 번 더 치면 직전 샷과 변화가 생깁니다.";
+      const change = buildShotChange(state.currentShot, state.previousShot);
+      return `직전 샷 대비 캐리 ${formatSignedYardDelta(change.carryDelta)} · 총거리 ${formatSignedYardDelta(change.totalDelta)} · ${change.centerText}`;
+    }
+
+    function formatComparisonContext() {
+      if (!state.currentShot) return "첫 샷을 실행하면 현재 샷이 표시됩니다.";
+      if (state.currentShot.sessionKind === "putter") {
+        if (!state.previousShot) return "한 번 더 퍼팅하면 직전 퍼트와 남은 거리 차이가 표시됩니다.";
+        if (state.mode === "auto_reset_pending") return "현재 퍼트의 남은 거리와 라인을 읽는 동안 다음 스트로크를 준비합니다.";
+        return "현재 퍼트와 직전 퍼트를 남은 거리, 라인, 템포 중심으로 비교합니다.";
+      }
+      if (!state.previousShot) return "한 번 더 실행하면 직전 샷과 변화가 표시됩니다.";
+      if (state.mode === "auto_reset_pending") return "현재 샷과 변화를 읽는 동안 다음 샷을 자동으로 준비하고 있습니다.";
+      if (hasPendingInputChanges()) return "입력값을 바꾼 뒤 바로 다시 치면 현재 샷과 직전 샷의 변화가 갱신됩니다.";
+      return "현재 샷과 직전 샷을 나란히 두고 최소 비교만 바로 읽을 수 있습니다.";
+    }
+
+    function formatCurrentShotValue() {
+      return state.currentShot ? formatShotPrimaryMetrics(state.currentShot) : "아직 현재 샷이 없습니다.";
+    }
+
+    function formatCurrentShotNote() {
+      if (!state.currentShot) return "첫 실행 후 현재 샷이 표시됩니다.";
+      if (state.currentShot.sessionKind === "putter") {
+        return `퍼트 ${state.currentShot.shotNo} · 홀 ${formatDistanceValue(state.currentShot.inputs.holeDistanceM, 1)} · ${state.currentShot.inputs.strokeSource === "sensor" ? "센서 스트로크" : "수동 스트로크"}`;
+      }
+      return formatShotInputSummary(state.currentShot);
+    }
+
+    function formatPreviousShotValue() {
+      return state.previousShot ? formatShotPrimaryMetrics(state.previousShot) : "직전 샷이 아직 없습니다.";
+    }
+
+    function formatPreviousShotNote() {
+      if (!state.previousShot) return "두 번째 실행부터 직전 샷이 표시됩니다.";
+      if (state.previousShot.sessionKind === "putter") {
+        return `퍼트 ${state.previousShot.shotNo} · 홀 ${formatDistanceValue(state.previousShot.inputs.holeDistanceM, 1)} · ${state.previousShot.inputs.strokeSource === "sensor" ? "센서 스트로크" : "수동 스트로크"}`;
+      }
+      return formatShotInputSummary(state.previousShot);
+    }
+
+    function formatChangeValue() {
+      const change = buildShotChange(state.currentShot, state.previousShot);
+      if (state.currentShot?.sessionKind === "putter" && state.previousShot?.sessionKind === "putter") {
+        const remainingDelta = (state.currentShot.remainingDistance ?? Math.abs(state.currentShot.paceError))
+          - (state.previousShot.remainingDistance ?? Math.abs(state.previousShot.paceError));
+        const lineDelta = state.currentShot.offline - state.previousShot.offline;
+        return `남은 거리 ${formatSignedYardDelta(remainingDelta)} · 라인 ${formatSignedYardDelta(lineDelta)} · 템포 ${formatTempoScore(state.currentShot.impactQuality)}`;
+      }
+      if (!change) return "변화가 아직 없습니다.";
+      return `캐리 ${formatSignedYardDelta(change.carryDelta)} · 총거리 ${formatSignedYardDelta(change.totalDelta)} · ${change.centerText}`;
+    }
+
+    function formatChangeNote() {
+      const change = buildShotChange(state.currentShot, state.previousShot);
+      if (state.currentShot?.sessionKind === "putter" && state.previousShot?.sessionKind === "putter") {
+        return "직전 퍼트보다 남은 거리와 라인이 얼마나 달라졌는지 보여줍니다.";
+      }
+      if (!change) return "직전 샷이 생기면 변화가 계산됩니다.";
+      if (roundDistanceForDisplay(change.carryDelta) === 0 && roundDistanceForDisplay(change.totalDelta) === 0 && change.centerText === "편차 변화 없음") {
+        return "현재 샷이 직전 샷과 거의 같습니다.";
+      }
+      return "현재 샷이 직전 샷보다 어떻게 달라졌는지 보여줍니다.";
+    }
+
+    function renderShotHistory() {
+      comparisonCurrentCard.hidden = false;
+      comparisonPreviousCard.hidden = !state.previousShot;
+      comparisonChangeCard.hidden = !state.previousShot;
+      comparisonCurrentValue.textContent = formatCurrentShotValue();
+      comparisonCurrentNote.textContent = formatCurrentShotNote();
+      comparisonPreviousValue.textContent = formatPreviousShotValue();
+      comparisonPreviousNote.textContent = formatPreviousShotNote();
+      comparisonChangeValue.textContent = formatChangeValue();
+      comparisonChangeNote.textContent = formatChangeNote();
+    }
+
+    function samplePointSeries(points, maxPoints = MAX_HISTORY_TRAJECTORY_SAMPLES) {
+      if (!Array.isArray(points) || points.length <= maxPoints) {
+        return Array.isArray(points) ? points.map((point) => ({ ...point })) : [];
+      }
+      const sampled = [{ ...points[0] }];
+      let totalDistance = 0;
+      for (let i = 1; i < points.length; i += 1) {
+        totalDistance += Math.hypot(
+          points[i].x - points[i - 1].x,
+          points[i].y - points[i - 1].y,
+          points[i].z - points[i - 1].z
+        );
+      }
+      if (totalDistance <= 0.001) {
+        return points.slice(0, maxPoints).map((point) => ({ ...point }));
+      }
+      const stepDistance = totalDistance / (maxPoints - 1);
+      let covered = 0;
+      let nextTarget = stepDistance;
+      for (let i = 1; i < points.length && sampled.length < maxPoints - 1; i += 1) {
+        const previous = points[i - 1];
+        const current = points[i];
+        const segmentDistance = Math.hypot(
+          current.x - previous.x,
+          current.y - previous.y,
+          current.z - previous.z
+        );
+        if (segmentDistance <= 0.0001) continue;
+        while (covered + segmentDistance >= nextTarget && sampled.length < maxPoints - 1) {
+          const ratio = (nextTarget - covered) / segmentDistance;
+          sampled.push({
+            x: previous.x + (current.x - previous.x) * ratio,
+            y: previous.y + (current.y - previous.y) * ratio,
+            z: previous.z + (current.z - previous.z) * ratio,
+          });
+          nextTarget += stepDistance;
+        }
+        covered += segmentDistance;
+      }
+      sampled.push({ ...points[points.length - 1] });
+      return sampled;
+    }
+
+    function buildShotTrajectorySamples(points = state.trajectorySamples, landing = state.ball.position) {
+      const launchPos = state.model?.launchPos ?? WORLD.teePos;
+      const landingPoint = {
+        x: landing.x,
+        y: landing.y,
+        z: landing.z,
+      };
+      const samples = points.length
+        ? points.map((point) => ({ ...point }))
+        : [{ ...launchPos }];
+      const lastSample = samples[samples.length - 1];
+      if (!lastSample || Math.hypot(lastSample.x - landingPoint.x, lastSample.y - landingPoint.y, lastSample.z - landingPoint.z) > 0.12) {
+        samples.push(landingPoint);
+      }
+      return samplePointSeries(samples, MAX_HISTORY_TRAJECTORY_SAMPLES);
+    }
+
+    function buildShotRecord(modelState = state.model, committedInputs = state.lastCommittedInputs ?? snapshotCurrentInputs(), trajectory = buildShotTrajectorySamples()) {
+      const clubHeadSpeed = modelState.clubHeadSpeed;
+      const ballSpeed = modelState.ballSpeed;
+      const impactQuality = modelState.impactQuality;
+      const smash = Number.isFinite(ballSpeed) && Number.isFinite(clubHeadSpeed) && clubHeadSpeed > 0.01
+        ? ballSpeed / clubHeadSpeed
+        : null;
+      return {
+        sessionKind: "range",
+        shotNo: modelState.shotNo ?? state.totalShots,
+        carry: modelState.carryDistance,
+        total: modelState.totalDistance,
+        offline: modelState.offlineDistance,
+        apex: modelState.apexHeight,
+        ballSpeed,
+        clubHeadSpeed,
+        impactQuality,
+        smash,
+        landing: {
+          x: modelState.ballPos.x,
+          y: modelState.ballPos.y,
+          z: modelState.ballPos.z,
+        },
+        trajectory,
+        inputs: {
+          aimDeg: committedInputs.aimDeg ?? state.aimDeg,
+          yawDeg: committedInputs.yawDeg ?? state.yawDeg,
+          ballSpeedMps: committedInputs.ballSpeedMps,
+          backspinRpm: committedInputs.backspinRpm,
+          sideSpinRpm: committedInputs.sideSpinRpm,
+        },
+      };
+    }
+
+    function buildPuttRecord(modelState = state.putt.model, stroke = state.putt.motion.lastStroke ?? { source: "manual" }) {
+      const holeDistanceM = state.putt.holeDistanceM;
+      const lineAngleDeg = Number.isFinite(modelState.launchAzimuthDeg) ? modelState.launchAzimuthDeg : state.yawDeg * 0.42;
+      return {
+        sessionKind: "putter",
+        shotNo: modelState.shotNo ?? state.totalShots,
+        carry: modelState.rollDistance,
+        total: modelState.totalDistance,
+        offline: modelState.offlineDistance,
+        apex: 0,
+        ballSpeed: modelState.startSpeed,
+        clubHeadSpeed: modelState.strokeSpeed,
+        impactQuality: modelState.tempoScore,
+        smash: modelState.remainingDistance,
+        holed: Boolean(modelState.holed),
+        paceError: modelState.paceError,
+        remainingDistance: modelState.remainingDistance,
+        landing: {
+          x: modelState.position.x,
+          y: modelState.position.y,
+          z: modelState.position.z,
+        },
+        trajectory: buildShotTrajectorySamples(state.trajectorySamples, modelState.position),
+        inputs: {
+          aimDeg: 0,
+          yawDeg: lineAngleDeg,
+          ballSpeedMps: modelState.startSpeed,
+          backspinRpm: null,
+          sideSpinRpm: null,
+          holeDistanceM,
+          strokeSource: stroke?.source ?? "manual",
+        },
+      };
+    }
+
+    function isSuccessfulShotRecord(record) {
+      return Boolean(
+        record &&
+        Number.isFinite(record.carry) &&
+        Number.isFinite(record.total) &&
+        Number.isFinite(record.offline) &&
+        Number.isFinite(record.apex) &&
+        Number.isFinite(record.ballSpeed) &&
+        record.ballSpeed > 0 &&
+        Number.isFinite(record.clubHeadSpeed) &&
+        record.clubHeadSpeed > 0 &&
+        Number.isFinite(record.impactQuality)
+      );
     }
 
     function snapshotCurrentInputs() {
@@ -719,35 +2485,35 @@
     }
 
     function hasPendingInputChanges() {
-      if (!state.lastShotMetrics || !state.lastCommittedInputs) return false;
+      if (!state.currentShot?.inputs) return false;
       const current = snapshotCurrentInputs();
       return !(
-        sameNullableNumber(current.aimDeg, state.lastCommittedInputs.aimDeg) &&
-        sameNullableNumber(current.yawDeg, state.lastCommittedInputs.yawDeg) &&
-        sameNullableNumber(current.ballSpeedMps, state.lastCommittedInputs.ballSpeedMps) &&
-        sameNullableNumber(current.backspinRpm, state.lastCommittedInputs.backspinRpm, 0.5) &&
-        sameNullableNumber(current.sideSpinRpm, state.lastCommittedInputs.sideSpinRpm, 0.5)
+        sameNullableNumber(current.aimDeg, state.currentShot.inputs.aimDeg) &&
+        sameNullableNumber(current.yawDeg, state.currentShot.inputs.yawDeg) &&
+        sameNullableNumber(current.ballSpeedMps, state.currentShot.inputs.ballSpeedMps) &&
+        sameNullableNumber(current.backspinRpm, state.currentShot.inputs.backspinRpm, 0.5) &&
+        sameNullableNumber(current.sideSpinRpm, state.currentShot.inputs.sideSpinRpm, 0.5)
       );
     }
 
     function getChangedInputKeys() {
-      if (!state.lastShotMetrics || !state.lastCommittedInputs) return [];
+      if (!state.currentShot?.inputs) return [];
       const current = snapshotCurrentInputs();
       const changedKeys = [];
-      if (!sameNullableNumber(current.aimDeg, state.lastCommittedInputs.aimDeg)) changedKeys.push("aimDeg");
-      if (!sameNullableNumber(current.yawDeg, state.lastCommittedInputs.yawDeg)) changedKeys.push("yawDeg");
-      if (!sameNullableNumber(current.ballSpeedMps, state.lastCommittedInputs.ballSpeedMps)) changedKeys.push("ballSpeedMps");
-      if (!sameNullableNumber(current.backspinRpm, state.lastCommittedInputs.backspinRpm, 0.5)) changedKeys.push("backspinRpm");
-      if (!sameNullableNumber(current.sideSpinRpm, state.lastCommittedInputs.sideSpinRpm, 0.5)) changedKeys.push("sideSpinRpm");
+      if (!sameNullableNumber(current.aimDeg, state.currentShot.inputs.aimDeg)) changedKeys.push("aimDeg");
+      if (!sameNullableNumber(current.yawDeg, state.currentShot.inputs.yawDeg)) changedKeys.push("yawDeg");
+      if (!sameNullableNumber(current.ballSpeedMps, state.currentShot.inputs.ballSpeedMps)) changedKeys.push("ballSpeedMps");
+      if (!sameNullableNumber(current.backspinRpm, state.currentShot.inputs.backspinRpm, 0.5)) changedKeys.push("backspinRpm");
+      if (!sameNullableNumber(current.sideSpinRpm, state.currentShot.inputs.sideSpinRpm, 0.5)) changedKeys.push("sideSpinRpm");
       return changedKeys;
     }
 
     function formatChangedInputSummary(changedKeys) {
       if (!changedKeys.length) {
-        if (state.lastShotMetrics && state.lastCommittedInputs) {
-          return "현재 입력값이 직전 확정 실행 기준과 일치합니다.";
+        if (state.currentShot?.inputs) {
+          return "현재 입력값이 현재 샷 입력값과 일치합니다.";
         }
-        if (!state.lastShotMetrics && !state.lastCommittedInputs) {
+        if (!state.currentShot?.inputs) {
           return "현재 방향 입력값은 기본값이고, 현재 볼 입력값은 입력창 값이 적용됩니다.";
         }
         return "지금 조정한 값은 다음 실행에 반영됩니다.";
@@ -768,7 +2534,7 @@
             return key;
         }
       });
-      return `현재 입력값 중 직전 확정 실행과 다른 항목: ${labels.join(", ")}`;
+      return `현재 샷 입력값과 다른 항목: ${labels.join(", ")}`;
     }
 
     function formatInputHeading(baseLabel, changedKeys, keysInGroup) {
@@ -777,90 +2543,477 @@
     }
 
     function currentResultReferenceKind() {
-      if (!state.lastShotMetrics) return "none";
+      if (!state.currentShot) return "none";
       if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") return "previous";
       if (hasPendingInputChanges()) return "previous";
       return "latest";
     }
 
     function formatResultReferenceLabel() {
-      const kind = currentResultReferenceKind();
-      if (kind === "none") return "비교 기준 없음";
-      if (kind === "latest") return "현재 입력값과 같은 기준";
-      return "직전 실행 기준";
+      if (!state.previousShot) return "직전 샷 없음";
+      return `샷 ${state.previousShot.shotNo} · 캐리 ${formatYards(state.previousShot.carry)}`;
+    }
+
+    function formatDistanceUnitNote() {
+      return state.distanceUnit === "m"
+        ? "직전 샷 기록과 HUD를 미터로 표시"
+        : "직전 샷 기록과 HUD를 야드로 표시";
     }
 
     function formatCurrentStateSummary() {
-      if (state.mode === "shot_primed" || state.charging) return "입력 강도 조정 중";
-      if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") return "새 결과 계산 중";
-      if (hasPendingInputChanges()) return "입력값 수정됨";
-      if (state.mode === "auto_reset_pending") return "새 기준 확정";
-      if (state.lastShotMetrics) return "기준과 일치";
-      return "실행 준비";
+      if (isPutterSession()) {
+        if (state.mode === "launching") return "스트로크 입력";
+        if (state.mode === "rollout" || state.mode === "in_flight") return "그린 롤링";
+        if (state.mode === "auto_reset_pending") return `${AUTO_READY_SECONDS}초 카운트 중`;
+        if (state.currentShot) return "다시 퍼팅 가능";
+        return "첫 퍼트 준비";
+      }
+      if (state.mode === "launching") return "발사 직후";
+      if (state.mode === "in_flight") return "비행 중";
+      if (state.mode === "rollout") return "결과 정리 중";
+      if (state.mode === "auto_reset_pending") return `${AUTO_READY_SECONDS}초 카운트 중`;
+      if (hasPendingInputChanges()) return "입력값 조정됨";
+      if (state.currentShot) return "다시 칠 수 있음";
+      return "첫 샷 준비";
     }
 
     function formatResultStatusNote() {
-      if (state.mode === "shot_primed") return "발사 강도를 유지한 뒤 놓으세요";
-      if (state.mode === "launching") return "샷 데이터를 수집 중입니다";
-      if (state.mode === "in_flight" || state.mode === "rollout") return "탄도를 관찰하세요";
-      if (state.mode === "auto_reset_pending") return "결과를 확인하는 중입니다";
-      if (state.lastShotMetrics) return "다음 샷을 바로 이어서 실험할 수 있습니다";
-      return "샷을 준비하세요";
+      if (isPutterSession()) {
+        if (!state.currentShot) return "현재 퍼트가 아직 없습니다.";
+        if (state.mode === "rollout" || state.mode === "launching") return "거리감과 스타트 라인을 계산 중입니다.";
+        return "현재 퍼트의 남은 거리와 라인 결과를 읽는 중입니다.";
+      }
+      const kind = currentResultReferenceKind();
+      if (kind === "none") {
+        if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") {
+          return "첫 샷을 계산하고 있습니다.";
+        }
+        return "현재 샷이 아직 없습니다.";
+      }
+      if (kind === "latest") return "현재 샷 품질 4개와 변화를 보여줍니다.";
+      if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") {
+        return "새 샷을 계산 중이며 현재 샷 값은 새 결과가 확정되면 갱신됩니다.";
+      }
+      return "입력값이 바뀌었고, 다음 실행이 끝나면 현재 샷이 새 결과로 바뀝니다.";
     }
 
     function formatNextActionHint() {
-      if (state.mode === "shot_primed" || state.charging) return "입력 강도를 유지한 뒤 놓으세요.";
-      if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") return "결과 흐름을 계속 관찰하세요.";
-      if (state.mode === "auto_reset_pending") return "3초 뒤 자동으로 다음 샷 준비 상태로 돌아갑니다.";
-      if (hasPendingInputChanges()) return "지금 실행하면 변경된 입력을 반영해 다시 실행합니다.";
-      if (state.lastShotMetrics) return "지금 실행하면 동일 조건으로 다시 실행합니다.";
-      return "지금 실행하면 현재 입력값으로 실행합니다.";
+      if (isPutterSession()) {
+        if (state.mode === "launching" || state.mode === "rollout") return "그린에서 굴러가는 동안 Space로 바로 다음 퍼트를 준비할 수 있습니다.";
+        if (state.mode === "auto_reset_pending") return `${state.autoResetTimer.toFixed(1)}초 뒤 자동으로 다음 퍼트를 준비합니다.`;
+        if (state.putt.motion.pendingStroke) return "센서 스트로크가 준비되었습니다. 실행하면 이 값을 사용합니다.";
+        return "홀 거리와 스트로크 방식을 확인한 뒤 퍼트를 실행하세요.";
+      }
+      if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") return "현재 샷을 계산 중입니다. Space로 즉시 다시 조준할 수 있습니다.";
+      if (state.mode === "auto_reset_pending") return `${state.autoResetTimer.toFixed(1)}초 뒤 자동으로 다음 샷을 준비합니다. Space로 바로 조준할 수도 있습니다.`;
+      if (hasPendingInputChanges()) return "지금 실행하면 변경된 입력으로 바로 다시 칩니다.";
+      if (state.currentShot) return "지금 실행하면 같은 입력으로 바로 다시 칩니다.";
+      return "지금 실행하면 현재 입력값으로 바로 칩니다.";
+    }
+
+    function getCameraModeProfile(mode = state.cameraMode) {
+      if (isPutterSession()) {
+        return {
+          label: "퍼팅 그린 고정",
+          badgeTitle: "퍼팅 그린",
+          detail: "컵과 볼을 함께 보는 고정 구도",
+        };
+      }
+      switch (mode) {
+        case "fixed-tee":
+          return {
+            label: "티박스 고정",
+            badgeTitle: "티박스 고정",
+            detail: "첫 화면 시점을 유지한 채 비행 보기",
+          };
+        default:
+          return {
+            label: "볼 추적",
+            badgeTitle: "볼 추적",
+            detail: "공을 따라 비행 추적",
+          };
+      }
+    }
+
+    function formatCameraModeLabel() {
+      return getCameraModeProfile().label;
+    }
+
+    function formatCameraBadgeTitle() {
+      return getCameraModeProfile().badgeTitle;
+    }
+
+    function formatCameraBehaviorHint() {
+      if (!isPutterSession() && state.cameraMode === "fixed-tee") {
+        return state.cameraManual.dirty
+          ? "수동 시점을 유지한 채 비행 보기"
+          : "첫 화면 시점을 유지한 채 비행 보기";
+      }
+      return getCameraModeProfile().detail;
+    }
+
+    function formatCameraHint() {
+      const summary = `카메라 ${formatCameraModeLabel()} · ${formatCameraBehaviorHint()}`;
+      if (state.mode === "auto_reset_pending" || state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") {
+        return summary;
+      }
+      return `${summary} · C 다음 / Shift+C 이전`;
+    }
+
+    function formatCameraControlNote() {
+      if (!isPutterSession() && state.cameraMode === "fixed-tee") {
+        return state.cameraManual.dirty
+          ? "티박스 고정 · 좌드래그 이동 · 우드래그 회전 · 휠 줌 · Esc 또는 버튼 리셋"
+          : "티박스 고정 · 좌드래그 이동 · 우드래그 회전 · 휠 줌 · Esc 리셋";
+      }
+      const currentIndex = CAMERA_MODES.indexOf(state.cameraMode);
+      const next = getCameraModeProfile(CAMERA_MODES[(currentIndex + 1) % CAMERA_MODES.length]).label;
+      const previous = getCameraModeProfile(CAMERA_MODES[(currentIndex - 1 + CAMERA_MODES.length) % CAMERA_MODES.length]).label;
+      if (state.cameraNoticeTimer > 0.01) {
+        return `카메라가 ${formatCameraModeLabel()}으로 전환됨 · C 다음 ${next} / Shift+C 이전 ${previous}`;
+      }
+      return `현재 ${formatCameraModeLabel()} · C 다음 ${next} / Shift+C 이전 ${previous}`;
+    }
+
+    function announceCameraMode(source) {
+      state.cameraNoticeTimer = 1.6;
+      state.cameraNoticeSource = source;
+    }
+
+    function isManualCameraEnabled(currentState = state) {
+      return !isPutterSession() && currentState.cameraMode === "fixed-tee";
+    }
+
+    function updateCameraManualDirty(currentState = state) {
+      const manual = currentState.cameraManual;
+      manual.active = isManualCameraEnabled(currentState);
+      manual.dirty =
+        Math.abs(manual.panX) > 0.01 ||
+        Math.abs(manual.panZ) > 0.01 ||
+        Math.abs(manual.yaw) > 0.001 ||
+        Math.abs(manual.pitch) > 0.001 ||
+        Math.abs(manual.distance - createDefaultCameraManual(currentState.cameraMode).distance) > 0.01;
+    }
+
+    function resetManualCamera(options = {}) {
+      const { announce = false, source = "reset", rerender = true } = options;
+      state.cameraManual = createDefaultCameraManual(state.cameraMode);
+      updateCameraManualDirty();
+      if (announce) announceCameraMode(source);
+      if (rerender) {
+        buildFlightCamera(state, true);
+        syncBallFromModel();
+        updateChrome();
+        render();
+      }
+    }
+
+    function syncViewportLayoutState() {
+      state.isHeightCompact = window.innerHeight <= HEIGHT_COMPACT_BREAKPOINT;
+      shell.dataset.heightCompact = state.isHeightCompact ? "true" : "false";
+      const shouldOpenOverview = !(isCompactLayout() || state.isHeightCompact);
+      sessionInputOverview.open = shouldOpenOverview;
+      sessionResultOverview.open = shouldOpenOverview;
+    }
+
+    function syncCameraInteractionUI() {
+      const manualEnabled = isManualCameraEnabled();
+      const dragActive = manualEnabled && state.cameraManual.dragMode !== "none";
+      const showReset = manualEnabled;
+      const interactionState = dragActive
+        ? "fixed-dragging"
+        : manualEnabled
+          ? "fixed-ready"
+          : "disabled";
+      canvas.dataset.cameraInteraction = interactionState;
+      gameViewport.dataset.cameraInteraction = interactionState;
+      cameraResetBtn.disabled = !state.cameraManual.dirty;
+      cameraResetOverlay.disabled = !state.cameraManual.dirty;
+      cameraResetBtn.parentElement.classList.toggle("is-hidden", !showReset);
+      cameraOverlayControls.classList.toggle("is-hidden", !showReset);
+      cameraOverlayHint.textContent = manualEnabled
+        ? (state.cameraManual.dirty
+          ? "수동 시점 적용됨 · 좌드래그 이동 · 우드래그 회전 · 휠 줌 · Esc 리셋"
+          : "좌드래그 이동 · 우드래그 회전 · 휠 줌 · Esc 리셋")
+        : "";
+    }
+
+    function formatStartButtonLabel() {
+      if (isPutterSession()) {
+        if (state.mode === "launching" || state.mode === "rollout") return "퍼트 계산 중";
+        if (state.mode === "auto_reset_pending") return `${state.autoResetTimer.toFixed(1)}초 뒤 준비 완료`;
+        return "퍼트 실행";
+      }
+      if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") return "샷 계산 중";
+      if (state.mode === "auto_reset_pending") return `${state.autoResetTimer.toFixed(1)}초 뒤 준비 완료`;
+      return "바로 실행";
     }
 
     function formatHudStatus() {
+      if (state.mode === "auto_reset_pending") return state.message;
+      if (state.mode === "session_ready") {
+        if (state.message === "현재 입력값을 확인한 뒤 실행하세요") return state.message;
+        if (state.message === "다음 샷 준비 완료. 지금 바로 다시 칠 수 있습니다.") return state.message;
+        if (state.message === "다시 조준할 수 있습니다.") return state.message;
+        if (state.message === "비행을 중단하고 다시 조준할 수 있습니다.") return state.message;
+        if (state.message === "이전 샷은 계속 비행 중이고, 다시 조준할 수 있습니다.") return state.message;
+      }
       return formatResultStatusNote();
     }
 
-    function getVisibleResultMetrics() {
-      const hasCurrentResult = state.model.phase === "flight" || state.model.phase === "rest" || state.mode === "auto_reset_pending";
-      if (hasCurrentResult) {
-        return {
-          carry: state.model.carryDistance,
-          total: state.model.totalDistance,
-          offline: state.model.offlineDistance,
-          ballSpeed: state.model.ballSpeed,
-          backspin: state.model.backspinRpm,
-          sidespin: state.model.sidespinRpm,
-        };
+    function formatReadyMeterLabel() {
+      if (state.mode === "auto_reset_pending") {
+        return `${state.autoResetTimer.toFixed(1)}초 뒤 다시 칠 수 있습니다.`;
       }
+      if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") {
+        return "이번 샷 결과를 정리하는 중입니다.";
+      }
+      if (state.currentShot) return "다음 샷 준비 완료";
+      return "첫 샷 준비 완료";
+    }
 
-      return state.lastShotMetrics;
+    function getReadyMeterProgress() {
+      if (state.mode === "auto_reset_pending") {
+        return clamp(1 - state.autoResetTimer / AUTO_READY_SECONDS, 0, 1);
+      }
+      if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") {
+        return 0.12;
+      }
+      return 1;
+    }
+
+    function ensureAudioContext() {
+      const AudioCtor = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtor) return null;
+      if (!window.__golfsimAudioCtx) {
+        try {
+          window.__golfsimAudioCtx = new AudioCtor();
+        } catch {
+          return null;
+        }
+      }
+      return window.__golfsimAudioCtx;
+    }
+
+    function unlockAudioContext() {
+      const audio = ensureAudioContext();
+      if (!audio || audio.state !== "suspended") return;
+      audio.resume().catch(() => {});
+    }
+
+    function playToneSequence(tones) {
+      const audio = ensureAudioContext();
+      if (!audio || audio.state === "suspended") return;
+      const now = audio.currentTime;
+
+      tones.forEach((tone, index) => {
+        const start = now + (tone.delay ?? index * 0.04);
+        const stop = start + tone.duration;
+        const osc = audio.createOscillator();
+        const gain = audio.createGain();
+        const filter = audio.createBiquadFilter();
+        osc.type = tone.type ?? "sine";
+        osc.frequency.setValueAtTime(tone.frequency, start);
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(tone.cutoff ?? 1800, start);
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(tone.volume, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, stop);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(audio.destination);
+        osc.start(start);
+        osc.stop(stop + 0.02);
+      });
+    }
+
+    function pulseHaptics(duration) {
+      try {
+        navigator.vibrate?.(duration);
+      } catch {}
+    }
+
+    function playImpactCue() {
+      playToneSequence([
+        { frequency: 164, duration: 0.09, volume: 0.07, type: "triangle", cutoff: 1350 },
+        { frequency: 318, duration: 0.11, volume: 0.04, delay: 0.02, type: "sawtooth", cutoff: 2200 },
+        { frequency: 408, duration: 0.12, volume: 0.028, delay: 0.05, type: "sine", cutoff: 2400 },
+      ]);
+      pulseHaptics(16);
+    }
+
+    function playReadyCue() {
+      playToneSequence([
+        { frequency: 554, duration: 0.08, volume: 0.035, type: "triangle", cutoff: 2500 },
+        { frequency: 740, duration: 0.13, volume: 0.03, delay: 0.05, type: "sine", cutoff: 2800 },
+      ]);
+      pulseHaptics(10);
+    }
+
+    function playLandingCue() {
+      playToneSequence([
+        { frequency: 210, duration: 0.12, volume: 0.028, type: "triangle", cutoff: 900 },
+        { frequency: 118, duration: 0.16, volume: 0.02, delay: 0.04, type: "sine", cutoff: 820 },
+      ]);
+      pulseHaptics(10);
     }
 
     function updateChrome() {
-      const metrics = getVisibleResultMetrics();
-      const hasShotResult = Boolean(metrics);
+      const hasShotResult = Boolean(state.currentShot);
       const changedInputKeys = getChangedInputKeys();
+      const liveFlight = getLiveFlightMetrics();
       state.message = formatHudStatus();
-      hudCarry.textContent = hasShotResult ? formatYards(metrics.carry) : "-";
-      hudTotal.textContent = hasShotResult ? formatYards(metrics.total) : "-";
-      hudOffline.textContent = hasShotResult ? formatSignedYards(metrics.offline) : "-";
-      hudBallSpeedPrimary.textContent = hasShotResult ? `${formatPanelMetric(mpsToMph(metrics.ballSpeed), 0, true)} mph` : "-";
-      hudBackSpin.textContent = hasShotResult ? `${formatPanelMetric(metrics.backspin, 0, true)} rpm` : "-";
-      hudSideSpin.textContent = hasShotResult ? `${formatPanelMetric(metrics.sidespin, 0, true)} rpm` : "-";
+      if (isPutterSession()) {
+        hudMetricLabel1.innerHTML = '<span class="metric-icon distance">R</span>남은 거리 (Remaining)';
+        hudMetricLabel2.innerHTML = '<span class="metric-icon distance">G</span>굴러간 거리 (Roll)';
+        hudMetricLabel3.innerHTML = '<span class="metric-icon wind">L</span>라인 오차 (Line)';
+        hudMetricLabel4.innerHTML = '<span class="metric-icon wind">S</span>스트로크 속도 (Stroke)';
+        hudBallSpeed.textContent = hasShotResult
+          ? (state.currentShot.holed ? "홀 아웃" : formatDistanceValue(Math.abs(state.currentShot.remainingDistance ?? state.currentShot.paceError), 2))
+          : "-";
+        hudClubHeadSpeed.textContent = hasShotResult ? formatDistanceValue(state.currentShot.total, 2) : "-";
+        hudImpactQuality.textContent = hasShotResult ? formatSignedYards(state.currentShot.offline) : "-";
+        hudSmash.textContent = hasShotResult ? formatStrokeSpeed(state.currentShot.clubHeadSpeed) : "-";
+      } else {
+        hudMetricLabel1.innerHTML = '<span class="metric-icon distance">B</span>볼 스피드 (Ball Speed)';
+        hudMetricLabel2.innerHTML = '<span class="metric-icon distance">C</span>캐리 (Carry)';
+        hudMetricLabel3.innerHTML = '<span class="metric-icon wind">T</span>토탈 (Total)';
+        hudMetricLabel4.innerHTML = '<span class="metric-icon wind">O</span>오프라인 (Offline)';
+        hudBallSpeed.textContent = hasShotResult ? `${formatPanelMetric(mpsToMph(state.currentShot.ballSpeed), 0, true)} mph` : "-";
+        hudClubHeadSpeed.textContent = hasShotResult ? formatDistanceValue(state.currentShot.carry, 1) : "-";
+        hudImpactQuality.textContent = hasShotResult ? formatDistanceValue(state.currentShot.total, 1) : "-";
+        hudSmash.textContent = hasShotResult ? formatSignedYards(state.currentShot.offline) : "-";
+      }
+      readyMeterFill.style.width = `${(getReadyMeterProgress() * 100).toFixed(1)}%`;
+      readyMeterFill.style.opacity = state.mode === "auto_reset_pending" ? "1" : "0.82";
+      readyMeterLabel.textContent = formatReadyMeterLabel();
+      if (isPutterSession()) {
+        hudContext.textContent = hasShotResult
+          ? "현재 퍼트의 남은 거리와 라인을 먼저 읽고, 이어서 직전 퍼트와 비교하세요."
+          : "이 패널은 현재 퍼트의 남은 거리와 굴러간 거리를 먼저 보여줍니다.";
+      } else if (hasShotResult && state.mode === "auto_reset_pending") {
+        hudContext.textContent = "현재 샷 핵심 4개를 먼저 읽고, 이어서 직전 샷 변화를 확인하세요.";
+      } else if (hasShotResult) {
+        hudContext.textContent = "현재 샷 핵심 4개가 먼저 보이고, 비교 정보는 그다음에 읽힙니다.";
+      } else if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") {
+        hudContext.textContent = "비행을 따라가며 현재 샷 핵심 지표가 곧 확정됩니다.";
+      } else {
+        hudContext.textContent = "이 패널은 현재 샷 핵심 지표와 직전 샷 변화를 보여줍니다.";
+      }
       hudStatus.textContent = state.message;
-      buttonNote.textContent = formatNextActionHint();
+      comparisonSummary.textContent = formatComparisonSummary();
+      comparisonContext.textContent = formatComparisonContext();
+      comparisonCurrentLabel.textContent = isPutterSession() ? "현재 퍼트" : "현재 샷";
+      comparisonPreviousLabel.textContent = isPutterSession() ? "직전 퍼트" : "직전 샷";
+      comparisonChangeLabel.textContent = "변화";
+      renderShotHistory();
+      startBtn.textContent = formatStartButtonLabel();
+      buttonNote.textContent = `${formatNextActionHint()} · ${formatCameraHint()}`;
+      cameraModeNote.textContent = formatCameraControlNote();
+      cameraModeNote.classList.toggle("is-live", state.cameraNoticeTimer > 0.01);
+      gameStageHeading.textContent = isPutterSession()
+        ? "1. 퍼트 결과와 거리감 확인"
+        : "1. 현재 입력값 확인과 비행 추적";
+      hudPanelHeading.textContent = isPutterSession() ? "2. 퍼트 결과" : "2. 현재 샷";
+      controlSidebarHeading.textContent = isPutterSession() ? "3. 퍼터 세팅과 가이드" : "3. 현재 입력값 조정";
+      readySectionHeading.textContent = isPutterSession() ? "다음 퍼트 준비" : "다음 샷 준비";
+      readySectionNote.textContent = isPutterSession()
+        ? "남은 거리와 라인을 읽은 뒤, 바로 다음 퍼트를 반복하세요."
+        : "현재 샷 품질을 읽은 뒤, 더 짧아진 준비 신호를 보고 바로 다시 치세요.";
+      comparisonSectionHeading.textContent = isPutterSession()
+        ? "현재 퍼트 · 직전 퍼트 · 변화"
+        : "현재 샷 · 직전 샷 · 변화";
       sessionStateLabel.textContent = "현재 상태";
-      sessionBestLabel.textContent = "최신 결과 기준";
-      inputContext.textContent = formatChangedInputSummary(changedInputKeys);
-      aimInputHeading.textContent = formatInputHeading("현재 방향 입력값", changedInputKeys, ["aimDeg", "yawDeg"]);
+      const bestLabel = isPutterSession()
+        ? (state.ball.moving ? "실시간 퍼트" : "퍼트 결과")
+        : (liveFlight ? "실시간 비행" : "직전 샷");
+      sessionBestLabel.textContent = bestLabel;
+      inputContext.textContent = isPutterSession()
+        ? "홀 거리, 퍼팅 라인, 수동 스트로크 속도 또는 센서 스트로크가 다음 퍼트에 반영됩니다."
+        : formatChangedInputSummary(changedInputKeys);
+      aimInputHeading.textContent = isPutterSession()
+        ? formatInputHeading("현재 퍼팅 라인", changedInputKeys, ["yawDeg"])
+        : formatInputHeading("현재 방향 입력값", changedInputKeys, ["aimDeg", "yawDeg"]);
       ballInputHeading.textContent = formatInputHeading("현재 볼 입력값", changedInputKeys, ["ballSpeedMps", "backspinRpm", "sideSpinRpm"]);
       aimDirectionInput.value = String(Math.round(state.yawDeg));
       aimDirectionValue.textContent = `${Math.round(state.yawDeg)}°`;
       sessionState.textContent = formatCurrentStateSummary();
-      sessionCount.textContent = `탄도 ${Math.round(state.aimDeg)}° · 방향 ${Math.round(state.yawDeg)}°`;
+      sessionCount.textContent = isPutterSession()
+        ? `홀 ${formatDistanceValue(state.putt.holeDistanceM, 1)} · ${describeGreenDecel(state.putt.greenDecel)}`
+        : `탄도 ${Math.round(state.aimDeg)}° · 방향 ${Math.round(state.yawDeg)}°`;
       sessionLast.textContent = formatBallInputSummary();
-      sessionBest.textContent = formatResultReferenceLabel();
+      sessionInputBallKey.textContent = isPutterSession() ? "홀 거리" : "볼 스피드";
+      sessionInputBackspinKey.textContent = isPutterSession() ? "스트로크" : "백스핀";
+      sessionInputSidespinKey.textContent = isPutterSession() ? "그린" : "사이드스핀";
+      sessionInputBall.textContent = formatBallInputDetailValue("ball");
+      sessionInputBackspin.textContent = formatBallInputDetailValue("backspin");
+      sessionInputSidespin.textContent = formatBallInputDetailValue("sidespin");
+      sessionBest.textContent = liveFlight ? formatLiveFlightSummary() : (isPutterSession() ? formatRecentFlightSummary() : formatResultReferenceLabel());
+      sessionResultPrimaryKey.textContent = isPutterSession() ? "남은 거리" : "캐리";
+      sessionResultSecondaryKey.textContent = isPutterSession() ? "굴러간 거리" : "토탈";
+      sessionResultTertiaryKey.textContent = isPutterSession() ? "라인 오차" : "오프라인";
+      sessionResultPrimary.textContent = formatSessionResultDetail("primary");
+      sessionResultSecondary.textContent = formatSessionResultDetail("secondary");
+      sessionResultTertiary.textContent = formatSessionResultDetail("tertiary");
+      distanceUnitSelect.value = state.distanceUnit;
+      distanceUnitNote.textContent = formatDistanceUnitNote();
+      sessionModeSelect.value = state.sessionKind;
+      sessionModeNote.textContent = isPutterSession()
+        ? "퍼터 세션은 빠른 거리감 훈련이 기본이고, 고급 센서 모드는 별도 페이지에서 엽니다."
+        : "레인지 세션은 비행 궤적과 직전 샷 비교 중심입니다.";
+      syncCameraInteractionUI();
+      updatePuttControlNotes();
+      updatePutterGuide();
+      motionSummary.textContent = state.putt.motion.armed
+        ? "스트로크 대기"
+        : state.putt.motion.pendingStroke
+          ? "센서 준비됨"
+          : state.putt.motion.calibrated
+            ? "기준 잡힘"
+            : "대기";
+      if (!state.putt.motion.lastStroke) {
+        motionLastStroke.textContent = state.putt.motion.armed ? "대기 중" : "없음";
+      }
+      shell.dataset.sessionKind = state.sessionKind;
+    }
+
+    function serializeShotRecord(record) {
+      if (!record) return null;
+      return {
+        sessionKind: record.sessionKind ?? "range",
+        shotNo: record.shotNo,
+        carry: Number(record.carry.toFixed(2)),
+        total: Number(record.total.toFixed(2)),
+        offline: Number(record.offline.toFixed(2)),
+        apex: Number(record.apex.toFixed(2)),
+        ballSpeed: Number(record.ballSpeed.toFixed(2)),
+        clubHeadSpeed: Number(record.clubHeadSpeed.toFixed(2)),
+        impactQuality: Number(record.impactQuality.toFixed(3)),
+        smash: record.smash == null ? null : Number(record.smash.toFixed(3)),
+        landing: {
+          x: Number(record.landing.x.toFixed(2)),
+          y: Number(record.landing.y.toFixed(2)),
+          z: Number(record.landing.z.toFixed(2)),
+        },
+        holed: Boolean(record.holed),
+        paceError: record.paceError == null ? null : Number(record.paceError.toFixed(2)),
+        remainingDistance: record.remainingDistance == null ? null : Number(record.remainingDistance.toFixed(2)),
+        trajectory: (record.trajectory ?? []).map((point) => ({
+          x: Number(point.x.toFixed(2)),
+          y: Number(point.y.toFixed(2)),
+          z: Number(point.z.toFixed(2)),
+        })),
+        inputs: {
+          aimDeg: Number(record.inputs.aimDeg.toFixed(2)),
+          yawDeg: Number(record.inputs.yawDeg.toFixed(2)),
+          ballSpeedMps: record.inputs.ballSpeedMps == null ? null : Number(record.inputs.ballSpeedMps.toFixed(2)),
+          ballSpeedMph: record.inputs.ballSpeedMps == null ? null : Number(mpsToMph(record.inputs.ballSpeedMps).toFixed(2)),
+          backspinRpm: record.inputs.backspinRpm == null ? null : Number(record.inputs.backspinRpm.toFixed(0)),
+          sideSpinRpm: record.inputs.sideSpinRpm == null ? null : Number(record.inputs.sideSpinRpm.toFixed(0)),
+          holeDistanceM: record.inputs.holeDistanceM == null ? null : Number(record.inputs.holeDistanceM.toFixed(2)),
+          strokeSource: record.inputs.strokeSource ?? null,
+        },
+      };
     }
 
     function applyManualInputs() {
@@ -873,9 +3026,69 @@
         manualSideSpinRpm: state.manualLaunch.sideSpinRpm,
       };
       state.previewSamples = sampleTrajectoryPreview(state, state.model);
+      updateChrome();
+      render();
     }
 
-    function buildFlightCamera(currentState) {
+    function applyCameraPose(currentState, desiredPosition, target, fov, immediate = false) {
+      currentState.camera.position = immediate ? { ...desiredPosition } : blendVec(currentState.camera.position, desiredPosition, 0.08);
+      currentState.camera.target = immediate ? { ...target } : blendVec(currentState.camera.target, target, 0.11);
+
+      const forward = normalize3(sub3(currentState.camera.target, currentState.camera.position));
+      const worldUp = vec3(0, 1, 0);
+      const right = normalize3(cross3(forward, worldUp));
+      const up = normalize3(cross3(right, forward));
+
+      currentState.camera.forward = forward;
+      currentState.camera.right = right;
+      currentState.camera.up = up;
+      currentState.camera.fov = fov;
+      return currentState.camera;
+    }
+
+    function buildFixedCamera(currentState, mode) {
+      const preset = getFixedCameraPreset(mode);
+      if (isPutterSession() || mode !== "fixed-tee") {
+        return applyCameraPose(currentState, preset.position, preset.target, preset.fov, true);
+      }
+
+      const manual = currentState.cameraManual;
+      updateCameraManualDirty(currentState);
+      const baseRelative = sub3(preset.position, preset.target);
+      const baseYaw = Math.atan2(baseRelative.z, baseRelative.x);
+      const basePitch = Math.atan2(baseRelative.y, Math.hypot(baseRelative.x, baseRelative.z));
+      const target = {
+        x: preset.target.x + manual.panX,
+        y: preset.target.y,
+        z: preset.target.z + manual.panZ,
+      };
+      const pitch = clamp(basePitch + manual.pitch, -0.24, 0.72);
+      const yaw = baseYaw + manual.yaw;
+      const distance = clamp(manual.distance, 8, 42);
+      const horizontalDistance = Math.cos(pitch) * distance;
+      const desiredPosition = {
+        x: target.x + Math.cos(yaw) * horizontalDistance,
+        y: target.y + Math.sin(pitch) * distance,
+        z: target.z + Math.sin(yaw) * horizontalDistance,
+      };
+      return applyCameraPose(currentState, desiredPosition, target, preset.fov, true);
+    }
+
+    function buildFlightCamera(currentState, immediate = false) {
+      if (isPutterSession()) {
+        const hole = getPuttHolePosition();
+        const desiredPosition = { x: -1.8, y: 4.2, z: 0 };
+        const target = {
+          x: Math.max(1.8, hole.x * 0.56),
+          y: 0.34,
+          z: 0,
+        };
+        return applyCameraPose(currentState, desiredPosition, target, 34, true);
+      }
+      if (currentState.cameraMode !== "follow") {
+        return buildFixedCamera(currentState, currentState.cameraMode);
+      }
+
       const ball = currentState.ball.position;
       const yawRad = (currentState.model.phase === "flight" ? currentState.model.launchAzimuthDeg : currentState.yawDeg) * Math.PI / 180;
       const forwardFlat = normalize3({ x: Math.cos(yawRad), y: 0, z: Math.sin(yawRad) || 0 });
@@ -890,20 +3103,7 @@
         y: clamp(4.8 + ball.y * 0.22, 4.4, 11.5),
         z: ball.z - forwardFlat.z * chaseDistance - Math.sin(yawRad) * 2.2,
       };
-
-      currentState.camera.position = blendVec(currentState.camera.position, desiredPosition, 0.08);
-      currentState.camera.target = blendVec(currentState.camera.target, target, 0.11);
-
-      const forward = normalize3(sub3(currentState.camera.target, currentState.camera.position));
-      const worldUp = vec3(0, 1, 0);
-      const right = normalize3(cross3(forward, worldUp));
-      const up = normalize3(cross3(right, forward));
-
-      currentState.camera.forward = forward;
-      currentState.camera.right = right;
-      currentState.camera.up = up;
-      currentState.camera.fov = 48;
-      return currentState.camera;
+      return applyCameraPose(currentState, desiredPosition, target, 48, immediate);
     }
 
     function projectWorldToScreen(worldPoint, camera = state.camera) {
@@ -931,9 +3131,23 @@
     }
 
     function syncBallFromModel() {
-      state.ball.position = { ...state.model.ballPos };
-      state.ball.velocity = { ...state.model.ballVel };
-      state.ball.moving = state.model.ballMoving;
+      if (isPutterSession()) {
+        state.ball.position = {
+          x: state.putt.model.position.x,
+          y: state.putt.model.position.y,
+          z: state.putt.model.position.z,
+        };
+        state.ball.velocity = {
+          x: state.putt.model.velocity.x,
+          y: 0,
+          z: state.putt.model.velocity.z,
+        };
+        state.ball.moving = state.putt.model.moving;
+      } else {
+        state.ball.position = { ...state.model.ballPos };
+        state.ball.velocity = { ...state.model.ballVel };
+        state.ball.moving = state.model.ballMoving;
+      }
       state.ball.screen = worldToScreen(state.ball.position);
     }
 
@@ -943,24 +3157,31 @@
         kind: "ring",
         position: { ...base },
         age: 0,
-        maxAge: 0.52,
-        maxRadius: 2.5,
+        maxAge: 0.68,
+        maxRadius: 4.2,
+      });
+      state.impactEffects.push({
+        kind: "ring",
+        position: { ...base },
+        age: 0.04,
+        maxAge: 0.56,
+        maxRadius: 2.8,
       });
 
-      for (let i = 0; i < 14; i += 1) {
-        const angle = (i / 14) * Math.PI * 2;
-        const lift = 0.7 + (i % 4) * 0.12;
+      for (let i = 0; i < 28; i += 1) {
+        const angle = (i / 28) * Math.PI * 2;
+        const lift = 0.86 + (i % 4) * 0.16;
         state.impactEffects.push({
           kind: "spark",
           position: { ...base },
           velocity: {
-            x: Math.cos(angle) * (5.5 + (i % 3)),
+            x: Math.cos(angle) * (7.2 + (i % 5)),
             y: lift,
-            z: Math.sin(angle) * (2.6 + (i % 2)),
+            z: Math.sin(angle) * (4 + (i % 4)),
           },
           age: 0,
-          maxAge: 0.55 + (i % 4) * 0.04,
-          size: 0.11 + (i % 3) * 0.02,
+          maxAge: 0.62 + (i % 4) * 0.05,
+          size: 0.14 + (i % 3) * 0.03,
         });
       }
     }
@@ -981,13 +3202,19 @@
     }
 
     function estimateShotProfile(currentState) {
-      const power = currentState.charging ? currentState.charge : Math.max(currentState.charge, 0.24);
-      const tempo = clamp(0.62 + power * 0.55, 0.4, 1.25);
+      const power = NEUTRAL_SWING.powerNorm;
+      const tempo = NEUTRAL_SWING.tempoNorm;
       const clubHeadSpeed = clamp(22 + power * 58, 18, 92);
-      const strikeOffsetX = (0.58 - power) * 0.08;
-      const strikeOffsetY = (0.68 - power) * 0.05;
+      const strikeOffsetX = NEUTRAL_SWING.strikeOffsetX;
+      const strikeOffsetY = NEUTRAL_SWING.strikeOffsetY;
       const loft = MODEL_PARAMS.loftBaseDeg + MODEL_PARAMS.attackLoftCoupling * (tempo * 3.1);
-      const launchDeg = clamp(currentState.aimDeg + loft * 0.48 - strikeOffsetY * 6, 5, 42);
+      const manualLaunchMode =
+        Number.isFinite(currentState.manualLaunch.ballSpeedMps) ||
+        Number.isFinite(currentState.manualLaunch.backspinRpm) ||
+        Number.isFinite(currentState.manualLaunch.sideSpinRpm);
+      const launchDeg = manualLaunchMode
+        ? clamp(currentState.aimDeg, 5, 42)
+        : clamp(currentState.aimDeg + loft * 0.48 - strikeOffsetY * 6, 5, 42);
       const ballSpeed = Number.isFinite(currentState.manualLaunch.ballSpeedMps)
         ? clamp(currentState.manualLaunch.ballSpeedMps, 5, 112)
         : clamp(clubHeadSpeed * (1.24 + power * 0.2), 26, 108);
@@ -1007,6 +3234,7 @@
     function simulatePreview(profile, currentState) {
       const points = [];
       let pos = { ...WORLD.teePos };
+      const dt = 0.08;
       const launchRad = profile.launchDeg * Math.PI / 180;
       const azimuthRad = profile.launchAzimuthDeg * Math.PI / 180;
       let vel = {
@@ -1019,44 +3247,289 @@
       const wind = currentState.wind;
 
       for (let i = 0; i < 55; i += 1) {
+        const coefficients = computeAeroCoefficients(
+          {
+            velocity: vel,
+            spinRateRpm: Math.hypot(backspin, sidespin),
+            spinAxisTiltDeg: profile.spinAxisTiltDeg,
+            launchDeg: profile.launchDeg,
+          },
+          { wind: { x: wind.x, y: 0, z: wind.z }, airDensity: 1 },
+          MODEL_PARAMS
+        );
         const rel = { x: vel.x - wind.x, y: vel.y, z: vel.z - wind.z };
         const speed = Math.max(0.001, length3(rel));
         const spinVector = {
           x: 0,
-          y: -(sidespin * (2 * Math.PI / 60)) * MODEL_PARAMS.sideMagnusScale,
+          y: -(sidespin * (2 * Math.PI / 60)) * coefficients.sideMagnusScale,
           z: backspin * (2 * Math.PI / 60),
         };
         const magnus = cross3(spinVector, rel);
         const accel = {
-          x: -MODEL_PARAMS.dragCoeff * speed * rel.x + MODEL_PARAMS.magnusCoeff * magnus.x,
-          y: -MODEL_PARAMS.gravity - MODEL_PARAMS.dragCoeff * speed * rel.y + MODEL_PARAMS.magnusCoeff * magnus.y,
-          z: -MODEL_PARAMS.dragCoeff * speed * rel.z + MODEL_PARAMS.magnusCoeff * magnus.z,
+          x: -coefficients.dragCoeff * speed * rel.x + coefficients.magnusCoeff * magnus.x,
+          y: -MODEL_PARAMS.gravity - coefficients.dragCoeff * speed * rel.y + coefficients.magnusCoeff * magnus.y,
+          z: -coefficients.dragCoeff * speed * rel.z + coefficients.magnusCoeff * magnus.z,
         };
-        vel = add3(vel, scale3(accel, 0.08));
-        pos = add3(pos, scale3(vel, 0.08));
+        vel = add3(vel, scale3(accel, dt));
+        pos = add3(pos, scale3(vel, dt));
         points.push(pos);
-        backspin *= MODEL_PARAMS.spinDecayAir;
-        sidespin *= MODEL_PARAMS.spinDecayAir;
+        const airDecay = Math.pow(coefficients.spinDecayAir, dt * 60);
+        backspin *= airDecay;
+        sidespin *= airDecay;
         if (pos.y <= MODEL_PARAMS.ballRadius) break;
       }
       return points;
     }
 
     function sampleTrajectoryPreview(currentState, modelState) {
+      if (isPutterSession()) {
+        const points = [];
+        let model = createPuttState({ position: PUTT_WORLD.teePos });
+        let controls = createPuttControls({
+          initiateStroke: true,
+          strokeSpeedMps: currentState.putt.manualStrokeSpeedMps,
+          lineAngleDeg: currentState.yawDeg * 0.42,
+          holeDistanceM: currentState.putt.holeDistanceM,
+          tempoScore: 0.78,
+        });
+        for (let i = 0; i < 240; i += 1) {
+          model = stepPuttState(model, controls, { ...PUTT_PARAMS, greenDecel: currentState.putt.greenDecel }, 1 / 60);
+          controls.initiateStroke = false;
+          points.push({ x: model.position.x, y: model.position.y, z: model.position.z });
+          if (!model.moving) break;
+        }
+        return points;
+      }
       if (currentState.ball.moving || modelState.phase === "flight") {
         return currentState.trajectorySamples.slice(-28);
       }
       return simulatePreview(estimateShotProfile(currentState), currentState);
     }
 
-    function prepareShotLoop(message = "샷을 준비하세요") {
+    function restoreDefaultInputs() {
+      state.aimDeg = 10.4;
+      state.yawDeg = 0;
+      aimDirectionInput.value = "0";
+      cameraModeSelect.value = state.cameraMode;
+      ballSpeedMphInput.value = "150";
+      backSpinInput.value = "2500";
+      sideSpinInput.value = "0";
+      state.manualLaunch.ballSpeedMps = mphToMps(150);
+      state.manualLaunch.backspinRpm = 2500;
+      state.manualLaunch.sideSpinRpm = 0;
+    }
+
+    function setDistanceUnit(unit) {
+      state.distanceUnit = DISTANCE_UNITS[unit] ? unit : "m";
+      distanceUnitSelect.value = state.distanceUnit;
+      try {
+        localStorage.setItem(DISTANCE_UNIT_STORAGE_KEY, state.distanceUnit);
+      } catch {}
+      renderShotHistory();
+      render();
+    }
+
+    function setCameraMode(mode, source = "panel", announce = true) {
+      state.cameraMode = isPutterSession()
+        ? "fixed-tee"
+        : (CAMERA_MODES.includes(mode) ? mode : "follow");
+      state.cameraManual = createDefaultCameraManual(state.cameraMode);
+      updateCameraManualDirty();
+      cameraModeSelect.value = state.cameraMode;
+      try {
+        localStorage.setItem(CAMERA_MODE_STORAGE_KEY, state.cameraMode);
+      } catch {}
+      if (announce) announceCameraMode(source);
+      syncBallFromModel();
+      buildFlightCamera(state, true);
+      syncBallFromModel();
+      render();
+    }
+
+    function syncCameraMode(source = "panel", announce = true) {
+      setCameraMode(cameraModeSelect.value, source, announce);
+    }
+
+    function cycleCameraMode(step, source) {
+      const currentIndex = CAMERA_MODES.indexOf(state.cameraMode);
+      const nextIndex = (currentIndex + step + CAMERA_MODES.length) % CAMERA_MODES.length;
+      setCameraMode(CAMERA_MODES[nextIndex], source, true);
+    }
+
+    function restoreCameraModePreference() {
+      try {
+        const saved = localStorage.getItem(CAMERA_MODE_STORAGE_KEY);
+        if (saved === "fixed") {
+          state.cameraMode = "fixed-tee";
+        }
+        if (saved?.startsWith("fixed-") && !CAMERA_MODES.includes(saved)) {
+          state.cameraMode = "fixed-tee";
+        }
+        if (CAMERA_MODES.includes(saved)) {
+          state.cameraMode = saved;
+        }
+      } catch {}
+      state.cameraManual = createDefaultCameraManual(state.cameraMode);
+      updateCameraManualDirty();
+      cameraModeSelect.value = state.cameraMode;
+    }
+
+    function restoreDistanceUnitPreference() {
+      try {
+        const saved = localStorage.getItem(DISTANCE_UNIT_STORAGE_KEY);
+        if (saved && DISTANCE_UNITS[saved]) {
+          state.distanceUnit = saved;
+        }
+      } catch {}
+      distanceUnitSelect.value = state.distanceUnit;
+    }
+
+    function isCompactLayout() {
+      return compactLayoutQuery.matches;
+    }
+
+    function syncPanelToggleState() {
+      const compact = isCompactLayout();
+      syncViewportLayoutState();
+      shell.dataset.compact = compact ? "true" : "false";
+      if (!compact) {
+        shell.dataset.leftOpen = "false";
+        shell.dataset.rightOpen = "false";
+      } else {
+        if (!shell.dataset.leftOpen) shell.dataset.leftOpen = "false";
+        if (!shell.dataset.rightOpen) shell.dataset.rightOpen = "false";
+      }
+      const leftOpen = shell.dataset.leftOpen === "true";
+      const rightOpen = shell.dataset.rightOpen === "true";
+      hudToggle.setAttribute("aria-expanded", leftOpen ? "true" : "false");
+      controlToggle.setAttribute("aria-expanded", rightOpen ? "true" : "false");
+    }
+
+    function setFoldPanel(side, open) {
+      if (!isCompactLayout()) {
+        shell.dataset.leftOpen = "false";
+        shell.dataset.rightOpen = "false";
+        syncPanelToggleState();
+        return;
+      }
+      if (side === "left") {
+        shell.dataset.leftOpen = open ? "true" : "false";
+        if (open) shell.dataset.rightOpen = "false";
+      } else {
+        shell.dataset.rightOpen = open ? "true" : "false";
+        if (open) shell.dataset.leftOpen = "false";
+      }
+      syncPanelToggleState();
+    }
+
+    function toggleFoldPanel(side) {
+      const attr = side === "left" ? "leftOpen" : "rightOpen";
+      setFoldPanel(side, shell.dataset[attr] !== "true");
+    }
+
+    function closeFoldPanels() {
+      shell.dataset.leftOpen = "false";
+      shell.dataset.rightOpen = "false";
+      syncPanelToggleState();
+    }
+
+    function beginCameraDrag(mode, event) {
+      if (!isManualCameraEnabled()) return false;
+      state.cameraManual.dragMode = mode;
+      state.cameraManual.lastX = event.clientX;
+      state.cameraManual.lastY = event.clientY;
+      state.cameraManual.pointerId = Number.isFinite(event.pointerId) ? event.pointerId : null;
+      if (typeof gameViewport.setPointerCapture === "function" && state.cameraManual.pointerId != null) {
+        try {
+          gameViewport.setPointerCapture(state.cameraManual.pointerId);
+        } catch {}
+      }
+      syncCameraInteractionUI();
+      return true;
+    }
+
+    function endCameraDrag() {
+      if (state.cameraManual.dragMode === "none") return;
+      if (typeof gameViewport.releasePointerCapture === "function" && state.cameraManual.pointerId != null) {
+        try {
+          gameViewport.releasePointerCapture(state.cameraManual.pointerId);
+        } catch {}
+      }
+      state.cameraManual.dragMode = "none";
+      state.cameraManual.pointerId = null;
+      syncCameraInteractionUI();
+    }
+
+    function applyCameraPan(deltaX, deltaY) {
+      const forwardFlat = normalize3({
+        x: state.camera.forward.x,
+        y: 0,
+        z: state.camera.forward.z,
+      });
+      const rightFlat = normalize3({
+        x: state.camera.right.x,
+        y: 0,
+        z: state.camera.right.z,
+      });
+      const shift = {
+        x: (-deltaX * rightFlat.x + deltaY * forwardFlat.x) * CAMERA_PAN_WORLD_SCALE,
+        z: (-deltaX * rightFlat.z + deltaY * forwardFlat.z) * CAMERA_PAN_WORLD_SCALE,
+      };
+      state.cameraManual.panX += shift.x;
+      state.cameraManual.panZ += shift.z;
+    }
+
+    function applyCameraOrbit(deltaX, deltaY) {
+      state.cameraManual.yaw = clamp(state.cameraManual.yaw - deltaX * CAMERA_ORBIT_SPEED, -1.2, 1.2);
+      state.cameraManual.pitch = clamp(state.cameraManual.pitch - deltaY * CAMERA_ORBIT_SPEED, -0.55, 0.45);
+    }
+
+    function applyCameraZoom(deltaY) {
+      if (!isManualCameraEnabled()) return;
+      state.cameraManual.distance = clamp(
+        state.cameraManual.distance + deltaY * CAMERA_ZOOM_STEP,
+        8,
+        42
+      );
+      updateCameraManualDirty();
+      buildFlightCamera(state, true);
+      syncBallFromModel();
+      updateChrome();
+      render();
+    }
+
+    function isCameraInteractionSurface(target) {
+      if (!(target instanceof Element)) return false;
+      if (!gameViewport.contains(target)) return false;
+      if (cameraOverlayControls.contains(target)) return false;
+      return true;
+    }
+
+    function updateCameraDrag(event) {
+      if (!isManualCameraEnabled() || state.cameraManual.dragMode === "none") return;
+      if (state.cameraManual.pointerId != null && Number.isFinite(event.pointerId) && event.pointerId !== state.cameraManual.pointerId) return;
+      const deltaX = event.clientX - state.cameraManual.lastX;
+      const deltaY = event.clientY - state.cameraManual.lastY;
+      state.cameraManual.lastX = event.clientX;
+      state.cameraManual.lastY = event.clientY;
+      if (state.cameraManual.dragMode === "pan") {
+        applyCameraPan(deltaX, deltaY);
+      } else if (state.cameraManual.dragMode === "orbit") {
+        applyCameraOrbit(deltaX, deltaY);
+      }
+      updateCameraManualDirty();
+      buildFlightCamera(state, true);
+      syncBallFromModel();
+      updateChrome();
+      render();
+    }
+
+    function prepareShotLoop(message = "다음 샷 준비 완료. 지금 바로 다시 칠 수 있습니다.", announceReady = false) {
       state.mode = "session_ready";
       state.charging = false;
-      state.charge = 0.24;
-      state.chargeDir = 1;
+      state.charge = 1;
       state.autoResetTimer = 0;
-      state.aimDeg = 15;
-      state.yawDeg = 0;
+      state.lastCommittedInputs = null;
       state.message = message;
       state.impactEffects = [];
       state.trajectorySamples = [];
@@ -1071,38 +3544,239 @@
         manualBackspinRpm: state.manualLaunch.backspinRpm,
         manualSideSpinRpm: state.manualLaunch.sideSpinRpm,
       });
-      state.camera.position = { x: -9.5, y: 4.8, z: -12 };
-      state.camera.target = { x: 22, y: 1.2, z: 0 };
+      syncBallFromModel();
+      buildFlightCamera(state, true);
       syncBallFromModel();
       state.previewSamples = sampleTrajectoryPreview(state, state.model);
+      updateCameraManualDirty();
+      if (announceReady) playReadyCue();
+    }
+
+    function preparePuttLoop(message = "퍼터 입력값을 확인한 뒤 실행하세요", announceReady = false) {
+      state.mode = "session_ready";
+      state.autoResetTimer = 0;
+      state.lastCommittedInputs = null;
+      state.message = message;
+      state.impactEffects = [];
+      state.trajectorySamples = [];
+      state.previewSamples = [];
+      state.ball.position = { ...PUTT_WORLD.teePos };
+      state.ball.velocity = { x: 0, y: 0, z: 0 };
+      state.ball.moving = false;
+      state.putt.model = createPuttState({ position: PUTT_WORLD.teePos, shotNo: state.totalShots });
+      state.putt.controls = createPuttControls({
+        holeDistanceM: state.putt.holeDistanceM,
+        strokeSpeedMps: state.putt.manualStrokeSpeedMps,
+      });
+      state.cameraMode = "fixed-tee";
+      state.cameraManual = createDefaultCameraManual(state.cameraMode);
+      updateCameraManualDirty();
+      buildFlightCamera(state, true);
+      syncBallFromModel();
+      state.previewSamples = sampleTrajectoryPreview(state, state.putt.model);
+      if (announceReady) playReadyCue();
+    }
+
+    function setSessionKind(kind, reset = true) {
+      state.sessionKind = persistSessionKind(kind);
+      shell.dataset.sessionKind = state.sessionKind;
+      if (state.sessionKind === SESSION_KIND_PUTTER) {
+        state.aimDeg = 0;
+        state.yawDeg = 0;
+        if (reset) {
+          state.currentShot = null;
+          state.previousShot = null;
+          state.recentShots = [];
+          state.totalShots = 0;
+          state.sessionDistanceTotal = 0;
+          state.sessionBestCarry = 0;
+          state.detachedFlights = [];
+          state.wind = { x: 0, z: 0 };
+          syncPuttInputs();
+          preparePuttLoop();
+        }
+      } else if (reset) {
+        resetSession();
+      }
+      updateChrome();
+      render();
+    }
+
+    function createFlightControls(inputs) {
+      return createDefaultControls({
+        aimDeg: inputs.aimDeg ?? state.aimDeg,
+        yawDeg: inputs.yawDeg ?? state.yawDeg,
+        windX: state.wind.x,
+        windZ: state.wind.z,
+        manualBallSpeedMps: inputs.ballSpeedMps ?? null,
+        manualBackspinRpm: inputs.backspinRpm ?? null,
+        manualSideSpinRpm: inputs.sideSpinRpm ?? null,
+      });
+    }
+
+    function commitShotRecord(record, triggerAutoReset = false) {
+      if (!isSuccessfulShotRecord(record)) return;
+      const alreadyTracked = state.recentShots.some((entry) => entry.shotNo === record.shotNo);
+      state.recentShots = [
+        record,
+        ...state.recentShots.filter((entry) => entry.shotNo !== record.shotNo),
+      ]
+        .sort((left, right) => right.shotNo - left.shotNo)
+        .slice(0, MAX_SHOT_HISTORY);
+      state.currentShot = state.recentShots[0] ?? null;
+      state.previousShot = state.recentShots[1] ?? null;
+      if (!alreadyTracked) {
+        state.sessionDistanceTotal += record.total;
+        state.sessionBestCarry = isPutterSession()
+          ? (record.holed
+            ? 0
+            : (state.recentShots.length === 1
+              ? Math.abs(record.paceError)
+              : Math.min(state.sessionBestCarry === 0 ? 0 : state.sessionBestCarry, Math.abs(record.paceError))))
+          : Math.max(state.sessionBestCarry, record.carry);
+      }
+      if (triggerAutoReset) {
+        state.mode = "auto_reset_pending";
+        state.autoResetTimer = AUTO_READY_SECONDS;
+        state.message = `현재 샷 품질과 변화를 확인하세요. ${AUTO_READY_SECONDS}초 뒤 다음 샷을 준비합니다.`;
+      } else if (state.mode === "session_ready") {
+        state.message = "다음 샷 준비 완료. 지금 바로 다시 칠 수 있습니다.";
+      }
+    }
+
+    function simulateDetachedFlightRecord() {
+      const committedInputs = state.lastCommittedInputs ?? snapshotCurrentInputs();
+      const controls = createFlightControls(committedInputs);
+      let model = createInitialState({
+        ...state.model,
+        ballPos: state.model.ballPos,
+        ballVel: state.model.ballVel,
+        launchPos: state.model.launchPos,
+        landingPos: state.model.landingPos,
+      });
+      model.shotNo = state.totalShots;
+      const fullTrajectory = state.trajectorySamples.map((point) => ({ ...point }));
+      const futureTrajectory = [];
+
+      for (let i = 0; i < 900 && model.phase !== "rest"; i += 1) {
+        model = stepSwingModel(model, controls, MODEL_PARAMS, 1 / 60);
+        model.shotNo = state.totalShots;
+        futureTrajectory.push({ ...model.ballPos });
+        fullTrajectory.push({ ...model.ballPos });
+      }
+
+      const record = buildShotRecord(model, committedInputs, buildShotTrajectorySamples(fullTrajectory, model.ballPos));
+      return {
+        trajectory: futureTrajectory.length ? futureTrajectory : [{ ...state.ball.position }],
+        record,
+      };
+    }
+
+    function updateDetachedFlights(dt) {
+      if (!state.detachedFlights.length) return;
+      const nextFlights = [];
+      for (const flight of state.detachedFlights) {
+        if (!flight.trajectory.length) {
+          commitShotRecord(flight.record, false);
+          continue;
+        }
+        const lastIndex = flight.trajectory.length - 1;
+        flight.cursor = Math.min(lastIndex, flight.cursor + dt * 60);
+        const index = Math.floor(flight.cursor);
+        const nextIndex = Math.min(lastIndex, index + 1);
+        const t = flight.cursor - index;
+        const from = flight.trajectory[index];
+        const to = flight.trajectory[nextIndex];
+        flight.position = {
+          x: from.x + (to.x - from.x) * t,
+          y: from.y + (to.y - from.y) * t,
+          z: from.z + (to.z - from.z) * t,
+        };
+        if (flight.cursor >= lastIndex) {
+          commitShotRecord(flight.record, false);
+          continue;
+        }
+        nextFlights.push(flight);
+      }
+      state.detachedFlights = nextFlights;
     }
 
     function resetSession() {
+      if (isPutterSession()) {
+        state.totalShots = 0;
+        state.sessionDistanceTotal = 0;
+        state.sessionBestCarry = 0;
+        state.currentShot = null;
+        state.previousShot = null;
+        state.recentShots = [];
+        state.detachedFlights = [];
+        state.lastCommittedInputs = null;
+        syncPuttInputs();
+        state.putt.motion.pendingStroke = null;
+        state.putt.motion.lastStroke = null;
+        preparePuttLoop();
+        return;
+      }
       state.totalShots = 0;
       state.sessionDistanceTotal = 0;
       state.sessionBestCarry = 0;
-      state.lastShotMetrics = null;
+      state.currentShot = null;
+      state.previousShot = null;
+      state.recentShots = [];
+      state.detachedFlights = [];
       state.lastCommittedInputs = null;
       state.wind = {
         x: (Math.random() * 2 - 1) * 7.5,
         z: (Math.random() * 2 - 1) * 6,
       };
+      restoreDefaultInputs();
+      state.cameraManual = createDefaultCameraManual(state.cameraMode);
+      updateCameraManualDirty();
       prepareShotLoop("현재 입력값을 확인한 뒤 실행하세요");
     }
 
-    function beginLaunchCharge() {
-      if (state.mode !== "session_ready" || state.charging || state.ball.moving) return;
-      state.charging = true;
-      state.mode = "shot_primed";
-      state.message = "입력 강도를 조정하고 있습니다";
+    function interruptToReady() {
+      if (isPutterSession()) {
+        preparePuttLoop("다시 퍼팅할 수 있습니다.", false);
+        updateChrome();
+        render();
+        return;
+      }
+      const shouldPreserveFlight = state.mode === "in_flight" || state.mode === "rollout";
+      const shouldRollbackActiveShot = state.mode === "launching";
+      if (shouldPreserveFlight) {
+        const detachedFlight = simulateDetachedFlightRecord();
+        state.detachedFlights.push({
+          shotNo: detachedFlight.record.shotNo,
+          trajectory: detachedFlight.trajectory,
+          position: { ...detachedFlight.trajectory[0] },
+          cursor: 0,
+          record: detachedFlight.record,
+        });
+      } else if (shouldRollbackActiveShot) {
+        state.totalShots = Math.max(0, state.totalShots - 1);
+        state.lastCommittedInputs = null;
+      }
+      prepareShotLoop(shouldPreserveFlight ? "이전 샷은 계속 비행 중이고, 다시 조준할 수 있습니다." : "다시 조준할 수 있습니다.", false);
       updateChrome();
+      render();
     }
 
-    function releaseLaunchCharge() {
-      if (state.charging && state.mode === "shot_primed") {
-        swing();
-        updateChrome();
+    function triggerLaunch() {
+      if (state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout" || state.mode === "auto_reset_pending") {
+        interruptToReady();
+        return;
       }
+      if (state.mode !== "session_ready" || state.ball.moving) return;
+      unlockAudioContext();
+      closeFoldPanels();
+      if (isPutterSession()) {
+        putt();
+        updateChrome();
+        return;
+      }
+      swing();
+      updateChrome();
     }
 
     function toggleFullscreen() {
@@ -1114,6 +3788,7 @@
     }
 
     function resizeCanvas() {
+      syncPanelToggleState();
       const rect = gameViewport.getBoundingClientRect();
       canvas.width = Math.max(720, Math.floor(rect.width));
       canvas.height = Math.max(405, Math.floor(rect.height));
@@ -1121,19 +3796,17 @@
     }
 
     function swing() {
-      const strikeOffsetX = (0.52 - state.charge) * 0.12;
-      const strikeOffsetY = (0.74 - state.charge) * 0.08;
       state.modelControls = {
         ...state.modelControls,
         initiateSwing: true,
-        powerNorm: state.charge,
-        tempoNorm: clamp(0.62 + state.charge * 0.55, 0.4, 1.25),
+        powerNorm: NEUTRAL_SWING.powerNorm,
+        tempoNorm: NEUTRAL_SWING.tempoNorm,
         aimDeg: state.aimDeg,
         yawDeg: state.yawDeg,
-        strikeOffsetX,
-        strikeOffsetY,
-        faceAngleBias: strikeOffsetX * 16,
-        clubPathBias: state.yawDeg * 0.18,
+        strikeOffsetX: NEUTRAL_SWING.strikeOffsetX,
+        strikeOffsetY: NEUTRAL_SWING.strikeOffsetY,
+        faceAngleBias: NEUTRAL_SWING.faceAngleBias,
+        clubPathBias: NEUTRAL_SWING.clubPathBias,
         windX: state.wind.x,
         windZ: state.wind.z,
         manualBallSpeedMps: state.manualLaunch.ballSpeedMps,
@@ -1144,42 +3817,110 @@
       state.charging = false;
       state.mode = "launching";
       state.totalShots += 1;
-      state.message = "입력값으로 시뮬레이션을 실행하고 있습니다";
+      state.message = "임팩트와 비행을 계산하고 있습니다";
+    }
+
+    function putt() {
+      syncPuttInputs();
+      const stroke = consumePuttStroke();
+      state.lastCommittedInputs = {
+        aimDeg: 0,
+        yawDeg: stroke.lineAngleDeg,
+        ballSpeedMps: stroke.strokeSpeedMps,
+        backspinRpm: null,
+        sideSpinRpm: null,
+        holeDistanceM: state.putt.holeDistanceM,
+        strokeSource: stroke.source,
+      };
+      state.totalShots += 1;
+      state.mode = "launching";
+      state.message = stroke.source === "sensor"
+        ? "센서 스트로크로 퍼트를 계산하고 있습니다."
+        : "수동 스트로크로 퍼트를 계산하고 있습니다.";
+      state.putt.controls = createPuttControls({
+        initiateStroke: true,
+        strokeSpeedMps: stroke.strokeSpeedMps,
+        lineAngleDeg: stroke.lineAngleDeg,
+        holeDistanceM: state.putt.holeDistanceM,
+        tempoScore: stroke.tempoScore,
+      });
+      state.putt.model = createPuttState({
+        position: PUTT_WORLD.teePos,
+        shotNo: state.totalShots,
+      });
     }
 
     function finalizeShotLoop() {
-      state.lastShotMetrics = {
-        carry: state.model.carryDistance,
-        total: state.model.totalDistance,
-        offline: state.model.offlineDistance,
-        apex: state.model.apexHeight,
-        ballSpeed: state.model.ballSpeed,
-        backspin: state.model.backspinRpm,
-        sidespin: state.model.sidespinRpm,
-      };
-      state.sessionDistanceTotal += state.model.totalDistance;
-      state.sessionBestCarry = Math.max(state.sessionBestCarry, state.model.carryDistance);
-      state.mode = "auto_reset_pending";
-      state.autoResetTimer = 3;
-      state.message = "결과를 확인하는 중입니다";
+      if (isPutterSession()) {
+        const puttRecord = buildPuttRecord();
+        state.lastCommittedInputs = null;
+        commitShotRecord(puttRecord, true);
+        return;
+      }
+      const shotRecord = buildShotRecord();
+      state.lastCommittedInputs = null;
+      if (!isSuccessfulShotRecord(shotRecord)) {
+        state.mode = "auto_reset_pending";
+        state.autoResetTimer = AUTO_READY_SECONDS;
+        state.message = `이번 실행을 확정하지 못했습니다. ${AUTO_READY_SECONDS}초 뒤 다시 준비합니다.`;
+        return;
+      }
+      commitShotRecord(shotRecord, true);
     }
 
     function update(dt) {
-      if (keys.has("arrowleft")) state.yawDeg = clamp(state.yawDeg - 28 * dt, -24, 24);
-      if (keys.has("arrowright")) state.yawDeg = clamp(state.yawDeg + 28 * dt, -24, 24);
-      if (keys.has("arrowup")) state.aimDeg = clamp(state.aimDeg + 16 * dt, 6, 28);
-      if (keys.has("arrowdown")) state.aimDeg = clamp(state.aimDeg - 16 * dt, 6, 28);
+      state.sceneTime += dt;
+      if (keys.has("ArrowLeft") || keys.has("KeyA")) state.yawDeg = clamp(state.yawDeg - 28 * dt, -24, 24);
+      if (keys.has("ArrowRight") || keys.has("KeyD")) state.yawDeg = clamp(state.yawDeg + 28 * dt, -24, 24);
+      if (!isPutterSession()) {
+        if (keys.has("ArrowUp")) state.aimDeg = clamp(state.aimDeg + 16 * dt, 6, 28);
+        if (keys.has("ArrowDown")) state.aimDeg = clamp(state.aimDeg - 16 * dt, 6, 28);
+      }
 
-      if (state.charging) {
-        state.charge += state.chargeDir * dt * 1.18;
-        if (state.charge > 1) {
-          state.charge = 1;
-          state.chargeDir = -1;
+      if (state.cameraNoticeTimer > 0) {
+        state.cameraNoticeTimer = Math.max(0, state.cameraNoticeTimer - dt);
+      }
+
+      if (isPutterSession()) {
+        const previousMoving = state.putt.model.moving;
+        state.putt.controls = createPuttControls({
+          ...state.putt.controls,
+          holeDistanceM: state.putt.holeDistanceM,
+          lineAngleDeg: state.putt.controls.lineAngleDeg,
+          strokeSpeedMps: state.putt.controls.strokeSpeedMps,
+          tempoScore: state.putt.controls.tempoScore,
+        });
+        state.putt.model = stepPuttState(
+          state.putt.model,
+          state.putt.controls,
+          { ...PUTT_PARAMS, greenDecel: state.putt.greenDecel },
+          dt
+        );
+        state.putt.controls.initiateStroke = false;
+        syncBallFromModel();
+        buildFlightCamera(state, true);
+        syncBallFromModel();
+        if (state.ball.moving) {
+          state.trajectorySamples.push({ ...state.ball.position });
+          if (state.trajectorySamples.length > 96) state.trajectorySamples.shift();
+          if (state.mode === "launching") {
+            state.mode = "rollout";
+            state.message = "퍼트가 굴러가고 있습니다. 거리감과 라인을 읽으세요.";
+            playImpactCue();
+          }
+        } else if (previousMoving && state.mode !== "auto_reset_pending") {
+          finalizeShotLoop();
+        } else if (state.mode === "session_ready") {
+          state.previewSamples = sampleTrajectoryPreview(state, state.putt.model);
         }
-        if (state.charge < 0.12) {
-          state.charge = 0.12;
-          state.chargeDir = 1;
+
+        if (state.mode === "auto_reset_pending") {
+          state.autoResetTimer = Math.max(0, state.autoResetTimer - dt);
+          if (state.autoResetTimer === 0) {
+            preparePuttLoop("다음 퍼트 준비 완료. 지금 바로 다시 퍼팅할 수 있습니다.", true);
+          }
         }
+        return;
       }
 
       const previousPhase = state.model.phase;
@@ -1192,28 +3933,32 @@
       };
       state.model = stepSwingModel(state.model, state.modelControls, MODEL_PARAMS, dt);
       state.modelControls.initiateSwing = false;
+      updateDetachedFlights(dt);
 
       syncBallFromModel();
       buildFlightCamera(state);
+      syncBallFromModel();
       updateImpactEffects(dt);
 
       if (state.ball.moving) {
         state.trajectorySamples.push({ ...state.ball.position });
         if (state.trajectorySamples.length > 96) state.trajectorySamples.shift();
-      } else if (state.mode === "session_ready" || state.mode === "shot_primed") {
+      } else if (state.mode === "session_ready") {
         state.previewSamples = sampleTrajectoryPreview(state, state.model);
       }
 
       if (state.model.phase === "flight" && state.model.firstBounceDone && state.mode === "in_flight") {
         state.mode = "rollout";
-        state.message = "지면 구간 결과를 확인하고 있습니다";
+        state.message = "착지 이후 결과를 정리하고 있습니다";
+        playLandingCue();
       }
 
       if (previousPhase !== state.model.phase) {
         if (state.model.phase === "flight") {
           state.mode = "in_flight";
-          state.message = "비행 결과를 확인하고 있습니다";
+          state.message = "비행 중입니다. 궤적과 방향을 읽으세요";
           spawnImpactEffect();
+          playImpactCue();
         }
         if (state.model.phase === "rest" && state.mode !== "auto_reset_pending") {
           finalizeShotLoop();
@@ -1223,7 +3968,7 @@
       if (state.mode === "auto_reset_pending") {
         state.autoResetTimer = Math.max(0, state.autoResetTimer - dt);
         if (state.autoResetTimer === 0) {
-          prepareShotLoop("다음 샷을 바로 이어서 실험할 수 있습니다");
+          prepareShotLoop("다음 샷 준비 완료. 지금 바로 다시 칠 수 있습니다.", true);
         }
       }
     }
@@ -1235,6 +3980,46 @@
       sky.addColorStop(1, "#f5fbff");
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function drawAtmosphere() {
+      const sunX = canvas.width * 0.18;
+      const sunY = canvas.height * 0.14;
+      const glow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, canvas.height * 0.24);
+      glow.addColorStop(0, "rgba(255, 244, 197, 0.82)");
+      glow.addColorStop(0.55, "rgba(255, 222, 143, 0.28)");
+      glow.addColorStop(1, "rgba(255, 222, 143, 0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, canvas.height * 0.24, 0, Math.PI * 2);
+      ctx.fill();
+
+      const cloudDrift = state.sceneTime * 10;
+      const clouds = [
+        { x: (canvas.width * 0.22 + cloudDrift * 0.8) % (canvas.width + 220) - 110, y: canvas.height * 0.16, scale: 1.1, alpha: 0.18 },
+        { x: (canvas.width * 0.64 + cloudDrift * 1.15) % (canvas.width + 260) - 130, y: canvas.height * 0.24, scale: 1.35, alpha: 0.15 },
+        { x: (canvas.width * 0.84 + cloudDrift * 0.56) % (canvas.width + 210) - 105, y: canvas.height * 0.12, scale: 0.96, alpha: 0.12 },
+      ];
+      clouds.forEach((cloud) => {
+        ctx.fillStyle = `rgba(255, 255, 255, ${cloud.alpha})`;
+        const width = 110 * cloud.scale;
+        const height = 28 * cloud.scale;
+        ctx.beginPath();
+        ctx.ellipse(cloud.x, cloud.y, width * 0.5, height * 0.9, 0, 0, Math.PI * 2);
+        ctx.ellipse(cloud.x - width * 0.24, cloud.y + 2, width * 0.28, height, 0, 0, Math.PI * 2);
+        ctx.ellipse(cloud.x + width * 0.22, cloud.y + 3, width * 0.32, height * 0.82, 0, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.fillStyle = "rgba(109, 148, 174, 0.12)";
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height * 0.5);
+      ctx.bezierCurveTo(canvas.width * 0.18, canvas.height * 0.42, canvas.width * 0.32, canvas.height * 0.5, canvas.width * 0.5, canvas.height * 0.45);
+      ctx.bezierCurveTo(canvas.width * 0.68, canvas.height * 0.4, canvas.width * 0.82, canvas.height * 0.5, canvas.width, canvas.height * 0.44);
+      ctx.lineTo(canvas.width, canvas.height * 0.61);
+      ctx.lineTo(0, canvas.height * 0.61);
+      ctx.closePath();
+      ctx.fill();
     }
 
     function projectGroundToScreen(worldPoint, minDepth = 0.08) {
@@ -1274,7 +4059,60 @@
     }
 
     function drawEnvironment() {
+      if (isPutterSession()) {
+        drawSky();
+        drawAtmosphere();
+
+        drawGroundQuad(
+          { x: -2, y: 0, z: -PUTT_WORLD.greenHalfWidth - 2 },
+          { x: PUTT_WORLD.greenLength + 2, y: 0, z: -PUTT_WORLD.greenHalfWidth - 2 },
+          { x: PUTT_WORLD.greenLength + 2, y: 0, z: PUTT_WORLD.greenHalfWidth + 2 },
+          { x: -2, y: 0, z: PUTT_WORLD.greenHalfWidth + 2 },
+          "#d7ebbc"
+        );
+
+        drawGroundQuad(
+          { x: -0.4, y: 0.01, z: -PUTT_WORLD.greenHalfWidth },
+          { x: PUTT_WORLD.greenLength, y: 0.01, z: -PUTT_WORLD.greenHalfWidth },
+          { x: PUTT_WORLD.greenLength, y: 0.01, z: PUTT_WORLD.greenHalfWidth },
+          { x: -0.4, y: 0.01, z: PUTT_WORLD.greenHalfWidth },
+          "#5da160",
+          "rgba(255,255,255,0.08)"
+        );
+
+        const hole = getPuttHolePosition();
+        for (const marker of PUTT_WORLD.meterMarkers) {
+          if (marker >= hole.x) continue;
+          const a = worldToScreen({ x: marker, y: 0.03, z: -PUTT_WORLD.greenHalfWidth });
+          const b = worldToScreen({ x: marker, y: 0.03, z: PUTT_WORLD.greenHalfWidth });
+          if (!a.visible || !b.visible) continue;
+          ctx.strokeStyle = "rgba(255,255,255,0.12)";
+          ctx.lineWidth = Math.max(1, a.scale * 0.03);
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+
+        const holeScreen = worldToScreen(hole);
+        if (holeScreen.visible) {
+          ctx.fillStyle = "rgba(7, 12, 18, 0.92)";
+          ctx.beginPath();
+          ctx.arc(holeScreen.x, holeScreen.y, clamp(holeScreen.scale * 0.07, 5, 10), 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "rgba(255,255,255,0.28)";
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.arc(holeScreen.x, holeScreen.y, clamp(holeScreen.scale * 0.1, 7, 13), 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.fillStyle = "rgba(9, 25, 43, 0.7)";
+          ctx.font = `${clamp(holeScreen.scale * 0.18, 11, 16)}px Trebuchet MS`;
+          ctx.fillText(`컵 ${formatDistanceValue(state.putt.holeDistanceM, 1)}`, holeScreen.x + 10, holeScreen.y - 6);
+        }
+        return;
+      }
       drawSky();
+      drawAtmosphere();
 
       drawGroundQuad(
         { x: -18, y: 0, z: -60 },
@@ -1321,17 +4159,56 @@
       }
     }
 
+    function drawReadyPulse() {
+      if (state.mode !== "session_ready" && state.mode !== "auto_reset_pending") return;
+      const base = worldToScreen(getActiveTeePos());
+      if (!base.visible) return;
+
+      const pulse = state.mode === "auto_reset_pending"
+        ? clamp(1 - state.autoResetTimer / AUTO_READY_SECONDS, 0, 1)
+        : (Math.sin(state.sceneTime * 4.4) + 1) * 0.5;
+      const radius = clamp(base.scale * (0.2 + pulse * 0.14), 14, 38);
+      const alpha = state.mode === "auto_reset_pending" ? 0.28 + pulse * 0.26 : 0.2 + pulse * 0.16;
+
+      ctx.strokeStyle = `rgba(121, 225, 178, ${alpha.toFixed(3)})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(base.x, base.y, radius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = `rgba(43, 127, 255, ${(alpha * 0.82).toFixed(3)})`;
+      ctx.beginPath();
+      ctx.arc(base.x, base.y, radius + 10, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
     function drawTrails() {
+      drawHistoricalTrails();
+      drawDetachedFlightTrails();
       const samples = state.ball.moving ? state.trajectorySamples : state.previewSamples;
+      if (samples === state.trajectorySamples && samples.length > 1) {
+        for (let i = 1; i < samples.length; i += 1) {
+          const prev = worldToScreen(samples[i - 1]);
+          const next = worldToScreen(samples[i]);
+          if (!prev.visible || !next.visible) continue;
+          const alpha = 0.22 + (i / samples.length) * 0.48;
+          ctx.strokeStyle = `rgba(255, 238, 186, ${alpha.toFixed(3)})`;
+          ctx.lineWidth = clamp(next.scale * 0.032, 1.4, 5.2);
+          ctx.beginPath();
+          ctx.moveTo(prev.x, prev.y);
+          ctx.lineTo(next.x, next.y);
+          ctx.stroke();
+        }
+      }
       for (let i = 0; i < samples.length; i += 1) {
         const projected = worldToScreen(samples[i]);
         if (!projected.visible) continue;
-        const alpha = samples === state.previewSamples ? 0.16 + (i / samples.length) * 0.12 : 0.2 + (i / samples.length) * 0.38;
+        const alpha = samples === state.previewSamples ? 0.16 + (i / samples.length) * 0.12 : 0.24 + (i / samples.length) * 0.42;
         ctx.fillStyle = samples === state.previewSamples
           ? `rgba(29, 62, 88, ${alpha.toFixed(3)})`
           : `rgba(255,255,255, ${alpha.toFixed(3)})`;
         ctx.beginPath();
-        ctx.arc(projected.x, projected.y, clamp(projected.scale * 0.04, 1.2, 4.2), 0, Math.PI * 2);
+        ctx.arc(projected.x, projected.y, clamp(projected.scale * 0.045, 1.4, 4.8), 0, Math.PI * 2);
         ctx.fill();
       }
     }
@@ -1342,18 +4219,364 @@
         if (!projected.visible) continue;
         const life = fx.age / fx.maxAge;
         if (fx.kind === "ring") {
-          ctx.strokeStyle = `rgba(255, 238, 196, ${(0.38 * (1 - life)).toFixed(3)})`;
-          ctx.lineWidth = Math.max(1, projected.scale * 0.02);
+          ctx.strokeStyle = `rgba(255, 244, 214, ${(0.48 * (1 - life)).toFixed(3)})`;
+          ctx.lineWidth = Math.max(1.2, projected.scale * 0.024);
           ctx.beginPath();
           ctx.arc(projected.x, projected.y, projected.scale * fx.maxRadius * life * 0.06, 0, Math.PI * 2);
           ctx.stroke();
         } else {
-          ctx.fillStyle = `rgba(255, 246, 220, ${(0.55 * (1 - life)).toFixed(3)})`;
+          ctx.fillStyle = `rgba(255, 249, 232, ${(0.62 * (1 - life)).toFixed(3)})`;
           ctx.beginPath();
-          ctx.arc(projected.x, projected.y, clamp(projected.scale * fx.size * 0.08, 1, 4.5), 0, Math.PI * 2);
+          ctx.arc(projected.x, projected.y, clamp(projected.scale * fx.size * 0.09, 1.2, 5), 0, Math.PI * 2);
           ctx.fill();
         }
       }
+    }
+
+    function drawHistoricalTrails() {
+      if (!state.recentShots.length) return;
+      const shots = state.recentShots.slice(0, MAX_SHOT_HISTORY).reverse();
+      shots.forEach((record, index) => {
+        if (!record?.trajectory || record.trajectory.length < 2) return;
+        const isLatest = state.currentShot?.shotNo === record.shotNo;
+        const strength = (index + 1) / shots.length;
+        const projected = record.trajectory
+          .map((point) => worldToScreen(point))
+          .filter((point) => point.visible);
+        if (projected.length < 2) return;
+        const alpha = isLatest ? 0.34 : 0.16 + strength * 0.08;
+        const width = clamp(projected[projected.length - 1].scale * (isLatest ? 0.026 : 0.018), 1.1, isLatest ? 4.2 : 2.6);
+        ctx.strokeStyle = `rgba(98, 214, 138, ${alpha.toFixed(3)})`;
+        ctx.lineWidth = width;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+        ctx.moveTo(projected[0].x, projected[0].y);
+        for (let i = 1; i < projected.length - 1; i += 1) {
+          const midX = (projected[i].x + projected[i + 1].x) * 0.5;
+          const midY = (projected[i].y + projected[i + 1].y) * 0.5;
+          ctx.quadraticCurveTo(projected[i].x, projected[i].y, midX, midY);
+        }
+        ctx.lineTo(projected[projected.length - 1].x, projected[projected.length - 1].y);
+        ctx.stroke();
+      });
+    }
+
+    function drawDetachedFlightTrails() {
+      if (!state.detachedFlights.length) return;
+      state.detachedFlights.forEach((flight) => {
+        const visiblePath = flight.trajectory
+          .slice(0, Math.max(2, Math.floor(flight.cursor) + 1))
+          .map((point) => worldToScreen(point))
+          .filter((point) => point.visible);
+        if (visiblePath.length < 2) return;
+        ctx.strokeStyle = "rgba(255, 223, 156, 0.32)";
+        ctx.lineWidth = clamp(visiblePath[visiblePath.length - 1].scale * 0.022, 1.2, 3.4);
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+        ctx.moveTo(visiblePath[0].x, visiblePath[0].y);
+        for (let i = 1; i < visiblePath.length - 1; i += 1) {
+          const midX = (visiblePath[i].x + visiblePath[i + 1].x) * 0.5;
+          const midY = (visiblePath[i].y + visiblePath[i + 1].y) * 0.5;
+          ctx.quadraticCurveTo(visiblePath[i].x, visiblePath[i].y, midX, midY);
+        }
+        ctx.lineTo(visiblePath[visiblePath.length - 1].x, visiblePath[visiblePath.length - 1].y);
+        ctx.stroke();
+      });
+    }
+
+    function drawDetachedFlightBalls() {
+      if (!state.detachedFlights.length) return;
+      state.detachedFlights.forEach((flight) => {
+        const projected = worldToScreen(flight.position);
+        if (!projected.visible) return;
+        const r = clamp(projected.scale * 0.1, 4, 12);
+        const halo = ctx.createRadialGradient(projected.x, projected.y, r * 0.2, projected.x, projected.y, r * 2.2);
+        halo.addColorStop(0, "rgba(255, 214, 120, 0.34)");
+        halo.addColorStop(0.6, "rgba(255, 214, 120, 0.14)");
+        halo.addColorStop(1, "rgba(255, 214, 120, 0)");
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(projected.x, projected.y, r * 2.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,0.88)";
+        ctx.beginPath();
+        ctx.arc(projected.x, projected.y, r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function drawLandingMarkers() {
+      if (!state.recentShots.length) return;
+      const shots = state.recentShots.slice(0, MAX_SHOT_HISTORY).reverse();
+
+      shots.forEach((record, index) => {
+        if (!record?.landing) return;
+        const landing = worldToScreen({
+          x: record.landing.x,
+          y: Math.max(MODEL_PARAMS.ballRadius, record.landing.y),
+          z: record.landing.z,
+        });
+        if (!landing.visible) return;
+
+        const isLatest = state.currentShot?.shotNo === record.shotNo;
+        const ageFactor = (index + 1) / shots.length;
+        const pulse = 0.5 + Math.sin(state.sceneTime * 3.8 + record.shotNo * 0.4) * 0.5;
+        const baseRadius = clamp(landing.scale * (isLatest ? 0.16 : 0.11), isLatest ? 8 : 5, isLatest ? 20 : 14);
+
+        ctx.save();
+        ctx.strokeStyle = isLatest
+          ? `rgba(21, 80, 129, ${(0.48 + pulse * 0.18).toFixed(3)})`
+          : `rgba(98, 214, 138, ${(0.16 + ageFactor * 0.16).toFixed(3)})`;
+        ctx.lineWidth = isLatest ? 2 : 1.4;
+        ctx.beginPath();
+        ctx.arc(landing.x, landing.y, baseRadius + (isLatest ? pulse * 4 : pulse * 2), 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = isLatest ? "rgba(255,255,255,0.9)" : `rgba(134, 238, 165, ${(0.24 + ageFactor * 0.18).toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(landing.x, landing.y, baseRadius * (isLatest ? 0.52 : 0.44), 0, Math.PI * 2);
+        ctx.fill();
+
+        if (isLatest) {
+          const poleHeight = clamp(landing.scale * 0.9, 20, 46);
+          ctx.strokeStyle = "rgba(14, 42, 68, 0.68)";
+          ctx.lineWidth = 2.2;
+          ctx.beginPath();
+          ctx.moveTo(landing.x, landing.y);
+          ctx.lineTo(landing.x, landing.y - poleHeight);
+          ctx.stroke();
+
+          ctx.fillStyle = "rgba(43, 127, 255, 0.92)";
+          ctx.beginPath();
+          ctx.moveTo(landing.x, landing.y - poleHeight);
+          ctx.lineTo(landing.x + baseRadius * 1.5, landing.y - poleHeight + baseRadius * 0.42);
+          ctx.lineTo(landing.x, landing.y - poleHeight + baseRadius * 0.9);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = "rgba(8, 22, 38, 0.62)";
+          ctx.font = `${clamp(landing.scale * 0.18, 11, 15)}px Trebuchet MS`;
+          ctx.fillText("마지막 착지", landing.x + baseRadius + 8, landing.y - poleHeight * 0.35);
+        } else {
+          ctx.fillStyle = "rgba(9, 31, 17, 0.62)";
+          ctx.font = `${clamp(landing.scale * 0.13, 10, 12)}px Trebuchet MS`;
+          ctx.fillText(`${record.shotNo}`, landing.x + baseRadius + 4, landing.y - 4);
+        }
+        ctx.restore();
+      });
+    }
+
+    function getLoopStateBadge() {
+      if (isPutterSession()) {
+        if (state.mode === "launching") {
+          return {
+            tag: "PUTT",
+            title: "스트로크 입력",
+            detail: "센서 또는 수동 스트로크를 적용 중",
+            accent: "#ffd07a",
+          };
+        }
+        if (state.mode === "rollout") {
+          return {
+            tag: "ROLL",
+            title: "그린 롤링",
+            detail: "거리감과 라인을 읽으세요",
+            accent: "#9ddcff",
+          };
+        }
+        if (state.mode === "auto_reset_pending") {
+          return {
+            tag: "AUTO RESET",
+            title: "퍼트 결과 읽는 중",
+            detail: `${state.autoResetTimer.toFixed(1)}초 뒤 다시 퍼팅`,
+            accent: "#fff1a6",
+          };
+        }
+        if (state.currentShot) {
+          return {
+            tag: "READY",
+            title: "다시 퍼팅 가능",
+            detail: "버튼 또는 Space로 바로 다음 퍼트",
+            accent: "#a9f3c7",
+          };
+        }
+        return {
+          tag: "READY",
+          title: "첫 퍼트 준비",
+          detail: "센서 기준을 잡고 시작하세요",
+          accent: "#a9f3c7",
+        };
+      }
+      if (state.mode === "launching") {
+        return {
+          tag: "IMPACT",
+          title: "발사 직후",
+          detail: "출발 방향과 임팩트를 읽으세요",
+          accent: "#ffd07a",
+        };
+      }
+          if (state.mode === "in_flight") {
+            return {
+              tag: "FLIGHT",
+              title: "비행 중",
+              detail: "궤적을 보다가 Space로 바로 다시 조준",
+              accent: "#9ddcff",
+            };
+          }
+          if (state.mode === "rollout") {
+            return {
+              tag: "RESULT",
+              title: "결과 정리 중",
+              detail: "Space로 즉시 티 위치로 돌아갈 수 있음",
+              accent: "#b9f1a8",
+            };
+          }
+      if (state.mode === "auto_reset_pending") {
+        return {
+          tag: "AUTO RESET",
+          title: "결과 읽는 중",
+          detail: `${state.autoResetTimer.toFixed(1)}초 뒤 다시 칠 수 있음`,
+          accent: "#fff1a6",
+        };
+      }
+      if (state.currentShot) {
+        return {
+          tag: "READY",
+          title: "다시 칠 수 있음",
+          detail: "버튼 또는 Space로 바로 다음 샷 시작",
+          accent: "#a9f3c7",
+        };
+      }
+      return {
+        tag: "READY",
+        title: "첫 샷 준비",
+        detail: "입력값을 확인하고 시작하세요",
+        accent: "#a9f3c7",
+      };
+    }
+
+    function drawLoopStateBadge() {
+      const badge = getLoopStateBadge();
+      const boxW = 248;
+      const boxH = 72;
+      const boxX = canvas.width - boxW - 24;
+      const boxY = 24;
+
+      ctx.save();
+      ctx.fillStyle = "rgba(8, 22, 38, 0.72)";
+      ctx.beginPath();
+      ctx.roundRect(boxX, boxY, boxW, boxH, 18);
+      ctx.fill();
+
+      ctx.strokeStyle = "rgba(255,255,255,0.08)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = badge.accent;
+      ctx.font = "700 12px Trebuchet MS";
+      ctx.fillText(badge.tag, boxX + 16, boxY + 18);
+
+      ctx.fillStyle = "#f4fbff";
+      ctx.font = "700 22px Trebuchet MS";
+      ctx.fillText(badge.title, boxX + 16, boxY + 42);
+
+      ctx.fillStyle = "rgba(235, 246, 255, 0.8)";
+      ctx.font = "13px Trebuchet MS";
+      ctx.fillText(badge.detail, boxX + 16, boxY + 61);
+      ctx.restore();
+    }
+
+    function drawFlightTelemetryBadge() {
+      const live = getLiveFlightMetrics();
+      if (!live && !isPutterSession()) return;
+      const boxW = 258;
+      const boxH = 72;
+      const boxX = 24;
+      const boxY = 118;
+      const curveDirection = live ? formatCurveDirection(live.curveMeters) : "중앙";
+
+      ctx.save();
+      ctx.fillStyle = "rgba(8, 22, 38, 0.74)";
+      ctx.beginPath();
+      ctx.roundRect(boxX, boxY, boxW, boxH, 18);
+      ctx.fill();
+
+      ctx.strokeStyle = "rgba(121, 225, 178, 0.34)";
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      ctx.fillStyle = "#79e1b2";
+      ctx.font = "700 12px Trebuchet MS";
+      ctx.fillText(isPutterSession() ? "LIVE PUTT" : "LIVE FLIGHT", boxX + 16, boxY + 18);
+
+      ctx.fillStyle = "#f4fbff";
+      ctx.font = "700 22px Trebuchet MS";
+      if (isPutterSession()) {
+        const remaining = Math.max(0, state.putt.holeDistanceM - state.ball.position.x);
+        ctx.fillText(`롤 ${formatDistanceValue(state.putt.model.rollDistance, 2)}`, boxX + 16, boxY + 42);
+        ctx.fillStyle = "rgba(235, 246, 255, 0.82)";
+        ctx.font = "13px Trebuchet MS";
+        ctx.fillText(`남은 거리 ${formatDistanceValue(remaining, 2)} · 라인 ${formatSignedYards(state.ball.position.z)}`, boxX + 16, boxY + 61);
+      } else {
+        ctx.fillText(`거리 ${formatDistanceValue(live.distanceMeters, 1)}`, boxX + 16, boxY + 42);
+
+        ctx.fillStyle = "rgba(235, 246, 255, 0.82)";
+        ctx.font = "13px Trebuchet MS";
+        ctx.fillText(`커브 ${formatDistanceValue(Math.abs(live.curveMeters), 1)} ${curveDirection}`, boxX + 16, boxY + 61);
+      }
+      ctx.restore();
+    }
+
+    function drawCameraModeBadge() {
+      const accent = state.cameraMode === "fixed-tee" ? "#ffd88d" : "#9ddcff";
+      const flash = state.cameraNoticeTimer > 0.01;
+      const boxW = 242;
+      const boxH = 84;
+      const boxX = 24;
+      const boxY = 24;
+
+      ctx.save();
+      ctx.fillStyle = flash ? "rgba(8, 22, 38, 0.84)" : "rgba(8, 22, 38, 0.72)";
+      ctx.beginPath();
+      ctx.roundRect(boxX, boxY, boxW, boxH, 18);
+      ctx.fill();
+
+      ctx.strokeStyle = flash ? accent : "rgba(255,255,255,0.08)";
+      ctx.lineWidth = flash ? 1.8 : 1;
+      ctx.stroke();
+
+      ctx.fillStyle = accent;
+      ctx.font = "700 12px Trebuchet MS";
+      ctx.fillText("CAMERA", boxX + 16, boxY + 18);
+
+      ctx.fillStyle = "#f4fbff";
+      ctx.font = "700 22px Trebuchet MS";
+      ctx.fillText(formatCameraBadgeTitle(), boxX + 16, boxY + 42);
+
+      ctx.fillStyle = "rgba(235, 246, 255, 0.82)";
+      ctx.font = "13px Trebuchet MS";
+      const detail = state.cameraMode === "fixed-tee" && !isPutterSession()
+        ? (state.cameraManual.dirty ? "수동 조작 가능 · Esc 또는 버튼 리셋" : "수동 조작 가능 · 좌/우드래그 + 휠")
+        : formatCameraBehaviorHint();
+      ctx.fillText(detail, boxX + 16, boxY + 61);
+
+      ctx.fillStyle = flash ? accent : "rgba(235, 246, 255, 0.72)";
+      ctx.font = "12px Trebuchet MS";
+      const notice = flash
+        ? (state.cameraNoticeSource === "keyboard-reverse"
+          ? "Shift+C 입력 반영됨"
+          : state.cameraNoticeSource === "keyboard"
+            ? "C 입력 반영됨"
+            : state.cameraNoticeSource === "reset"
+              ? "시점 리셋 반영됨"
+              : "메뉴 선택 반영됨")
+        : (state.cameraMode === "fixed-tee" && !isPutterSession()
+          ? "좌드래그 이동 · 우드래그 회전 · 휠 줌"
+          : "C 다음 / Shift+C 이전");
+      ctx.fillText(notice, boxX + 16, boxY + 77);
+      ctx.restore();
     }
 
     function drawBall() {
@@ -1372,6 +4595,16 @@
 
       if (!ball.visible) return;
       const r = clamp(ball.scale * 0.11, 5, 16);
+      if (state.ball.moving || state.mode === "launching" || state.mode === "in_flight" || state.mode === "rollout") {
+        const halo = ctx.createRadialGradient(ball.x, ball.y, r * 0.2, ball.x, ball.y, r * 2.4);
+        halo.addColorStop(0, "rgba(255, 214, 120, 0.46)");
+        halo.addColorStop(0.5, "rgba(255, 214, 120, 0.18)");
+        halo.addColorStop(1, "rgba(255, 214, 120, 0)");
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, r * 2.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
       const grad = ctx.createRadialGradient(ball.x - r * 0.22, ball.y - r * 0.28, 0, ball.x, ball.y, r);
       grad.addColorStop(0, "rgba(255,255,255,0.98)");
       grad.addColorStop(0.5, "rgba(242, 246, 248, 0.95)");
@@ -1408,6 +4641,31 @@
     }
 
     function drawGolfer() {
+      if (isPutterSession()) {
+        const stance = worldToScreen({ x: -0.55, y: 0, z: -0.35 });
+        if (!stance.visible) return;
+        ctx.save();
+        const bodyScale = clamp(stance.scale * 0.12, 30, 54);
+        ctx.strokeStyle = "#355064";
+        ctx.lineWidth = bodyScale * 0.08;
+        ctx.beginPath();
+        ctx.moveTo(stance.x, stance.y - bodyScale * 0.52);
+        ctx.lineTo(stance.x, stance.y - bodyScale * 0.12);
+        ctx.lineTo(stance.x + bodyScale * 0.2, stance.y + bodyScale * 0.2);
+        ctx.stroke();
+        ctx.strokeStyle = "#5e707b";
+        ctx.lineWidth = bodyScale * 0.04;
+        ctx.beginPath();
+        ctx.moveTo(stance.x + bodyScale * 0.18, stance.y + bodyScale * 0.18);
+        ctx.lineTo(stance.x + bodyScale * 0.62, stance.y + bodyScale * 0.22);
+        ctx.stroke();
+        ctx.fillStyle = "#e8f2fa";
+        ctx.beginPath();
+        ctx.arc(stance.x, stance.y - bodyScale * 0.66, bodyScale * 0.09, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        return;
+      }
       const stance = worldToScreen({ x: -1.25, y: 0, z: -0.8 });
       if (!stance.visible) return;
 
@@ -1532,18 +4790,24 @@
 
       ctx.fillStyle = "rgba(235, 246, 255, 0.72)";
       ctx.font = "13px Trebuchet MS";
-      ctx.fillText("ArrowLeft / ArrowRight: 방위각", panelX + 34, panelY + panelH - 48);
-      ctx.fillText("ArrowUp / ArrowDown: 발사각", panelX + 34, panelY + panelH - 28);
-      ctx.fillText("Space: 길게 눌러 실행  |  R: 실험 조건 초기화  |  F: 전체화면", panelX + panelW - 372, panelY + panelH - 28);
+      ctx.fillText("A / D: 방향  |  ArrowUp / ArrowDown: 발사각", panelX + 34, panelY + panelH - 48);
+      ctx.fillText("Q / E: 사이드스핀  |  W / S: 볼 스피드  |  R / F: 백스핀", panelX + 34, panelY + panelH - 28);
+      ctx.fillText("C: 카메라  |  Esc: 시점 리셋  |  Space: 바로 실행  |  Shift+F: 전체화면", panelX + panelW - 490, panelY + panelH - 28);
       ctx.restore();
     }
 
     function drawScene() {
       drawEnvironment();
       drawTrails();
+      drawLandingMarkers();
       drawGolfer();
+      drawReadyPulse();
+      drawDetachedFlightBalls();
       drawBall();
-      if (!state.ball.moving) drawAim();
+      if (!state.ball.moving && (!state.currentShot || isPutterSession())) drawAim();
+      drawCameraModeBadge();
+      drawFlightTelemetryBadge();
+      drawLoopStateBadge();
       drawHUD();
     }
 
@@ -1571,15 +4835,41 @@
 
     window.render_game_to_text = () => {
       const ballScreen = state.ball.screen;
-      const reportedMetrics = state.lastShotMetrics ?? {
-        carry: state.model.carryDistance,
-        total: state.model.totalDistance,
-        offline: state.model.offlineDistance,
-        apex: state.model.apexHeight,
-        ballSpeed: state.model.ballSpeed,
-      };
+      const liveFlight = getLiveFlightMetrics();
+      const reportedMetrics = state.currentShot ?? (isPutterSession()
+        ? {
+          carry: state.putt.model.rollDistance,
+          total: state.putt.model.totalDistance,
+          offline: state.putt.model.offlineDistance,
+          apex: 0,
+          ballSpeed: state.putt.model.startSpeed,
+        }
+        : {
+          carry: state.model.carryDistance,
+          total: state.model.totalDistance,
+          offline: state.model.offlineDistance,
+          apex: state.model.apexHeight,
+          ballSpeed: state.model.ballSpeed,
+        });
+      const change = buildShotChange(state.currentShot, state.previousShot);
+      const sessionContract = buildSessionContractPayload({
+        sessionKind: state.sessionKind,
+        mode: state.mode,
+        totalShots: state.totalShots,
+        distanceUnit: state.distanceUnit,
+        autoResetTimer: state.autoResetTimer,
+        currentShot: state.currentShot,
+        previousShot: state.previousShot,
+        recentShots: state.recentShots,
+        detachedFlights: state.detachedFlights,
+        aimDeg: state.aimDeg,
+        yawDeg: state.yawDeg,
+        manualLaunch: state.manualLaunch,
+        putt: state.putt,
+      });
       return JSON.stringify({
         coordinateSystem: "world: +x downrange, +y up, +z right; screen: origin top-left",
+        sessionKind: state.sessionKind,
         mode: state.mode,
         message: state.message,
         totalShots: state.totalShots,
@@ -1589,6 +4879,8 @@
         charge: Number(state.charge.toFixed(3)),
         aimDeg: Number(state.aimDeg.toFixed(2)),
         yawDeg: Number(state.yawDeg.toFixed(2)),
+        cameraMode: state.cameraMode,
+        distanceUnit: state.distanceUnit,
         wind: {
           x: Number(state.wind.x.toFixed(2)),
           z: Number(state.wind.z.toFixed(2)),
@@ -1601,6 +4893,17 @@
         },
         cameraX: Number(state.camera.position.x.toFixed(2)),
         camera: {
+          mode: state.cameraMode,
+          manualActive: state.cameraManual.active,
+          manualDirty: state.cameraManual.dirty,
+          manual: {
+            panX: Number(state.cameraManual.panX.toFixed(3)),
+            panZ: Number(state.cameraManual.panZ.toFixed(3)),
+            yaw: Number(state.cameraManual.yaw.toFixed(4)),
+            pitch: Number(state.cameraManual.pitch.toFixed(4)),
+            distance: Number(state.cameraManual.distance.toFixed(3)),
+            dragMode: state.cameraManual.dragMode,
+          },
           position: {
             x: Number(state.camera.position.x.toFixed(2)),
             y: Number(state.camera.position.y.toFixed(2)),
@@ -1611,6 +4914,9 @@
             y: Number(state.camera.target.y.toFixed(2)),
             z: Number(state.camera.target.z.toFixed(2)),
           },
+        },
+        layout: {
+          heightCompact: state.isHeightCompact,
         },
         model: {
           phase: state.model.phase,
@@ -1630,6 +4936,32 @@
           offlineDistance: Number(state.model.offlineDistance.toFixed(2)),
           apexHeight: Number(state.model.apexHeight.toFixed(2)),
           didImpact: state.model.didImpact,
+        },
+        putt: {
+          holeDistanceM: Number(state.putt.holeDistanceM.toFixed(2)),
+          greenDecel: Number(state.putt.greenDecel.toFixed(2)),
+          manualStrokeSpeedMps: Number(state.putt.manualStrokeSpeedMps.toFixed(2)),
+          model: {
+            phase: state.putt.model.phase,
+            rollDistance: Number(state.putt.model.rollDistance.toFixed(2)),
+            totalDistance: Number(state.putt.model.totalDistance.toFixed(2)),
+            offlineDistance: Number(state.putt.model.offlineDistance.toFixed(2)),
+            paceError: Number(state.putt.model.paceError.toFixed(2)),
+            remainingDistance: Number(state.putt.model.remainingDistance.toFixed(2)),
+            strokeSpeed: Number(state.putt.model.strokeSpeed.toFixed(2)),
+            startSpeed: Number(state.putt.model.startSpeed.toFixed(2)),
+            launchAzimuthDeg: Number(state.putt.model.launchAzimuthDeg.toFixed(2)),
+            tempoScore: Number(state.putt.model.tempoScore.toFixed(3)),
+            holed: state.putt.model.holed,
+          },
+          motion: {
+            supported: state.putt.motion.supported,
+            permission: state.putt.motion.permission,
+            calibrated: state.putt.motion.calibrated,
+            armed: state.putt.motion.armed,
+            pendingStroke: state.putt.motion.pendingStroke,
+            lastStroke: state.putt.motion.lastStroke,
+          },
         },
         impactEffectCount: state.impactEffects.length,
         ball: {
@@ -1653,94 +4985,313 @@
           apex: Number(reportedMetrics.apex.toFixed(2)),
           offline: Number(reportedMetrics.offline.toFixed(2)),
         },
-        lastShot: state.lastShotMetrics ? {
-          carry: Number(state.lastShotMetrics.carry.toFixed(2)),
-          total: Number(state.lastShotMetrics.total.toFixed(2)),
-          offline: Number(state.lastShotMetrics.offline.toFixed(2)),
-          apex: Number(state.lastShotMetrics.apex.toFixed(2)),
-          ballSpeed: Number(state.lastShotMetrics.ballSpeed.toFixed(2)),
+        liveFlight: liveFlight ? {
+          active: true,
+          distanceMeters: Number(liveFlight.distanceMeters.toFixed(2)),
+          downrangeMeters: Number(liveFlight.downrangeMeters.toFixed(2)),
+          curveMeters: Number(liveFlight.curveMeters.toFixed(2)),
+          curveDirection: formatCurveDirection(liveFlight.curveMeters),
+          summary: formatLiveFlightSummary(),
+        } : {
+          active: false,
+          distanceMeters: 0,
+          downrangeMeters: 0,
+          curveMeters: 0,
+          curveDirection: "중앙",
+          summary: "실시간 비행 정보 없음",
+        },
+        currentShot: serializeShotRecord(state.currentShot),
+        previousShot: serializeShotRecord(state.previousShot),
+        lastShot: serializeShotRecord(state.currentShot),
+        recentShots: state.recentShots.map((record) => serializeShotRecord(record)),
+        detachedFlights: state.detachedFlights.map((flight) => ({
+          shotNo: flight.shotNo,
+          position: {
+            x: Number(flight.position.x.toFixed(2)),
+            y: Number(flight.position.y.toFixed(2)),
+            z: Number(flight.position.z.toFixed(2)),
+          },
+        })),
+        comparisonSummary: formatComparisonSummary(),
+        change: change ? {
+          carryDelta: Number(change.carryDelta.toFixed(2)),
+          totalDelta: Number(change.totalDelta.toFixed(2)),
+          offlineDelta: Number(change.offlineDelta.toFixed(2)),
+          centerText: change.centerText,
         } : null,
         session: {
           state: describeMode(state.mode),
           autoResetTimer: Number(state.autoResetTimer.toFixed(2)),
         },
+        sessionContract,
         controls: {
-          swing: "Space 길게 눌러 실행",
-          elevation: "ArrowUp/ArrowDown",
-          azimuth: "ArrowLeft/ArrowRight",
-          restart: "R 실험 조건 초기화",
-          fullscreen: "F",
+          swing: "Space 실행 / 비행 중 재준비",
+          elevation: isPutterSession() ? "퍼터 세션에서는 미사용" : "ArrowUp/ArrowDown",
+          azimuth: "A/D 또는 ArrowLeft/ArrowRight",
+          ballSpeed: isPutterSession() ? "W/S 수동 스트로크 속도" : "W/S",
+          sideSpin: isPutterSession() ? "Q/E 홀 거리" : "Q/E",
+          backSpin: isPutterSession() ? "R/F 그린 감쇠" : "R/F",
+          camera: "C 다음 / Shift+C 이전 / 셀렉트 직접 선택",
+          restart: "Shift+R 실험 조건 초기화",
+          fullscreen: "Shift+F",
         },
       });
     };
 
     window.addEventListener("keydown", (e) => {
-      const k = e.key.toLowerCase();
-      if (k === "f") {
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      const code = e.code;
+
+      if (code === "KeyF" && e.shiftKey) {
         e.preventDefault();
         toggleFullscreen();
         return;
       }
-      if (e.key === "Escape" && document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
+
+      if (code === "KeyF") {
+        e.preventDefault();
+        if (isPutterSession()) {
+          puttGreenSpeedInput.value = String(clamp(getPuttGreenDecelValue() + 0.05, 1.1, 2.1));
+          syncPuttInputs();
+          updateChrome();
+        } else {
+          nudgeBackSpinInput(-1);
+        }
+        return;
       }
 
-      keys.add(k);
-      if (e.code === "Space") {
+      if (code === "KeyC") {
+        if (e.repeat) return;
         e.preventDefault();
-        beginLaunchCharge();
+        cycleCameraMode(e.shiftKey ? -1 : 1, e.shiftKey ? "keyboard-reverse" : "keyboard");
+        updateChrome();
+        return;
       }
-      if (k === "r") {
+
+      if (code === "KeyQ") {
+        e.preventDefault();
+        if (isPutterSession()) {
+          puttDistanceInput.value = String(clamp(getPuttDistanceValue() - 0.5, 1, 15));
+          syncPuttInputs();
+          preparePuttLoop("퍼터 입력값을 확인한 뒤 실행하세요");
+          updateChrome();
+        } else {
+          nudgeSideSpinInput(-1);
+        }
+        return;
+      }
+
+      if (code === "KeyE") {
+        e.preventDefault();
+        if (isPutterSession()) {
+          puttDistanceInput.value = String(clamp(getPuttDistanceValue() + 0.5, 1, 15));
+          syncPuttInputs();
+          preparePuttLoop("퍼터 입력값을 확인한 뒤 실행하세요");
+          updateChrome();
+        } else {
+          nudgeSideSpinInput(1);
+        }
+        return;
+      }
+
+      if (code === "KeyW") {
+        e.preventDefault();
+        if (isPutterSession()) {
+          puttStrokeSpeedInput.value = String(clamp(getPuttStrokeSpeedValue() + 0.05, 0.4, 3.5));
+          syncPuttInputs();
+          updateChrome();
+        } else {
+          nudgeBallSpeedInput(HOTKEY_BALL_SPEED_STEP_MPH);
+        }
+        return;
+      }
+
+      if (code === "KeyS") {
+        e.preventDefault();
+        if (isPutterSession()) {
+          puttStrokeSpeedInput.value = String(clamp(getPuttStrokeSpeedValue() - 0.05, 0.4, 3.5));
+          syncPuttInputs();
+          updateChrome();
+        } else {
+          nudgeBallSpeedInput(-HOTKEY_BALL_SPEED_STEP_MPH);
+        }
+        return;
+      }
+
+      if (code === "KeyR" && e.shiftKey) {
+        e.preventDefault();
         resetSession();
         applyManualInputs();
+        return;
       }
+
+      if (code === "KeyR") {
+        e.preventDefault();
+        if (isPutterSession()) {
+          puttGreenSpeedInput.value = String(clamp(getPuttGreenDecelValue() - 0.05, 1.1, 2.1));
+          syncPuttInputs();
+          updateChrome();
+        } else {
+          nudgeBackSpinInput(1);
+        }
+        return;
+      }
+
+      if (e.key === "Escape" && document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+        return;
+      }
+
+      if (e.key === "Escape" && isManualCameraEnabled() && state.cameraManual.dirty) {
+        e.preventDefault();
+        resetManualCamera({ announce: true, source: "reset" });
+        return;
+      }
+
+      if (e.code === "Space") {
+        if (e.repeat) return;
+        e.preventDefault();
+        triggerLaunch();
+        return;
+      }
+
+      if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "KeyA", "KeyD"].includes(code)) {
+        e.preventDefault();
+      }
+
+      keys.add(code);
     });
 
     window.addEventListener("keyup", (e) => {
-      const k = e.key.toLowerCase();
-      keys.delete(k);
-      if (e.code === "Space") {
-        releaseLaunchCharge();
-      }
+      keys.delete(e.code);
     });
 
     document.addEventListener("fullscreenchange", resizeCanvas);
     window.addEventListener("resize", resizeCanvas);
-    startBtn.addEventListener("pointerdown", (e) => {
+    window.addEventListener("blur", endCameraDrag);
+    compactLayoutQuery.addEventListener?.("change", syncPanelToggleState);
+    startBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      beginLaunchCharge();
-    });
-    startBtn.addEventListener("pointerup", (e) => {
-      e.preventDefault();
-      releaseLaunchCharge();
+      triggerLaunch();
       canvas.focus();
     });
-    startBtn.addEventListener("pointercancel", releaseLaunchCharge);
-    startBtn.addEventListener("pointerleave", (e) => {
-      if ((e.buttons & 1) === 1) releaseLaunchCharge();
-    });
     resetBtn.addEventListener("click", () => {
+      closeFoldPanels();
       resetSession();
       applyManualInputs();
       canvas.focus();
     });
+    hudToggle.addEventListener("click", () => toggleFoldPanel("left"));
+    controlToggle.addEventListener("click", () => toggleFoldPanel("right"));
+    panelScrim.addEventListener("click", closeFoldPanels);
+    cameraResetBtn.addEventListener("click", () => resetManualCamera({ announce: true, source: "reset" }));
+    cameraResetOverlay.addEventListener("click", () => resetManualCamera({ announce: true, source: "reset" }));
+    gameViewport.addEventListener("contextmenu", (e) => {
+      if (!isCameraInteractionSurface(e.target)) return;
+      if (isManualCameraEnabled()) e.preventDefault();
+    });
+    gameViewport.addEventListener("pointerdown", (e) => {
+      if (!isCameraInteractionSurface(e.target)) return;
+      if (!isManualCameraEnabled()) return;
+      canvas.focus();
+      if (e.button === 0) {
+        e.preventDefault();
+        beginCameraDrag("pan", e);
+      } else if (e.button === 2) {
+        e.preventDefault();
+        beginCameraDrag("orbit", e);
+      }
+    });
+    document.addEventListener("pointermove", (e) => {
+      if (state.cameraManual.dragMode === "none") return;
+      e.preventDefault();
+      updateCameraDrag(e);
+    });
+    document.addEventListener("pointerup", endCameraDrag);
+    document.addEventListener("pointercancel", endCameraDrag);
+    gameViewport.addEventListener("wheel", (e) => {
+      if (!isCameraInteractionSurface(e.target)) return;
+      if (!isManualCameraEnabled()) return;
+      e.preventDefault();
+      applyCameraZoom(e.deltaY);
+    }, { passive: false });
     ballSpeedMphInput.addEventListener("input", () => {
       syncSpeedInputs();
       applyManualInputs();
     });
     sideSpinInput.addEventListener("input", applyManualInputs);
     backSpinInput.addEventListener("input", applyManualInputs);
+    sessionModeSelect.addEventListener("change", () => setSessionKind(sessionModeSelect.value, true));
+    putterShortcutTab.addEventListener("click", () => {
+      sessionModeSelect.value = "putter";
+      setSessionKind("putter", true);
+      if (isCompactLayout()) {
+        setFoldPanel("right", true);
+      }
+    });
+    cameraModeSelect.addEventListener("change", () => syncCameraMode("panel"));
+    distanceUnitSelect.addEventListener("change", () => setDistanceUnit(distanceUnitSelect.value));
+    puttDistanceInput.addEventListener("input", () => {
+      syncPuttInputs();
+      preparePuttLoop("퍼터 입력값을 확인한 뒤 실행하세요");
+      updateChrome();
+    });
+    puttStrokeSpeedInput.addEventListener("input", () => {
+      syncPuttInputs();
+      updateChrome();
+    });
+    puttGreenSpeedInput.addEventListener("input", () => {
+      syncPuttInputs();
+      preparePuttLoop("퍼터 입력값을 확인한 뒤 실행하세요");
+      updateChrome();
+    });
+    motionPermissionBtn.addEventListener("click", async () => {
+      await ensureMotionPermission();
+      updateChrome();
+    });
+    motionCalibrateBtn.addEventListener("click", () => {
+      calibrateMotion();
+      updateChrome();
+    });
+    motionArmBtn.addEventListener("click", () => {
+      armMotionStroke();
+      updateChrome();
+    });
     aimDirectionInput.addEventListener("input", () => {
       state.yawDeg = Number(aimDirectionInput.value);
       state.previewSamples = sampleTrajectoryPreview(state, state.model);
+      if (state.cameraMode !== "follow") {
+        syncBallFromModel();
+        buildFlightCamera(state, true);
+        syncBallFromModel();
+      }
       updateChrome();
     });
 
+    window.addEventListener("devicemotion", (event) => {
+      const sample = event.acceleration ?? event.accelerationIncludingGravity;
+      if (!sample) return;
+      handleMotionSample(sample);
+    });
+
+    window.__golfsimTestFeedMotion = (samples = []) => {
+      samples.forEach((sample) => handleMotionSample(sample));
+      updateChrome();
+      render();
+      return Promise.resolve();
+    };
+
+    restoreCameraModePreference();
+    restoreDistanceUnitPreference();
+    state.sessionKind = restoreSessionKind();
+    syncPanelToggleState();
     resizeCanvas();
     resetSession();
     syncSpeedInputs();
     applyManualInputs();
-    buildFlightCamera(state);
+    syncPuttInputs();
+    setSessionKind(state.sessionKind, true);
+    buildFlightCamera(state, true);
     syncBallFromModel();
     updateChrome();
     render();

@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/codex-hooks/main.py intake_guard --mode codex",
+            "timeout": 15,
+            "statusMessage": "입력 분류 중"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/codex-hooks/main.py check_guard --mode codex --phase blocking",
+            "timeout": 300,
+            "statusMessage": "최소 검증 확인 중"
+          }
+        ]
+      }
+    ]
+  }
+}

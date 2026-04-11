@@ -1,0 +1,100 @@
+[
+  {
+    "id": "trackman_optimizer_driver_150",
+    "kind": "official",
+    "source": {
+      "label": "TrackMan Driver Optimizer",
+      "url": "https://www.trackman.com/blog/golf/driver-optimizer"
+    },
+    "inputs": {
+      "speedMph": 150.4,
+      "launchDeg": 9.6,
+      "backspinRpm": 2828
+    },
+    "expected": {
+      "carryYards": { "min": 242, "max": 248 },
+      "totalYards": { "min": 269, "max": 276 }
+    }
+  },
+  {
+    "id": "trackman_tour_driver_171",
+    "kind": "official",
+    "source": {
+      "label": "TrackMan PGA TOUR driver window",
+      "url": "https://www.trackman.com/ko/blog/golf/ball-speed"
+    },
+    "inputs": {
+      "speedMph": 171,
+      "launchDeg": 10.4,
+      "backspinRpm": 2545
+    },
+    "expected": {
+      "carryYards": { "min": 279, "max": 284 },
+      "totalYards": { "min": 311, "max": 317 }
+    }
+  },
+  {
+    "id": "usga_ods_tour_ball_a",
+    "kind": "official",
+    "source": {
+      "label": "USGA/R&A Distance Insights tour ball A",
+      "url": "https://assets.randa.org/c42c7bf4-dca7-00ea-4f2e-373223f80f76/45f2a2f2-2081-4402-a867-0925977e9667/R20%20-%20Effect%20of%20Equipment%20on%20Distance%20-%20Golf%20Balls.pdf"
+    },
+    "inputs": {
+      "speedFps": 257,
+      "launchDeg": 9.7,
+      "backspinRpm": 2520
+    },
+    "expected": {
+      "totalYards": { "min": 300, "max": 306 }
+    }
+  },
+  {
+    "id": "usga_ods_tour_ball_b",
+    "kind": "official",
+    "source": {
+      "label": "USGA/R&A Distance Insights tour ball B",
+      "url": "https://assets.randa.org/c42c7bf4-dca7-00ea-4f2e-373223f80f76/45f2a2f2-2081-4402-a867-0925977e9667/R20%20-%20Effect%20of%20Equipment%20on%20Distance%20-%20Golf%20Balls.pdf"
+    },
+    "inputs": {
+      "speedFps": 258.2,
+      "launchDeg": 9.7,
+      "backspinRpm": 2426
+    },
+    "expected": {
+      "totalYards": { "min": 298, "max": 306 }
+    }
+  },
+  {
+    "id": "internal_high_launch_guardrail",
+    "kind": "sanity",
+    "source": {
+      "label": "Internal guardrail"
+    },
+    "inputs": {
+      "speedMph": 150,
+      "launchDeg": 15,
+      "backspinRpm": 2500
+    },
+    "expected": {
+      "carryYards": { "max": 292 },
+      "totalYards": { "max": 326 }
+    }
+  },
+  {
+    "id": "internal_high_speed_spin_decay_guardrail",
+    "kind": "sanity",
+    "source": {
+      "label": "Internal over-spin guardrail"
+    },
+    "inputs": {
+      "speedMph": 172,
+      "launchDeg": 10.4,
+      "backspinRpm": 3000
+    },
+    "expected": {
+      "carryYards": { "min": 280, "max": 290.1 },
+      "totalYards": { "max": 326 }
+    }
+  }
+]

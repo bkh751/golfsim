@@ -1,3 +1,28 @@
+# Dependencies
 node_modules/
+
+# Build / generated output
 output/
+coverage/
+playwright-report/
+test-results/
+
+# OS / editor noise
 .DS_Store
+*.log
+
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+
+# Codex runtime state
+.codex/orchestrator/
+.codex/harness/
+
+# Local reference/vendor copies, not source of truth
+.codex/references/
+
+# Temporary local scratch
+tmp/

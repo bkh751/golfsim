@@ -1,0 +1,30 @@
+{
+  "design": {
+    "role": "design",
+    "thread_id": "019d5775-792a-7482-b08e-fd8671a0a665",
+    "thread_title": "Codex Route: Design Team",
+    "last_status": "notLoaded",
+    "updated_at": "0001-01-01T00:00:00Z"
+  },
+  "dev": {
+    "role": "dev",
+    "thread_id": "019d5775-c218-7590-82e1-846cea43d7c9",
+    "thread_title": "Codex Route: DevTeam",
+    "last_status": "notLoaded",
+    "updated_at": "0001-01-01T00:00:00Z"
+  },
+  "planning": {
+    "role": "planning",
+    "thread_id": "019d5775-60b1-7fb0-a547-8cc2eb65927d",
+    "thread_title": "Codex Route: Plannning Team",
+    "last_status": "notLoaded",
+    "updated_at": "0001-01-01T00:00:00Z"
+  },
+  "pm": {
+    "role": "pm",
+    "thread_id": "019d5775-33d0-7961-97fb-283482ae5b97",
+    "thread_title": "Codex Route: PM Team",
+    "last_status": "notLoaded",
+    "updated_at": "0001-01-01T00:00:00Z"
+  }
+}

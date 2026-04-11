@@ -30,7 +30,7 @@ test('happy path: swing progresses to flight then rest with forward ball travel'
   let didImpactCount = 0;
   let steps = 0;
 
-  while (steps < 900) {
+  while (steps < 2400) {
     state = stepSwingModel(state, controls, DEFAULT_PARAMS, 1 / 60);
     controls.initiateSwing = false;
     if (state.didImpact) {
@@ -190,4 +190,56 @@ test('regression: higher power creates a meaningfully longer shot', () => {
   assert.ok(fullShot.carryDistance > softShot.carryDistance + 120);
   assert.ok(fullShot.totalDistance > softShot.totalDistance + 150);
   assert.ok(fullShot.apexHeight > softShot.apexHeight);
+});
+
+test('regression: manual ball inputs use the requested launch window directly', () => {
+  let state = createInitialState({ ballPos: { x: 0, y: DEFAULT_PARAMS.ballRadius, z: 0 } });
+  let controls = createDefaultControls({
+    initiateSwing: true,
+    powerNorm: 0.68,
+    tempoNorm: 0.9,
+    aimDeg: 10.4,
+    yawDeg: 0,
+    manualBallSpeedMps: 150 * 0.44704,
+    manualBackspinRpm: 2500,
+    manualSideSpinRpm: 0,
+  });
+
+  for (let i = 0; i < 2000; i += 1) {
+    state = stepSwingModel(state, controls, DEFAULT_PARAMS, 1 / 60);
+    controls.initiateSwing = false;
+    if (state.phase === 'rest') break;
+  }
+
+  assert.ok(Math.abs(state.launchDeg - 10.4) < 0.25, `launchDeg=${state.launchDeg}`);
+  const carryYards = state.carryDistance * 1.09361;
+  assert.ok(carryYards > 235 && carryYards < 245, `carry=${carryYards.toFixed(1)} yd`);
+});
+
+test('regression: slower manual ball speed stays materially shorter than the tour-average benchmark', () => {
+  const settleManual = (ballSpeedMph) => {
+    let state = createInitialState({ ballPos: { x: 0, y: DEFAULT_PARAMS.ballRadius, z: 0 } });
+    let controls = createDefaultControls({
+      initiateSwing: true,
+      powerNorm: 0.68,
+      tempoNorm: 0.9,
+      aimDeg: 10.4,
+      yawDeg: 0,
+      manualBallSpeedMps: ballSpeedMph * 0.44704,
+      manualBackspinRpm: ballSpeedMph >= 170 ? 2545 : 2500,
+      manualSideSpinRpm: 0,
+    });
+    for (let i = 0; i < 2400; i += 1) {
+      state = stepSwingModel(state, controls, DEFAULT_PARAMS, 1 / 60);
+      controls.initiateSwing = false;
+      if (state.phase === 'rest') return state;
+    }
+    return state;
+  };
+
+  const slower = settleManual(150);
+  const tour = settleManual(171);
+
+  assert.ok(tour.carryDistance > slower.carryDistance + 35);
+  assert.ok(tour.totalDistance > slower.totalDistance + 40);
 });
