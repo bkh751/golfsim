@@ -14,6 +14,7 @@ if str(REPO_ROOT) not in sys.path:
 from scripts.codex_hooks.checks import derive_round_topic, select_checks, should_trigger_roundtable
 from scripts.codex_hooks.classify import classify_prompt
 from scripts.codex_hooks.orchestrator_state import summarize_orchestrator
+from scripts.codex_hooks.app import _extract_context_usage_percent, run_hook, to_codex_output
 
 
 class ClassifyPromptTests(unittest.TestCase):
@@ -104,6 +105,42 @@ class CheckSelectionTests(unittest.TestCase):
         self.assertTrue(should_trigger_roundtable(["test/ui-interaction.test.mjs"]))
         self.assertFalse(should_trigger_roundtable(["docs/product.md"]))
         self.assertIn("UI/플레이 루프", derive_round_topic(["index.html", "test/ui-interaction.test.mjs"]))
+
+
+class ContextGuardTests(unittest.TestCase):
+    def test_context_guard_blocks_when_percent_exceeds_threshold(self) -> None:
+        payload = {
+            "hook_event_name": "UserPromptSubmit",
+            "context_usage_percent": 18.4,
+            "session_id": "sess-1",
+        }
+        result = run_hook("context_guard", "advisory", payload)
+        self.assertEqual(result["status"], "block")
+        self.assertEqual(result["context_usage_percent"], 18.4)
+        codex_output = to_codex_output(result, payload)
+        self.assertEqual(codex_output["decision"], "block")
+
+    def test_context_guard_detects_nested_usage_window(self) -> None:
+        payload = {
+            "usage": {
+                "context_window": {
+                    "used_tokens": 120,
+                    "max_tokens": 1000,
+                }
+            }
+        }
+        percent, source = _extract_context_usage_percent(payload)
+        self.assertEqual(percent, 12.0)
+        self.assertEqual(source, "usage.context_window")
+
+    def test_context_guard_allows_when_usage_field_missing(self) -> None:
+        payload = {
+            "hook_event_name": "UserPromptSubmit",
+            "prompt": "간단한 분석",
+        }
+        result = run_hook("context_guard", "advisory", payload)
+        self.assertEqual(result["status"], "ok")
+        self.assertFalse(result["context_detected"])
 
 
 if __name__ == "__main__":

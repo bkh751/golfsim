@@ -5,6 +5,12 @@
         "hooks": [
           {
             "type": "command",
+            "command": "python3 scripts/codex-hooks/main.py context_guard --mode codex",
+            "timeout": 15,
+            "statusMessage": "컨텍스트 사용량 확인 중"
+          },
+          {
+            "type": "command",
             "command": "python3 scripts/codex-hooks/main.py intake_guard --mode codex",
             "timeout": 15,
             "statusMessage": "입력 분류 중"

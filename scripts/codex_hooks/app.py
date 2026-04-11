@@ -23,6 +23,7 @@ HARNESS_DIR = REPO_ROOT / ".codex" / "harness"
 LOG_DIR = HARNESS_DIR / "logs"
 
 LAST_FILES = {
+    "context": HARNESS_DIR / "last-context.json",
     "intake": HARNESS_DIR / "last-intake.json",
     "orchestrator": HARNESS_DIR / "last-orchestrator-hint.json",
     "check": HARNESS_DIR / "last-check.json",
@@ -31,7 +32,10 @@ LAST_FILES = {
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="golfsim Codex hook runner")
-    parser.add_argument("hook", choices=("intake_guard", "orchestrator_hint", "check_guard"))
+    parser.add_argument(
+        "hook",
+        choices=("context_guard", "intake_guard", "orchestrator_hint", "check_guard"),
+    )
     parser.add_argument("--mode", choices=("contract", "codex"), default="contract")
     parser.add_argument("--phase", choices=("advisory", "blocking"), default="advisory")
     args = parser.parse_args()
@@ -51,11 +55,67 @@ def main() -> int:
 
 
 def run_hook(hook: str, phase: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    if hook == "context_guard":
+        return run_context_guard(payload, phase)
     if hook == "intake_guard":
         return run_intake_guard(payload, phase)
     if hook == "orchestrator_hint":
         return run_orchestrator_hint(payload, phase)
     return run_check_guard(payload, phase)
+
+
+def run_context_guard(payload: Dict[str, Any], phase: str) -> Dict[str, Any]:
+    threshold = 15.0
+    usage_percent, source = _extract_context_usage_percent(payload)
+    event_name = payload.get("hook_event_name") or payload.get("hookEventName") or "UserPromptSubmit"
+    details = [f"임계값: {threshold:.1f}%"]
+    if source:
+        details.append(f"감지 경로: {source}")
+
+    if usage_percent is None:
+        details.append("컨텍스트 사용량 필드를 찾지 못함")
+        return _result(
+            kind="context",
+            status="ok",
+            summary="컨텍스트 사용량 정보 없음",
+            details=details,
+            next_action="payload에 컨텍스트 사용량 필드가 들어오면 자동 차단이 동작한다.",
+            phase=phase,
+            extra={
+                "context_usage_percent": None,
+                "context_threshold_percent": threshold,
+                "context_detected": False,
+                "context_source": "",
+                "session_id": _extract_session_id(payload),
+                "hook_event_name": event_name,
+            },
+        )
+
+    details.append(f"컨텍스트 사용량: {usage_percent:.1f}%")
+    status = "ok"
+    summary = "컨텍스트 사용량 임계값 이내"
+    next_action = "현재 세션을 계속 진행한다."
+    if usage_percent >= threshold:
+        status = "block"
+        summary = f"세션 컨텍스트 {usage_percent:.1f}%로 임계값 {threshold:.1f}% 초과"
+        next_action = "즉시 새 세션으로 전환하거나 짧은 요약만 남기고 다시 시작한다."
+
+    return _result(
+        kind="context",
+        status=status,
+        summary=summary,
+        details=details,
+        next_action=next_action,
+        phase=phase,
+        extra={
+            "context_usage_percent": usage_percent,
+            "context_threshold_percent": threshold,
+            "context_detected": True,
+            "context_source": source,
+            "session_id": _extract_session_id(payload),
+            "hook_event_name": event_name,
+        },
+    )
 
 
 def run_intake_guard(payload: Dict[str, Any], phase: str) -> Dict[str, Any]:
@@ -305,12 +365,12 @@ def run_check_guard(payload: Dict[str, Any], phase: str) -> Dict[str, Any]:
 
 def to_codex_output(result: Dict[str, Any], payload: Dict[str, Any]) -> Dict[str, Any]:
     event_name = payload.get("hook_event_name") or payload.get("hookEventName") or "UserPromptSubmit"
+    if result["status"] == "block":
+        return {
+            "decision": "block",
+            "reason": result["summary"],
+        }
     if event_name == "Stop":
-        if result["status"] == "block":
-            return {
-                "decision": "block",
-                "reason": result["summary"],
-            }
         return {}
 
     return {}
@@ -370,6 +430,117 @@ def _read_payload() -> Dict[str, Any]:
         return json.loads(raw)
     except json.JSONDecodeError:
         return {"raw": raw}
+
+
+def _extract_context_usage_percent(payload: Dict[str, Any]) -> tuple[float | None, str]:
+    for path, value in _walk_payload(payload):
+        if not path:
+            continue
+        key = path[-1]
+        normalized = _normalize_key(key)
+        if _looks_like_context_percent_key(normalized):
+            percent = _coerce_percent(value)
+            if percent is not None:
+                return percent, ".".join(path)
+        if _looks_like_context_ratio_key(normalized):
+            percent = _coerce_ratio_as_percent(value)
+            if percent is not None:
+                return percent, ".".join(path)
+
+    for path, value in _walk_payload(payload):
+        if not isinstance(value, dict):
+            continue
+        percent = _percent_from_usage_dict(path, value)
+        if percent is not None:
+            return percent, ".".join(path)
+
+    return None, ""
+
+
+def _walk_payload(node: Any, path: tuple[str, ...] = ()) -> list[tuple[tuple[str, ...], Any]]:
+    items: list[tuple[tuple[str, ...], Any]] = [(path, node)]
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if isinstance(key, str):
+                items.extend(_walk_payload(value, path + (key,)))
+    elif isinstance(node, list):
+        for index, value in enumerate(node):
+            items.extend(_walk_payload(value, path + (str(index),)))
+    return items
+
+
+def _percent_from_usage_dict(path: tuple[str, ...], value: Dict[str, Any]) -> float | None:
+    joined = ".".join(path)
+    normalized_path = _normalize_key(joined)
+    normalized_keys = {_normalize_key(key): key for key in value.keys() if isinstance(key, str)}
+    if not any(token in normalized_path for token in ("context", "window", "usage", "token")):
+        if "context" not in normalized_keys and "window" not in normalized_keys:
+            return None
+
+    for used_key, total_key in (
+        ("used", "total"),
+        ("current", "max"),
+        ("consumed", "limit"),
+        ("usedtokens", "maxtokens"),
+        ("inputtokens", "maxinputtokens"),
+    ):
+        if used_key in normalized_keys and total_key in normalized_keys:
+            used = _coerce_number(value[normalized_keys[used_key]])
+            total = _coerce_number(value[normalized_keys[total_key]])
+            if used is None or total is None or total <= 0:
+                return None
+            return round((used / total) * 100.0, 2)
+    return None
+
+
+def _looks_like_context_percent_key(normalized: str) -> bool:
+    return (
+        "percent" in normalized or normalized.endswith("pct")
+    ) and any(token in normalized for token in ("context", "usage", "window"))
+
+
+def _looks_like_context_ratio_key(normalized: str) -> bool:
+    return "ratio" in normalized and any(token in normalized for token in ("context", "usage", "window"))
+
+
+def _normalize_key(value: str) -> str:
+    return "".join(ch for ch in value.lower() if ch.isalnum())
+
+
+def _coerce_number(value: Any) -> float | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        text = value.strip().rstrip("%")
+        if not text:
+            return None
+        try:
+            return float(text)
+        except ValueError:
+            return None
+    return None
+
+
+def _coerce_percent(value: Any) -> float | None:
+    number = _coerce_number(value)
+    if number is None:
+        return None
+    if 0.0 <= number <= 1.0:
+        number *= 100.0
+    if 0.0 <= number <= 100.0:
+        return round(number, 2)
+    return None
+
+
+def _coerce_ratio_as_percent(value: Any) -> float | None:
+    number = _coerce_number(value)
+    if number is None:
+        return None
+    if 0.0 <= number <= 1.0:
+        return round(number * 100.0, 2)
+    return None
 
 
 def _extract_session_id(payload: Dict[str, Any]) -> str:
